@@ -60,18 +60,18 @@ function Index() {
   return (
     <Layout>
       {/* Hero */}
-      <section className="relative h-[85vh] flex items-center justify-center bg-muted/30">
-        <div className="absolute inset-0 overflow-hidden">
+      <section className="relative min-h-[calc(100vh-4rem)] md:min-h-[calc(100vh-5.5rem)] h-screen w-full flex items-center justify-center bg-muted/30 overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden w-full h-full">
           <img
             src={heroPlants}
             alt="Hero plants"
-            className="w-full h-full object-cover animate-fade-in"
+            className="w-full h-full object-cover object-center animate-fade-in"
           />
           {/* Soft, calm, pastel Matcha Green color grade overlay preserving natural image details */}
           <div className="absolute inset-0 bg-[#9EBE67]/25 mix-blend-soft-light" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#2F4B2F]/80 via-[#2F4B2F]/40 to-[#2F4B2F]/20" />
         </div>
-        <div className="relative text-center z-10 px-6 mt-10">
+        <div className="relative text-center z-10 px-6 my-auto pt-6">
           <h1 className="font-script text-[#FCFCF8] text-6xl md:text-9xl mb-[-15px] md:mb-[-35px] drop-shadow-md select-none">
             Artificial
           </h1>

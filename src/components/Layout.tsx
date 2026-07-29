@@ -130,24 +130,20 @@ export default function Layout({ children }: { children: ReactNode }) {
 
       {/* Header */}
       <header
-        className={`shrink-0 sticky top-0 z-40 transition-all duration-300 transform ease-in-out ${
-          isScrolled
-            ? "bg-primary text-white border-b border-white/10 shadow-md backdrop-blur-none"
-            : "bg-muted/40 text-foreground border-b border-border/20 backdrop-blur-md"
-        } ${isVisible ? "translate-y-0" : "-translate-y-full"}`}
+        className={`shrink-0 sticky top-0 z-40 transition-all duration-300 transform ease-in-out bg-primary text-primary-foreground border-b border-white/10 shadow-md ${
+          isVisible ? "translate-y-0" : "-translate-y-full"
+        }`}
       >
         <div
           className={`mx-auto max-w-[1400px] relative flex items-center justify-between px-6 transition-all duration-300 ${
-            isScrolled ? "py-3.5" : "py-5"
+            isScrolled ? "py-3.5" : "py-4 md:py-5"
           }`}
         >
           {/* Left Column */}
           <div className="flex items-center gap-4 z-10">
             {/* Hamburger menu - mobile only */}
             <button
-              className={`lg:hidden transition-colors ${
-                isScrolled ? "text-white hover:text-white/80" : "text-foreground hover:text-primary"
-              }`}
+              className="lg:hidden text-primary-foreground hover:text-white transition-colors cursor-pointer"
               onClick={() => setIsMobileMenuOpen(true)}
               aria-label="Open Menu"
             >
@@ -155,11 +151,7 @@ export default function Layout({ children }: { children: ReactNode }) {
             </button>
             {/* Search - desktop only */}
             <button
-              className={`hidden lg:inline-flex items-center gap-2 text-sm transition-colors ${
-                isScrolled
-                  ? "text-white hover:text-white/80"
-                  : "text-foreground/80 hover:text-foreground"
-              }`}
+              className="hidden lg:inline-flex items-center gap-2 text-sm text-primary-foreground/90 hover:text-white transition-colors cursor-pointer"
               aria-label="Search"
             >
               <Search className="h-5 w-5" />
@@ -172,8 +164,8 @@ export default function Layout({ children }: { children: ReactNode }) {
               <img
                 src={logo}
                 alt="VASSIO Logo"
-                className={`w-auto object-contain transition-all duration-300 ${
-                  isScrolled ? "brightness-0 invert h-6 md:h-8" : "h-7 md:h-9"
+                className={`w-auto object-contain brightness-0 invert transition-all duration-300 ${
+                  isScrolled ? "h-6 md:h-8" : "h-7 md:h-9"
                 }`}
               />
             </Link>
@@ -183,11 +175,7 @@ export default function Layout({ children }: { children: ReactNode }) {
           <div className="flex items-center gap-4 sm:gap-5 z-10">
             {/* Search - mobile only */}
             <button
-              className={`lg:hidden transition-colors ${
-                isScrolled
-                  ? "text-white hover:text-white/80"
-                  : "text-foreground/80 hover:text-foreground"
-              }`}
+              className="lg:hidden text-primary-foreground/90 hover:text-white transition-colors cursor-pointer"
               aria-label="Search"
             >
               <Search className="h-5 w-5" />
@@ -195,29 +183,17 @@ export default function Layout({ children }: { children: ReactNode }) {
             {/* Wishlist */}
             <button
               aria-label="Wishlist"
-              className={`transition-colors ${
-                isScrolled
-                  ? "text-white hover:text-white/80"
-                  : "text-foreground/80 hover:text-foreground"
-              }`}
+              className="text-primary-foreground/90 hover:text-white transition-colors cursor-pointer"
             >
               <Heart className="h-5 w-5" />
             </button>
             {/* Cart */}
             <button
               aria-label="Cart"
-              className={`relative transition-colors ${
-                isScrolled
-                  ? "text-white hover:text-white/80"
-                  : "text-foreground/80 hover:text-foreground"
-              }`}
+              className="relative text-primary-foreground/90 hover:text-white transition-colors cursor-pointer"
             >
               <ShoppingBag className="h-5 w-5" />
-              <span
-                className={`absolute -right-2 -top-2 grid h-4 w-4 place-items-center rounded-full text-[10px] font-bold transition-all duration-300 ${
-                  isScrolled ? "bg-white text-primary" : "bg-announce text-announce-foreground"
-                }`}
-              >
+              <span className="absolute -right-2 -top-2 grid h-4 w-4 place-items-center rounded-full text-[10px] font-bold bg-white text-primary shadow-sm">
                 0
               </span>
             </button>
@@ -226,8 +202,8 @@ export default function Layout({ children }: { children: ReactNode }) {
 
         {/* Nav (Desktop) */}
         {!isScrolled && (
-          <nav className="hidden lg:block border-t border-border/30 animate-in fade-in duration-300">
-            <ul className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-center gap-x-6 gap-y-2 px-6 py-3.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground/85">
+          <nav className="hidden lg:block border-t border-white/10 animate-in fade-in duration-300">
+            <ul className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-center gap-x-6 gap-y-2 px-6 py-3.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-primary-foreground/90">
               {mainNavigationItems.map((item) => {
                 const hasSub = item.subItems && item.subItems.length > 0;
                 return (
@@ -235,23 +211,23 @@ export default function Layout({ children }: { children: ReactNode }) {
                     <Link
                       to={item.href}
                       search={item.search}
-                      className="inline-flex items-center gap-1 hover:text-primary transition-colors cursor-pointer py-1"
+                      className="inline-flex items-center gap-1 hover:text-white transition-colors cursor-pointer py-1"
                     >
                       <span>{item.label}</span>
                       {hasSub && (
-                        <ChevronDown className="h-3 w-3 transition-transform duration-200 group-hover:rotate-180 opacity-70 group-hover:opacity-100" />
+                        <ChevronDown className="h-3 w-3 transition-transform duration-200 group-hover:rotate-180 opacity-80 group-hover:opacity-100" />
                       )}
                     </Link>
 
                     {hasSub && (
                       <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 ease-out z-50">
-                        <ul className="w-48 bg-background border border-border/40 shadow-xl rounded-xl py-2 px-1 space-y-1">
+                        <ul className="w-48 bg-primary border border-white/20 shadow-xl rounded-xl py-2 px-1 space-y-1 text-white">
                           {item.subItems!.map((sub) => (
                             <li key={sub.label}>
                               <Link
                                 to={sub.href}
                                 search={sub.search}
-                                className="block px-3.5 py-2 text-[10px] font-semibold uppercase tracking-wider text-foreground/80 hover:text-primary hover:bg-muted/60 rounded-lg transition-colors"
+                                className="block px-3.5 py-2 text-[10px] font-semibold uppercase tracking-wider text-white/90 hover:text-white hover:bg-white/15 rounded-lg transition-colors"
                               >
                                 {sub.label}
                               </Link>
