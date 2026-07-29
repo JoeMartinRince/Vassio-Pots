@@ -11,8 +11,57 @@ import {
   Facebook,
   Youtube,
   ArrowUpRight,
+  ChevronDown,
 } from "lucide-react";
-import { announcements, navLinks, logo } from "@/data/products";
+import { announcements, logo } from "@/data/products";
+
+export interface NavSubItem {
+  label: string;
+  href: string;
+  search?: Record<string, string>;
+}
+
+export interface NavItem {
+  label: string;
+  href: string;
+  search?: Record<string, string>;
+  subItems?: NavSubItem[];
+}
+
+export const mainNavigationItems: NavItem[] = [
+  { label: "Home", href: "/" },
+  {
+    label: "FRP Pots",
+    href: "/shop",
+    search: { category: "frp-pots" },
+    subItems: [
+      { label: "Off-White", href: "/shop", search: { category: "frp-pots", color: "off-white" } },
+      { label: "Black", href: "/shop", search: { category: "frp-pots", color: "black" } },
+      { label: "Beige", href: "/shop", search: { category: "frp-pots", color: "beige" } },
+      { label: "Grey", href: "/shop", search: { category: "frp-pots", color: "grey" } },
+      { label: "Other Colors", href: "/shop", search: { category: "frp-pots", color: "other" } },
+    ],
+  },
+  {
+    label: "Artificial Plants",
+    href: "/shop",
+    search: { category: "artificial-plants" },
+    subItems: [
+      { label: "1 ft", href: "/shop", search: { category: "artificial-plants", height: "1-ft" } },
+      { label: "2 ft", href: "/shop", search: { category: "artificial-plants", height: "2-ft" } },
+      { label: "3 ft", href: "/shop", search: { category: "artificial-plants", height: "3-ft" } },
+      { label: "4 ft", href: "/shop", search: { category: "artificial-plants", height: "4-ft" } },
+      { label: "5 ft", href: "/shop", search: { category: "artificial-plants", height: "5-ft" } },
+      { label: "6 ft+", href: "/shop", search: { category: "artificial-plants", height: "6-ft-plus" } },
+    ],
+  },
+  { label: "Terracotta Pots", href: "/shop", search: { category: "terracotta-pots" } },
+  { label: "Pebbles", href: "/shop", search: { category: "pebbles" } },
+  { label: "New Arrivals", href: "/shop", search: { filter: "new-arrivals" } },
+  { label: "Track My Order", href: "/track-order" },
+  { label: "Locations", href: "/locations" },
+  { label: "Contact", href: "/contact" },
+];
 
 function FooterTime() {
   const [time, setTime] = useState("");
@@ -35,9 +84,17 @@ function FooterTime() {
 
 export default function Layout({ children }: { children: ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [openMobileAccordions, setOpenMobileAccordions] = useState<Record<string, boolean>>({});
   const [isScrolled, setIsScrolled] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+
+  const toggleMobileAccordion = (label: string) => {
+    setOpenMobileAccordions((prev) => ({
+      ...prev,
+      [label]: !prev[label],
+    }));
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -170,19 +227,42 @@ export default function Layout({ children }: { children: ReactNode }) {
         {/* Nav (Desktop) */}
         {!isScrolled && (
           <nav className="hidden lg:block border-t border-border/30 animate-in fade-in duration-300">
-            <ul className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-center gap-x-7 gap-y-2 px-6 py-3.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground/85">
-              {navLinks.map((l) => (
-                <li key={l}>
-                  <Link
-                    to="/"
-                    className={`hover:text-primary transition-colors ${
-                      l === "Last Chance" ? "text-announce animate-pulse" : ""
-                    }`}
-                  >
-                    {l}
-                  </Link>
-                </li>
-              ))}
+            <ul className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-center gap-x-6 gap-y-2 px-6 py-3.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-foreground/85">
+              {mainNavigationItems.map((item) => {
+                const hasSub = item.subItems && item.subItems.length > 0;
+                return (
+                  <li key={item.label} className="relative group py-1">
+                    <Link
+                      to={item.href}
+                      search={item.search}
+                      className="inline-flex items-center gap-1 hover:text-primary transition-colors cursor-pointer py-1"
+                    >
+                      <span>{item.label}</span>
+                      {hasSub && (
+                        <ChevronDown className="h-3 w-3 transition-transform duration-200 group-hover:rotate-180 opacity-70 group-hover:opacity-100" />
+                      )}
+                    </Link>
+
+                    {hasSub && (
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 ease-out z-50">
+                        <ul className="w-48 bg-background border border-border/40 shadow-xl rounded-xl py-2 px-1 space-y-1">
+                          {item.subItems!.map((sub) => (
+                            <li key={sub.label}>
+                              <Link
+                                to={sub.href}
+                                search={sub.search}
+                                className="block px-3.5 py-2 text-[10px] font-semibold uppercase tracking-wider text-foreground/80 hover:text-primary hover:bg-muted/60 rounded-lg transition-colors"
+                              >
+                                {sub.label}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           </nav>
         )}
@@ -197,7 +277,7 @@ export default function Layout({ children }: { children: ReactNode }) {
             onClick={() => setIsMobileMenuOpen(false)}
           />
           {/* Drawer content */}
-          <div className="relative flex flex-col w-full max-w-[300px] h-full bg-background p-6 shadow-2xl border-r border-border/40 animate-in slide-in-from-left duration-250">
+          <div className="relative flex flex-col w-full max-w-[320px] h-full bg-background p-6 shadow-2xl border-r border-border/40 animate-in slide-in-from-left duration-250">
             <div className="flex items-center justify-between pb-6 border-b border-border/20">
               <img src={logo} alt="VASSIO Logo" className="h-6 w-auto object-contain" />
               <button
@@ -209,19 +289,68 @@ export default function Layout({ children }: { children: ReactNode }) {
               </button>
             </div>
 
-            <nav className="mt-8 flex-1">
-              <ul className="space-y-6 text-sm font-semibold uppercase tracking-[0.15em] text-foreground/90">
-                {navLinks.map((l) => (
-                  <li key={l}>
-                    <Link
-                      to="/"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="block hover:text-primary transition-colors"
-                    >
-                      {l}
-                    </Link>
-                  </li>
-                ))}
+            <nav className="mt-6 flex-1 overflow-y-auto pr-1">
+              <ul className="space-y-4 text-xs font-semibold uppercase tracking-[0.15em] text-foreground/90">
+                {mainNavigationItems.map((item) => {
+                  const hasSub = item.subItems && item.subItems.length > 0;
+                  const isOpen = !!openMobileAccordions[item.label];
+                  return (
+                    <li key={item.label} className="border-b border-border/10 pb-3">
+                      {hasSub ? (
+                        <div>
+                          <div className="flex items-center justify-between">
+                            <Link
+                              to={item.href}
+                              search={item.search}
+                              onClick={() => setIsMobileMenuOpen(false)}
+                              className="hover:text-primary transition-colors py-1 flex-1"
+                            >
+                              {item.label}
+                            </Link>
+                            <button
+                              type="button"
+                              onClick={() => toggleMobileAccordion(item.label)}
+                              className="p-1.5 hover:text-primary transition-colors cursor-pointer"
+                              aria-label={`Toggle ${item.label} sub-navigation`}
+                            >
+                              <ChevronDown
+                                className={`h-4 w-4 transition-transform duration-200 ${
+                                  isOpen ? "rotate-180 text-primary" : "text-foreground/60"
+                                }`}
+                              />
+                            </button>
+                          </div>
+
+                          {isOpen && (
+                            <ul className="mt-2.5 ml-3 space-y-2.5 border-l-2 border-primary/30 pl-3 animate-in fade-in duration-200">
+                              {item.subItems!.map((sub) => (
+                                <li key={sub.label}>
+                                  <Link
+                                    to={sub.href}
+                                    search={sub.search}
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className="block text-[11px] font-semibold tracking-wider text-muted-foreground hover:text-primary transition-colors py-0.5"
+                                  >
+                                    {sub.label}
+                                  </Link>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      ) : (
+                        <Link
+                          to={item.href}
+                          search={item.search}
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className="block hover:text-primary transition-colors py-1"
+                        >
+                          {item.label}
+                        </Link>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             </nav>
 
