@@ -1,8 +1,8 @@
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@500,700,800,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap');
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
-@import url('https://api.fontshare.com/v2/css?f[]=satoshi@700,900,500,400&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap');
 
 @custom-variant dark (&:is(.dark *));
 
@@ -69,9 +69,9 @@
   --card-foreground: #2F4B2F;
   --popover: #FCFCF8;
   --popover-foreground: #2F4B2F;
-  --primary: #A8CF45;
+  --primary: #9EBE67;
   --primary-foreground: #2F4B2F;
-  --primary-hover: #8CBF3F;
+  --primary-hover: #8EB058;
   --dark-green: #3F673F;
   --secondary: #3F673F;
   --secondary-foreground: #FCFCF8;
@@ -83,22 +83,22 @@
   --destructive-foreground: #FCFCF8;
   --border: #D9E3C5;
   --input: #D9E3C5;
-  --ring: #A8CF45;
+  --ring: #9EBE67;
   --announce: #3F673F;
   --announce-foreground: #FCFCF8;
-  --chart-1: #A8CF45;
-  --chart-2: #8CBF3F;
+  --chart-1: #9EBE67;
+  --chart-2: #8EB058;
   --chart-3: #3F673F;
   --chart-4: #66725E;
   --chart-5: #2F4B2F;
   --sidebar: #F3F8E8;
   --sidebar-foreground: #2F4B2F;
-  --sidebar-primary: #A8CF45;
+  --sidebar-primary: #9EBE67;
   --sidebar-primary-foreground: #2F4B2F;
   --sidebar-accent: #F3F8E8;
   --sidebar-accent-foreground: #2F4B2F;
   --sidebar-border: #D9E3C5;
-  --sidebar-ring: #A8CF45;
+  --sidebar-ring: #9EBE67;
   --font-heading: "Satoshi", system-ui, -apple-system, sans-serif;
   --font-serif: "Satoshi", system-ui, -apple-system, sans-serif;
   --font-sans: "Manrope", system-ui, -apple-system, sans-serif;
@@ -120,11 +120,11 @@
   --card-foreground: #FCFCF8;
   --popover: #2F4B2F;
   --popover-foreground: #FCFCF8;
-  --primary: #A8CF45;
+  --primary: #9EBE67;
   --primary-foreground: #2F4B2F;
-  --primary-hover: #8CBF3F;
+  --primary-hover: #8EB058;
   --dark-green: #3F673F;
-  --secondary: #8CBF3F;
+  --secondary: #8EB058;
   --secondary-foreground: #2F4B2F;
   --muted: #3F673F;
   --muted-foreground: #D9E3C5;
@@ -134,20 +134,20 @@
   --destructive-foreground: #FCFCF8;
   --border: #3F673F;
   --input: #3F673F;
-  --ring: #A8CF45;
-  --chart-1: #A8CF45;
-  --chart-2: #8CBF3F;
+  --ring: #9EBE67;
+  --chart-1: #9EBE67;
+  --chart-2: #8EB058;
   --chart-3: #F3F8E8;
   --chart-4: #3F673F;
   --chart-5: #FCFCF8;
   --sidebar: #2F4B2F;
   --sidebar-foreground: #FCFCF8;
-  --sidebar-primary: #A8CF45;
+  --sidebar-primary: #9EBE67;
   --sidebar-primary-foreground: #2F4B2F;
   --sidebar-accent: #3F673F;
   --sidebar-accent-foreground: #FCFCF8;
   --sidebar-border: #3F673F;
-  --sidebar-ring: #A8CF45;
+  --sidebar-ring: #9EBE67;
 }
 
 @layer base {
