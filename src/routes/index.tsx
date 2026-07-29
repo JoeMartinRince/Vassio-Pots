@@ -72,10 +72,10 @@ function Index() {
           <div className="absolute inset-0 bg-gradient-to-t from-[#2F4B2F]/80 via-[#2F4B2F]/40 to-[#2F4B2F]/20" />
         </div>
         <div className="relative text-center z-10 px-6 my-auto pt-6">
-          <h1 className="font-script text-[#FCFCF8] text-6xl md:text-9xl mb-[-15px] md:mb-[-35px] drop-shadow-md select-none">
+          <h1 className="font-script text-[#FCFCF8] text-6xl md:text-9xl mb-3 md:mb-6 leading-tight drop-shadow-md select-none">
             Artificial
           </h1>
-          <h2 className="serif text-[#9EBE67] uppercase text-5xl md:text-8xl tracking-[0.2em] font-bold drop-shadow-md">
+          <h2 className="serif text-[#9EBE67] uppercase text-5xl md:text-8xl tracking-[0.2em] font-bold leading-tight drop-shadow-md">
             Plants
           </h2>
           <p className="text-[#FCFCF8]/90 text-[10px] md:text-xs uppercase tracking-[0.4em] mt-8 max-w-xl mx-auto leading-loose font-sans font-semibold">
