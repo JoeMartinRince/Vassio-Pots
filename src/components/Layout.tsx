@@ -202,8 +202,8 @@ export default function Layout({ children }: { children: ReactNode }) {
 
         {/* Nav (Desktop) */}
         {!isScrolled && (
-          <nav className="hidden lg:block border-t border-white/10 animate-in fade-in duration-300">
-            <ul className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-center gap-x-6 gap-y-2 px-6 py-3.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-primary-foreground/90">
+          <nav className="hidden lg:block border-t border-white/15 animate-in fade-in duration-300">
+            <ul className="mx-auto flex max-w-[1400px] flex-wrap items-center justify-center gap-x-7 gap-y-2 px-6 py-3.5 text-[11px] md:text-[12px] font-bold uppercase tracking-[0.2em] text-[#1C331C]">
               {mainNavigationItems.map((item) => {
                 const hasSub = item.subItems && item.subItems.length > 0;
                 return (
@@ -211,23 +211,23 @@ export default function Layout({ children }: { children: ReactNode }) {
                     <Link
                       to={item.href}
                       search={item.search}
-                      className="inline-flex items-center gap-1 hover:text-white transition-colors cursor-pointer py-1"
+                      className="inline-flex items-center gap-1.5 hover:text-black transition-colors cursor-pointer py-1 text-[#1C331C] font-bold"
                     >
                       <span>{item.label}</span>
                       {hasSub && (
-                        <ChevronDown className="h-3 w-3 transition-transform duration-200 group-hover:rotate-180 opacity-80 group-hover:opacity-100" />
+                        <ChevronDown className="h-3.5 w-3.5 transition-transform duration-200 group-hover:rotate-180 text-[#1C331C] group-hover:text-black" />
                       )}
                     </Link>
 
                     {hasSub && (
                       <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 ease-out z-50">
-                        <ul className="w-48 bg-primary border border-white/20 shadow-xl rounded-xl py-2 px-1 space-y-1 text-white">
+                        <ul className="w-48 bg-primary border border-white/25 shadow-xl rounded-xl py-2.5 px-1.5 space-y-1 text-[#1C331C]">
                           {item.subItems!.map((sub) => (
                             <li key={sub.label}>
                               <Link
                                 to={sub.href}
                                 search={sub.search}
-                                className="block px-3.5 py-2 text-[10px] font-semibold uppercase tracking-wider text-white/90 hover:text-white hover:bg-white/15 rounded-lg transition-colors"
+                                className="block px-3.5 py-2 text-[10px] font-bold uppercase tracking-wider text-[#1C331C] hover:text-black hover:bg-white/20 rounded-lg transition-colors"
                               >
                                 {sub.label}
                               </Link>
