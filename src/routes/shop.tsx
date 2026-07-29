@@ -346,14 +346,14 @@ function ShopPage() {
                       <ShoppingBag className="h-4 w-4" />
                     </button>
                   </div>
-                  <p className="serif mt-4 text-base tracking-wide text-foreground/90 leading-tight group-hover:text-primary transition-colors">
+                  <p className="product-name font-sans font-extrabold mt-4 text-base tracking-wide text-foreground/90 leading-tight group-hover:text-primary transition-colors">
                     {p.name}
                   </p>
                   <p className="mt-1.5 text-sm">
-                    <span className="font-semibold text-primary serif">
+                    <span className="product-price font-sans font-bold text-primary">
                       ₹{p.price.toLocaleString("en-IN")}
                     </span>
-                    <span className="ml-2 text-muted-foreground line-through text-xs serif">
+                    <span className="ml-2 text-muted-foreground line-through text-xs font-sans">
                       ₹{p.mrp.toLocaleString("en-IN")}
                     </span>
                   </p>

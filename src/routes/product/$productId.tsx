@@ -141,7 +141,7 @@ function ProductDetails({
     <div className="w-full lg:w-1/2 flex flex-col justify-between">
       <div>
         {/* Title */}
-        <h1 className="serif text-3xl md:text-5xl text-foreground leading-tight">{product.name}</h1>
+        <h1 className="product-name font-sans font-extrabold text-3xl md:text-5xl text-foreground leading-tight">{product.name}</h1>
 
         {/* Product Code */}
         <p className="text-[11px] text-muted-foreground uppercase tracking-widest mt-2">
@@ -150,10 +150,10 @@ function ProductDetails({
 
         {/* Price Tag */}
         <div className="mt-5 flex items-center gap-3.5">
-          <span className="text-2xl md:text-3xl font-semibold text-primary serif">
+          <span className="product-price font-sans font-bold text-2xl md:text-3xl text-primary">
             ₹{displayPrice.toLocaleString("en-IN")}
           </span>
-          <span className="text-base text-muted-foreground line-through serif">
+          <span className="text-base text-muted-foreground line-through font-sans">
             ₹{displayMrp.toLocaleString("en-IN")}
           </span>
           <span className="text-[10px] bg-primary text-primary-foreground px-2 py-0.5 font-bold uppercase tracking-wider rounded">

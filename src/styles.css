@@ -155,27 +155,59 @@
     border-color: var(--color-border);
   }
 
-  body {
+  /* Body text and descriptions: Manrope Medium (500) */
+  body,
+  p,
+  li,
+  label,
+  input,
+  textarea,
+  select {
     background-color: var(--color-background);
     color: var(--color-muted-foreground);
     font-family: var(--font-sans);
+    font-weight: 500;
   }
 
-  h1,
+  /* Section headings: Satoshi Bold (700) */
   h2,
   h3,
   h4,
   h5,
   h6,
-  .serif,
-  .font-script {
+  .section-heading,
+  .serif {
     color: var(--color-foreground);
     font-family: var(--font-heading);
     font-weight: 700;
   }
 
+  /* Hero headings: Satoshi Bold (800) */
+  h1,
+  .hero-heading,
+  .font-script {
+    color: var(--color-foreground);
+    font-family: var(--font-heading);
+    font-weight: 800;
+  }
+
+  /* Product names: Manrope ExtraBold (800) */
+  .product-name,
+  .product-title {
+    font-family: var(--font-sans);
+    font-weight: 800;
+  }
+
+  /* Product prices: Manrope Bold (700) */
+  .product-price {
+    font-family: var(--font-sans);
+    font-weight: 700;
+  }
+
+  /* Buttons: Manrope SemiBold (600) */
   button,
   .btn,
+  a.inline-block,
   [role="button"] {
     font-family: var(--font-sans);
     font-weight: 600;
