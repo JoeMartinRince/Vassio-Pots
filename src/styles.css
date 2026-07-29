@@ -155,15 +155,43 @@
     border-color: var(--color-border);
   }
 
+  body {
+    background-color: var(--color-background);
+    color: var(--color-muted-foreground);
+    font-family: var(--font-sans);
+    font-weight: 500;
+  }
+
+  /* Ensure transparent background on all text, headings, paragraphs, and font elements */
+  p,
+  span,
+  a,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  .serif,
+  .font-serif,
+  .font-script,
+  .hero-heading,
+  .section-heading,
+  .product-name,
+  .product-title,
+  .product-price {
+    background-color: transparent;
+    background-image: none;
+    box-shadow: none;
+  }
+
   /* Body text and descriptions: Manrope Medium (500) */
-  body,
   p,
   li,
   label,
   input,
   textarea,
   select {
-    background-color: var(--color-background);
     color: var(--color-muted-foreground);
     font-family: var(--font-sans);
     font-weight: 500;
