@@ -277,12 +277,12 @@ export default function Layout({ children }: { children: ReactNode }) {
             onClick={() => setIsMobileMenuOpen(false)}
           />
           {/* Drawer content */}
-          <div className="relative flex flex-col w-full max-w-[320px] h-full bg-background p-6 shadow-2xl border-r border-border/40 animate-in slide-in-from-left duration-250">
-            <div className="flex items-center justify-between pb-6 border-b border-border/20">
-              <img src={logo} alt="VASSIO Logo" className="h-6 w-auto object-contain" />
+          <div className="relative flex flex-col w-full max-w-[320px] h-full bg-primary text-primary-foreground p-6 shadow-2xl border-r border-white/10 animate-in slide-in-from-left duration-250">
+            <div className="flex items-center justify-between pb-6 border-b border-primary-foreground/20">
+              <img src={logo} alt="VASSIO Logo" className="h-6 w-auto object-contain brightness-0 invert" />
               <button
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="hover:text-primary transition-colors"
+                className="text-primary-foreground/90 hover:text-white transition-colors cursor-pointer"
                 aria-label="Close Menu"
               >
                 <X className="h-5 w-5" />
@@ -290,12 +290,12 @@ export default function Layout({ children }: { children: ReactNode }) {
             </div>
 
             <nav className="mt-6 flex-1 overflow-y-auto pr-1">
-              <ul className="space-y-4 text-xs font-semibold uppercase tracking-[0.15em] text-foreground/90">
+              <ul className="space-y-4 text-xs font-semibold uppercase tracking-[0.15em] text-primary-foreground/90">
                 {mainNavigationItems.map((item) => {
                   const hasSub = item.subItems && item.subItems.length > 0;
                   const isOpen = !!openMobileAccordions[item.label];
                   return (
-                    <li key={item.label} className="border-b border-border/10 pb-3">
+                    <li key={item.label} className="border-b border-primary-foreground/15 pb-3">
                       {hasSub ? (
                         <div>
                           <div className="flex items-center justify-between">
@@ -303,33 +303,33 @@ export default function Layout({ children }: { children: ReactNode }) {
                               to={item.href}
                               search={item.search}
                               onClick={() => setIsMobileMenuOpen(false)}
-                              className="hover:text-primary transition-colors py-1 flex-1"
+                              className="hover:text-white transition-colors py-1 flex-1 text-primary-foreground"
                             >
                               {item.label}
                             </Link>
                             <button
                               type="button"
                               onClick={() => toggleMobileAccordion(item.label)}
-                              className="p-1.5 hover:text-primary transition-colors cursor-pointer"
+                              className="p-1.5 text-primary-foreground/80 hover:text-white transition-colors cursor-pointer"
                               aria-label={`Toggle ${item.label} sub-navigation`}
                             >
                               <ChevronDown
                                 className={`h-4 w-4 transition-transform duration-200 ${
-                                  isOpen ? "rotate-180 text-primary" : "text-foreground/60"
+                                  isOpen ? "rotate-180 text-white" : "text-primary-foreground/70"
                                 }`}
                               />
                             </button>
                           </div>
 
                           {isOpen && (
-                            <ul className="mt-2.5 ml-3 space-y-2.5 border-l-2 border-primary/30 pl-3 animate-in fade-in duration-200">
+                            <ul className="mt-2.5 ml-3 space-y-2.5 border-l-2 border-primary-foreground/40 pl-3 animate-in fade-in duration-200">
                               {item.subItems!.map((sub) => (
                                 <li key={sub.label}>
                                   <Link
                                     to={sub.href}
                                     search={sub.search}
                                     onClick={() => setIsMobileMenuOpen(false)}
-                                    className="block text-[11px] font-semibold tracking-wider text-muted-foreground hover:text-primary transition-colors py-0.5"
+                                    className="block text-[11px] font-semibold tracking-wider text-primary-foreground/80 hover:text-white transition-colors py-0.5"
                                   >
                                     {sub.label}
                                   </Link>
@@ -343,7 +343,7 @@ export default function Layout({ children }: { children: ReactNode }) {
                           to={item.href}
                           search={item.search}
                           onClick={() => setIsMobileMenuOpen(false)}
-                          className="block hover:text-primary transition-colors py-1"
+                          className="block text-primary-foreground hover:text-white transition-colors py-1"
                         >
                           {item.label}
                         </Link>
@@ -354,15 +354,15 @@ export default function Layout({ children }: { children: ReactNode }) {
               </ul>
             </nav>
 
-            <div className="border-t border-border/20 pt-6 mt-auto">
-              <div className="flex justify-center gap-6 text-foreground/75">
-                <a href="#" aria-label="Instagram" className="hover:text-primary transition-colors">
+            <div className="border-t border-primary-foreground/20 pt-6 mt-auto">
+              <div className="flex justify-center gap-6 text-primary-foreground/80">
+                <a href="#" aria-label="Instagram" className="hover:text-white transition-colors">
                   <Instagram className="h-5 w-5" />
                 </a>
-                <a href="#" aria-label="Facebook" className="hover:text-primary transition-colors">
+                <a href="#" aria-label="Facebook" className="hover:text-white transition-colors">
                   <Facebook className="h-5 w-5" />
                 </a>
-                <a href="#" aria-label="Youtube" className="hover:text-primary transition-colors">
+                <a href="#" aria-label="Youtube" className="hover:text-white transition-colors">
                   <Youtube className="h-5 w-5" />
                 </a>
               </div>
