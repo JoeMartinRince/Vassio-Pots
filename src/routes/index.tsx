@@ -442,17 +442,6 @@ function Index() {
         </div>
       </section>
 
-      {/* Brand Partners */}
-      <section className="bg-secondary/25 py-12 border-t border-b border-border/20">
-        <div className="mx-auto max-w-[1400px] px-6">
-          <div className="flex flex-wrap items-center justify-center gap-12 md:gap-24 text-foreground/50 text-xs font-bold tracking-[0.3em] uppercase">
-            <span>LODHA</span>
-            <span>EMBASSY</span>
-            <span>GODREJ</span>
-            <span>SOBHA</span>
-          </div>
-        </div>
-      </section>
 
 
       {/* Instagram Grid */}
