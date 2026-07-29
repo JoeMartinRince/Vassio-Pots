@@ -67,24 +67,24 @@ function Index() {
             alt="Hero plants"
             className="w-full h-full object-cover animate-fade-in"
           />
-          {/* Immersive forest green overlay matching the golf reference image */}
-          <div className="absolute inset-0 bg-primary/70 mix-blend-multiply" />
-          <div className="absolute inset-0 bg-black/25" />
+          {/* Soft Matcha Green color grade overlay preserving natural image details */}
+          <div className="absolute inset-0 bg-[#A8CF45]/30 mix-blend-soft-light" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#2F4B2F]/80 via-[#2F4B2F]/40 to-[#2F4B2F]/20" />
         </div>
         <div className="relative text-center z-10 px-6 mt-10">
-          <h1 className="font-script text-[#FCFCF8] text-6xl md:text-9xl mb-[-15px] md:mb-[-35px] drop-shadow-sm select-none opacity-90">
+          <h1 className="font-script text-[#FCFCF8] text-6xl md:text-9xl mb-[-15px] md:mb-[-35px] drop-shadow-md select-none">
             Artificial
           </h1>
-          <h2 className="serif text-secondary uppercase text-5xl md:text-8xl tracking-[0.2em] font-medium drop-shadow-md">
+          <h2 className="serif text-[#A8CF45] uppercase text-5xl md:text-8xl tracking-[0.2em] font-bold drop-shadow-md">
             Plants
           </h2>
-          <p className="text-[#FCFCF8]/85 text-[10px] md:text-xs uppercase tracking-[0.4em] mt-8 max-w-xl mx-auto leading-loose">
+          <p className="text-[#FCFCF8]/90 text-[10px] md:text-xs uppercase tracking-[0.4em] mt-8 max-w-xl mx-auto leading-loose font-sans font-semibold">
             The beauty of nature, perfected for modern living.
           </p>
           <div className="mt-10">
             <a
               href="#shop"
-              className="inline-block bg-secondary text-foreground hover:bg-secondary/90 px-10 py-4 text-[10px] uppercase tracking-[0.25em] font-bold transition duration-300 rounded-full shadow-lg hover:scale-105 active:scale-95 duration-200 cursor-pointer"
+              className="inline-block bg-[#A8CF45] text-[#2F4B2F] hover:bg-[#8CBF3F] px-10 py-4 text-[10px] uppercase tracking-[0.25em] font-semibold transition duration-300 rounded-full shadow-lg hover:scale-105 active:scale-95 duration-200 cursor-pointer"
             >
               Shop Now
             </a>

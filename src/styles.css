@@ -1,6 +1,8 @@
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@700,900,500,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap');
 
 @custom-variant dark (&:is(.dark *));
 
@@ -9,13 +11,6 @@
  *
  * The @theme inline block maps CSS custom properties to Tailwind utility
  * classes (e.g. --color-primary -> bg-primary, text-primary).
- *
- * The :root and .dark blocks define the actual color values using oklch.
- * All colors MUST use oklch format.
- *
- * To add a new semantic color:
- * 1. Add the variable to :root (light value) and .dark (dark value)
- * 2. Register it in @theme inline as --color-<name>: var(--<name>)
  */
 
 @theme inline {
@@ -42,7 +37,6 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
-  --color-light-green-bg: var(--light-green-bg);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
@@ -62,6 +56,9 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --font-sans: var(--font-sans);
+  --font-serif: var(--font-serif);
+  --font-heading: var(--font-heading);
 }
 
 :root {
@@ -75,37 +72,37 @@
   --primary: #A8CF45;
   --primary-foreground: #2F4B2F;
   --primary-hover: #8CBF3F;
-  --dark-green: #3E6A3E;
-  --secondary: #7DAF52;
+  --dark-green: #3F673F;
+  --secondary: #3F673F;
   --secondary-foreground: #FCFCF8;
-  --muted: #F5F7EF;
-  --muted-foreground: #6C7A62;
-  --accent: #EDF6D5;
+  --muted: #F3F8E8;
+  --muted-foreground: #66725E;
+  --accent: #F3F8E8;
   --accent-foreground: #2F4B2F;
-  --light-green-bg: #EDF6D5;
   --destructive: oklch(0.45 0.15 25);
   --destructive-foreground: #FCFCF8;
   --border: #D9E3C5;
   --input: #D9E3C5;
   --ring: #A8CF45;
-  --announce: #3E6A3E;
+  --announce: #3F673F;
   --announce-foreground: #FCFCF8;
   --chart-1: #A8CF45;
-  --chart-2: #7DAF52;
-  --chart-3: #3E6A3E;
-  --chart-4: #EDF6D5;
-  --chart-5: #6C7A62;
-  --sidebar: #F5F7EF;
+  --chart-2: #8CBF3F;
+  --chart-3: #3F673F;
+  --chart-4: #66725E;
+  --chart-5: #2F4B2F;
+  --sidebar: #F3F8E8;
   --sidebar-foreground: #2F4B2F;
   --sidebar-primary: #A8CF45;
   --sidebar-primary-foreground: #2F4B2F;
-  --sidebar-accent: #EDF6D5;
+  --sidebar-accent: #F3F8E8;
   --sidebar-accent-foreground: #2F4B2F;
   --sidebar-border: #D9E3C5;
   --sidebar-ring: #A8CF45;
-  --font-serif: "Cormorant Garamond", "Playfair Display", Georgia, serif;
-  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
-  --font-script: "Playball", cursive;
+  --font-heading: "Satoshi", system-ui, -apple-system, sans-serif;
+  --font-serif: "Satoshi", system-ui, -apple-system, sans-serif;
+  --font-sans: "Manrope", system-ui, -apple-system, sans-serif;
+  --font-script: "Satoshi", system-ui, -apple-system, sans-serif;
 }
 
 @theme inline {
@@ -126,31 +123,30 @@
   --primary: #A8CF45;
   --primary-foreground: #2F4B2F;
   --primary-hover: #8CBF3F;
-  --dark-green: #3E6A3E;
-  --secondary: #7DAF52;
-  --secondary-foreground: #FCFCF8;
-  --muted: #3E6A3E;
+  --dark-green: #3F673F;
+  --secondary: #8CBF3F;
+  --secondary-foreground: #2F4B2F;
+  --muted: #3F673F;
   --muted-foreground: #D9E3C5;
-  --accent: #3E6A3E;
+  --accent: #3F673F;
   --accent-foreground: #FCFCF8;
-  --light-green-bg: #3E6A3E;
   --destructive: oklch(0.704 0.191 22.216);
   --destructive-foreground: #FCFCF8;
-  --border: #3E6A3E;
-  --input: #3E6A3E;
+  --border: #3F673F;
+  --input: #3F673F;
   --ring: #A8CF45;
   --chart-1: #A8CF45;
-  --chart-2: #7DAF52;
-  --chart-3: #EDF6D5;
-  --chart-4: #3E6A3E;
+  --chart-2: #8CBF3F;
+  --chart-3: #F3F8E8;
+  --chart-4: #3F673F;
   --chart-5: #FCFCF8;
   --sidebar: #2F4B2F;
   --sidebar-foreground: #FCFCF8;
   --sidebar-primary: #A8CF45;
   --sidebar-primary-foreground: #2F4B2F;
-  --sidebar-accent: #3E6A3E;
+  --sidebar-accent: #3F673F;
   --sidebar-accent-foreground: #FCFCF8;
-  --sidebar-border: #3E6A3E;
+  --sidebar-border: #3F673F;
   --sidebar-ring: #A8CF45;
 }
 
@@ -161,18 +157,28 @@
 
   body {
     background-color: var(--color-background);
-    color: var(--color-foreground);
+    color: var(--color-muted-foreground);
     font-family: var(--font-sans);
-    font-feature-settings: "ss01", "cv11";
   }
 
   h1,
   h2,
   h3,
-  .serif {
-    font-family: var(--font-serif);
-    font-weight: 400;
-    letter-spacing: -0.01em;
+  h4,
+  h5,
+  h6,
+  .serif,
+  .font-script {
+    color: var(--color-foreground);
+    font-family: var(--font-heading);
+    font-weight: 700;
+  }
+
+  button,
+  .btn,
+  [role="button"] {
+    font-family: var(--font-sans);
+    font-weight: 600;
   }
 }
 
