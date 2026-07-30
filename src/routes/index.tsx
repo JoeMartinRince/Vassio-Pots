@@ -67,15 +67,15 @@ function Index() {
             alt="Hero plants"
             className="w-full h-full object-cover object-center animate-fade-in"
           />
-          {/* Soft, fresh botanical green color grade overlay preserving natural image details */}
-          <div className="absolute inset-0 bg-[#739D30]/25 mix-blend-soft-light" />
+          {/* Soft, refined botanical green color grade overlay preserving natural image details */}
+          <div className="absolute inset-0 bg-[#7FA93A]/25 mix-blend-soft-light" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#2F4B2F]/80 via-[#2F4B2F]/40 to-[#2F4B2F]/20" />
         </div>
         <div className="relative text-center z-10 px-6 my-auto pt-6">
           <h1 className="font-script text-[#FCFCF8] text-6xl md:text-9xl mb-3 md:mb-6 leading-tight drop-shadow-md select-none">
             Artificial
           </h1>
-          <h2 className="serif text-[#739D30] uppercase text-5xl md:text-8xl tracking-[0.2em] font-bold leading-tight drop-shadow-md">
+          <h2 className="serif text-[#7FA93A] uppercase text-5xl md:text-8xl tracking-[0.2em] font-bold leading-tight drop-shadow-md">
             Plants
           </h2>
           <p className="text-[#FCFCF8]/90 text-[10px] md:text-xs uppercase tracking-[0.4em] mt-8 max-w-xl mx-auto leading-loose font-sans font-semibold">
@@ -84,7 +84,7 @@ function Index() {
           <div className="mt-10">
             <a
               href="#shop"
-              className="inline-block bg-[#739D30] text-[#FCFCF8] hover:bg-[#628828] px-10 py-4 text-[10px] uppercase tracking-[0.25em] font-semibold transition duration-300 rounded-full shadow-lg hover:scale-105 active:scale-95 duration-200 cursor-pointer"
+              className="inline-block bg-[#7FA93A] text-[#FCFCF8] hover:bg-[#6E9432] px-10 py-4 text-[10px] uppercase tracking-[0.25em] font-semibold transition duration-300 rounded-full shadow-lg hover:scale-105 active:scale-95 duration-200 cursor-pointer"
             >
               Shop Now
             </a>
