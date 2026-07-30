@@ -4,6 +4,22 @@
 @source "../src";
 @import "tw-animate-css";
 
+@font-face {
+  font-family: 'JHC Rasbora ExtraBold';
+  src: local('JHC Rasbora ExtraBold'), local('JHC-Rasbora-ExtraBold'), local('JHC Rasbora'), local('JHC-Rasbora');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'JHC Rasbora';
+  src: local('JHC Rasbora ExtraBold'), local('JHC-Rasbora-ExtraBold'), local('JHC Rasbora'), local('JHC-Rasbora');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 /*
@@ -99,10 +115,10 @@
   --sidebar-accent-foreground: #2F4B2F;
   --sidebar-border: #D9E3C5;
   --sidebar-ring: #7FA93A;
-  --font-heading: "Satoshi", system-ui, -apple-system, sans-serif;
-  --font-serif: "Satoshi", system-ui, -apple-system, sans-serif;
+  --font-heading: "JHC Rasbora ExtraBold", "JHC Rasbora", "Satoshi", system-ui, -apple-system, sans-serif;
+  --font-serif: "JHC Rasbora ExtraBold", "JHC Rasbora", "Satoshi", system-ui, -apple-system, sans-serif;
   --font-sans: "Manrope", system-ui, -apple-system, sans-serif;
-  --font-script: "Satoshi", system-ui, -apple-system, sans-serif;
+  --font-script: "JHC Rasbora ExtraBold", "JHC Rasbora", "Satoshi", system-ui, -apple-system, sans-serif;
 }
 
 @theme inline {
@@ -185,7 +201,7 @@
     box-shadow: none;
   }
 
-  /* Body text and descriptions: Manrope Medium (500) */
+  /* Secondary Font: Manrope for Body text, descriptions, forms, footer, small labels */
   p,
   li,
   label,
@@ -197,23 +213,22 @@
     font-weight: 500;
   }
 
-  /* Section headings: Satoshi Bold (700) */
+  /* Primary Display Font: JHC Rasbora ExtraBold for Hero heading, Section headings, Collection titles, Promotional banners, Marketing text, Category titles */
+  h1,
   h2,
   h3,
   h4,
   h5,
   h6,
-  .section-heading,
-  .serif {
-    color: var(--color-foreground);
-    font-family: var(--font-heading);
-    font-weight: 700;
-  }
-
-  /* Hero headings: Satoshi Bold (800) */
-  h1,
   .hero-heading,
-  .font-script {
+  .section-heading,
+  .collection-title,
+  .banner-title,
+  .marketing-title,
+  .category-title,
+  .font-script,
+  .serif,
+  .font-serif {
     color: var(--color-foreground);
     font-family: var(--font-heading);
     font-weight: 800;
