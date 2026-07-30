@@ -110,7 +110,7 @@ function ProductImages({
       <div className="flex-1 aspect-square bg-secondary border border-border/20 overflow-hidden relative rounded-xl">
         <img src={activeImage} alt={product.name} className="h-full w-full object-cover" />
         {(product as any).isSoldOut && (
-          <span className="absolute top-4 left-4 bg-accent text-accent-foreground text-[10px] uppercase tracking-widest px-3 py-1.5 font-semibold shadow-sm rounded">
+          <span className="absolute top-4 left-4 bg-[#3F673F] text-white border border-[#5B8550] text-[10px] uppercase tracking-widest px-3 py-1.5 font-semibold shadow-sm rounded">
             Sold Out
           </span>
         )}
@@ -156,7 +156,7 @@ function ProductDetails({
           <span className="text-base text-muted-foreground line-through font-sans">
             ₹{displayMrp.toLocaleString("en-IN")}
           </span>
-          <span className="text-[10px] bg-primary text-primary-foreground px-2 py-0.5 font-bold uppercase tracking-wider rounded">
+          <span className="text-[10px] bg-[#3F673F] text-white border border-[#5B8550]/60 px-2 py-0.5 font-bold uppercase tracking-wider rounded">
             {off}% OFF
           </span>
         </div>

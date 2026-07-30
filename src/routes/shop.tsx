@@ -324,7 +324,7 @@ function ShopPage() {
                       loading="lazy"
                       className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
                     />
-                    <span className="absolute left-3 top-3 bg-accent text-accent-foreground text-[10px] uppercase tracking-[0.25em] px-2 py-1 font-semibold rounded">
+                    <span className="absolute left-3 top-3 bg-[#3F673F] text-white border border-[#5B8550] text-[10px] uppercase tracking-[0.25em] px-2 py-1 font-semibold rounded shadow-sm">
                       {(p as any).isSoldOut ? "Sold Out" : `${off}% OFF`}
                     </span>
                     {/* View Product Banner (Desktop hover) */}

@@ -134,7 +134,7 @@ function Index() {
                     loading="lazy"
                     className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
                   />
-                  <span className="absolute left-3 top-3 bg-accent text-accent-foreground text-[10px] uppercase tracking-[0.2em] px-2 py-1 font-semibold rounded">
+                  <span className="absolute left-3 top-3 bg-[#3F673F] text-white border border-[#5B8550] text-[10px] uppercase tracking-[0.2em] px-2 py-1 font-semibold rounded shadow-sm">
                     {(p as any).isSoldOut ? "Sold Out" : `${off}% OFF`}
                   </span>
                   {/* View Product Banner (aligned to the bottom of the image container, appearing on hover - Desktop only) */}
@@ -214,7 +214,7 @@ function Index() {
                       loading="lazy"
                       className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
                     />
-                    <span className="absolute left-3 top-3 bg-accent text-accent-foreground text-[10px] uppercase tracking-[0.2em] px-2 py-1 font-semibold rounded">
+                    <span className="absolute left-3 top-3 bg-[#3F673F] text-white border border-[#5B8550] text-[10px] uppercase tracking-[0.2em] px-2 py-1 font-semibold rounded shadow-sm">
                       {(p as any).isSoldOut ? "Sold Out" : `${off}% OFF`}
                     </span>
                     {/* View Product Banner (aligned to the bottom of the image container, appearing on hover - Desktop only) */}
@@ -841,7 +841,7 @@ function ReelItem({
                         <span className="text-[9px] lg:text-[7.5px] text-muted-foreground line-through ml-1.5 lg:ml-1 font-sans">
                           ₹{p.mrp.toLocaleString("en-IN")}
                         </span>
-                        <span className="text-[8px] lg:text-[6.5px] bg-primary/10 text-primary px-1 py-0.5 font-bold uppercase rounded ml-1.5 lg:ml-1">
+                        <span className="text-[8px] lg:text-[6.5px] bg-[#3F673F] text-white border border-[#5B8550]/40 px-1 py-0.5 font-bold uppercase rounded ml-1.5 lg:ml-1">
                           {off}% OFF
                         </span>
                       </div>
@@ -955,7 +955,7 @@ function WatchAndBuy({ onReelClick }: { onReelClick: (index: number) => void }) 
                       </span>
                     </div>
                     <div className="mt-1.5">
-                      <span className="inline-block text-[9px] font-bold bg-secondary text-foreground px-2 py-0.5 rounded tracking-wide">
+                      <span className="inline-block text-[9px] font-bold bg-[#3F673F] text-white border border-[#5B8550]/40 px-2 py-0.5 rounded tracking-wide">
                         {off}% off
                       </span>
                     </div>
@@ -1056,7 +1056,7 @@ function QuickViewModal({
             ₹{product.price.toLocaleString("en-IN")}
           </span>
           {off > 0 && (
-            <span className="text-[9px] bg-primary text-white px-2 py-0.5 font-bold uppercase rounded serif tracking-wider">
+            <span className="text-[9px] bg-[#3F673F] text-white border border-[#5B8550]/40 px-2 py-0.5 font-bold uppercase rounded serif tracking-wider">
               {off}% off
             </span>
           )}
