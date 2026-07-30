@@ -213,23 +213,25 @@
     font-weight: 500;
   }
 
-  /* Primary Display Font: JHC Rasbora ExtraBold for Hero heading, Section headings, Collection titles, Promotional banners, Marketing text, Category titles */
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6,
+  /* Primary Display Font: JHC Rasbora ExtraBold for Hero heading, Section headings, Collection titles, Category titles, Promotional headlines, CTA headings, Footer CTA headings */
+  h1:not(.product-name),
+  h2:not(.product-name),
+  h3:not(.product-name),
+  h4:not(.product-name),
+  h5:not(.product-name),
+  h6:not(.product-name),
   .hero-heading,
   .section-heading,
+  .section-title,
   .collection-title,
+  .category-title,
+  .promo-headline,
+  .cta-heading,
   .banner-title,
   .marketing-title,
-  .category-title,
   .font-script,
   .serif,
   .font-serif {
-    color: var(--color-foreground);
     font-family: var(--font-heading);
     font-weight: 800;
   }
