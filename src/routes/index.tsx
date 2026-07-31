@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useRef, useState, useEffect } from "react";
 import Layout from "@/components/Layout";
-import { Instagram, Heart, Share2, Volume2, VolumeX, X, ShoppingBag, Truck, RotateCcw, Phone, ShieldCheck, ExternalLink, ArrowRight, ShoppingCart, ArrowDownLeft, ArrowDownRight } from "lucide-react";
+import FiberplanterFeatures from "@/components/FiberplanterFeatures";
+import { Instagram, Heart, Share2, Volume2, VolumeX, X, ShoppingBag, Truck, RotateCcw, ShieldCheck, ExternalLink, ArrowRight, ShoppingCart, ArrowDownLeft, ArrowDownRight } from "lucide-react";
 import { toast, Toaster } from "sonner";
 import {
   products,
@@ -391,29 +392,7 @@ function Index() {
       </section>
 
       {/* What Makes Fiberplanter's Different? */}
-      <section className="bg-background border-t border-border/30 py-24">
-        <div className="mx-auto max-w-[1400px] px-6">
-          <div className="mb-16 text-center">
-            <h2 className="serif text-4xl md:text-5xl text-foreground tracking-wide">
-              What Makes Fiberplanter's Different?
-            </h2>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-x-8 gap-y-12">
-            {featuresImages.map((imgSrc, index) => (
-              <div
-                key={index}
-                className="group text-center flex flex-col items-center justify-center"
-              >
-                <img
-                  src={imgSrc}
-                  alt={`Feature ${index + 1}`}
-                  className="w-full max-w-[144px] h-auto object-contain mix-blend-multiply transition-transform duration-300 group-hover:scale-105 animate-fade-in"
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <FiberplanterFeatures />
 
 
 
