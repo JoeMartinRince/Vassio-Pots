@@ -1,16 +1,16 @@
 import React from "react";
 import {
+  Sun,
   ShieldCheck,
   Feather,
   Snowflake,
   Home,
   Sparkles,
+  Award,
   Palette,
   Sliders,
-  Award,
-  Sun,
-  Wrench,
   CheckCircle2,
+  Wrench,
 } from "lucide-react";
 
 interface Feature {
@@ -22,8 +22,8 @@ interface Feature {
   category: "durability" | "craft" | "convenience";
 }
 
-// Custom Make in India Lion Silhouette SVG
-function MakeInIndiaIcon({ className = "w-6 h-6" }: { className?: string }) {
+// Custom Make in India Lion Silhouette SVG (consistent 44px size, primary green)
+function MakeInIndiaIcon({ className = "w-11 h-11" }: { className?: string }) {
   return (
     <svg
       viewBox="0 0 100 60"
@@ -37,57 +37,13 @@ function MakeInIndiaIcon({ className = "w-6 h-6" }: { className?: string }) {
   );
 }
 
-// Custom UV Protection Shield SVG
-function UVShieldIcon({ className = "w-6 h-6" }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-      <path d="M9 10h1.5a1.5 1.5 0 0 0 0-3H9v6" />
-      <path d="M13 7l1.5 6L16 7" />
-    </svg>
-  );
-}
-
-// Custom Low Maintenance Icon
-function LowMaintenanceIcon({ className = "w-6 h-6" }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <path d="M12 2v4" />
-      <path d="M12 18v4" />
-      <path d="M4.93 4.93l2.83 2.83" />
-      <path d="M16.24 16.24l2.83 2.83" />
-      <path d="M2 12h4" />
-      <path d="M18 12h4" />
-      <path d="M4.93 19.07l2.83-2.83" />
-      <path d="M16.24 7.76l2.83-2.83" />
-      <circle cx="12" cy="12" r="4" />
-    </svg>
-  );
-}
-
 const features: Feature[] = [
   {
     id: "uv-protected",
     title: "UV Protected",
     subtitle: "Sun & Heat Shield",
     description: "Resists intense solar radiation without yellowing, cracking, or surface degradation.",
-    icon: <UVShieldIcon className="w-6 h-6" />,
+    icon: <Sun className="w-10 h-10 stroke-[1.75]" />,
     category: "durability",
   },
   {
@@ -95,7 +51,7 @@ const features: Feature[] = [
     title: "Durable & Tough",
     subtitle: "Impact Resistant",
     description: "Fiber-reinforced composite structure provides lifetime strength against accidental drops.",
-    icon: <ShieldCheck className="w-6 h-6" />,
+    icon: <ShieldCheck className="w-10 h-10 stroke-[1.75]" />,
     category: "durability",
   },
   {
@@ -103,7 +59,7 @@ const features: Feature[] = [
     title: "Light Weight",
     subtitle: "70% Lighter Than Concrete",
     description: "Ultra-light design makes moving and rearranging floor planters effortless.",
-    icon: <Feather className="w-6 h-6" />,
+    icon: <Feather className="w-10 h-10 stroke-[1.75]" />,
     category: "convenience",
   },
   {
@@ -111,7 +67,7 @@ const features: Feature[] = [
     title: "Frost Resistant",
     subtitle: "Sub-Zero Weatherproof",
     description: "Endures freezing temperatures, ice, and extreme thermal shock without fracturing.",
-    icon: <Snowflake className="w-6 h-6" />,
+    icon: <Snowflake className="w-10 h-10 stroke-[1.75]" />,
     category: "durability",
   },
   {
@@ -119,7 +75,7 @@ const features: Feature[] = [
     title: "Indoor & Outdoor",
     subtitle: "All-Space Versatility",
     description: "Seamless aesthetic ideal for living rooms, sunlit balconies, gardens & commercial lounges.",
-    icon: <Home className="w-6 h-6" />,
+    icon: <Home className="w-10 h-10 stroke-[1.75]" />,
     category: "convenience",
   },
   {
@@ -127,7 +83,7 @@ const features: Feature[] = [
     title: "Handmade",
     subtitle: "Artisan Sculpted",
     description: "Hand-finished by skilled craftsmen for smooth, organic tactile luxury.",
-    icon: <Sparkles className="w-6 h-6" />,
+    icon: <Sparkles className="w-10 h-10 stroke-[1.75]" />,
     category: "craft",
   },
   {
@@ -135,7 +91,7 @@ const features: Feature[] = [
     title: "Make in India",
     subtitle: "100% Indigenous Quality",
     description: "Proudly designed and manufactured locally using premium architectural-grade materials.",
-    icon: <MakeInIndiaIcon className="w-6 h-6" />,
+    icon: <MakeInIndiaIcon className="w-10 h-10" />,
     category: "craft",
   },
   {
@@ -143,7 +99,7 @@ const features: Feature[] = [
     title: "Fade Resistant",
     subtitle: "Color-Lock Coatings",
     description: "UV-stabilized pigments preserve deep matte and smooth satin colors for years.",
-    icon: <Palette className="w-6 h-6" />,
+    icon: <Palette className="w-10 h-10 stroke-[1.75]" />,
     category: "durability",
   },
   {
@@ -151,7 +107,7 @@ const features: Feature[] = [
     title: "Customized Design",
     subtitle: "Architectural Bespoke",
     description: "Tailored dimensions, custom color matching, and textures available for projects.",
-    icon: <Sliders className="w-6 h-6" />,
+    icon: <Sliders className="w-10 h-10 stroke-[1.75]" />,
     category: "craft",
   },
   {
@@ -159,7 +115,7 @@ const features: Feature[] = [
     title: "Low Maintenance",
     subtitle: "Stain & Water Resistant",
     description: "Non-porous surface resists soil stains and wipes clean easily in seconds.",
-    icon: <LowMaintenanceIcon className="w-6 h-6" />,
+    icon: <Wrench className="w-10 h-10 stroke-[1.75]" />,
     category: "convenience",
   },
 ];
@@ -172,7 +128,7 @@ export function FiberplanterFeatures() {
   );
 
   return (
-    <section className="bg-gradient-to-b from-background via-card/60 to-background border-t border-b border-border/40 py-16 md:py-24 relative overflow-hidden">
+    <section className="bg-gradient-to-b from-background via-card/50 to-background border-t border-b border-border/40 py-16 md:py-24 relative overflow-hidden">
       {/* Ambient background blur glow */}
       <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#7FA93A]/5 rounded-full blur-3xl pointer-events-none" />
 
@@ -185,7 +141,7 @@ export function FiberplanterFeatures() {
           </div>
 
           <h2 className="serif text-3xl sm:text-4xl md:text-5xl text-foreground tracking-wide font-extrabold">
-            What Makes Fiberplanters Different?
+            The Vassio Difference
           </h2>
 
           <p className="mt-4 text-muted-foreground text-xs sm:text-sm md:text-base leading-relaxed max-w-2xl mx-auto font-sans font-medium">
@@ -206,7 +162,7 @@ export function FiberplanterFeatures() {
                 className={`px-4 py-2 text-[11px] uppercase tracking-wider font-bold rounded-full transition-all duration-300 cursor-pointer ${
                   activeTab === tab.id
                     ? "bg-[#7FA93A] text-white shadow-md shadow-[#7FA93A]/25 scale-105"
-                    : "bg-muted/70 text-muted-foreground hover:bg-muted hover:text-foreground border border-border/50"
+                    : "bg-white text-muted-foreground hover:bg-muted/80 hover:text-foreground border border-border/50 shadow-sm"
                 }`}
               >
                 {tab.label}
@@ -220,21 +176,21 @@ export function FiberplanterFeatures() {
           {filteredFeatures.map((item) => (
             <div
               key={item.id}
-              className="group relative bg-background/90 backdrop-blur-sm border border-border/60 hover:border-[#7FA93A]/50 rounded-2xl p-4 sm:p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-[#7FA93A]/10 flex flex-col justify-between"
+              className="group relative bg-white border border-border/50 hover:border-[#7FA93A]/40 rounded-2xl p-5 sm:p-6 transition-all duration-300 hover:-translate-y-1 shadow-sm hover:shadow-md flex flex-col justify-between"
             >
               <div>
-                {/* Icon Badge */}
-                <div className="w-11 h-11 sm:w-13 sm:h-13 rounded-xl bg-[#7FA93A]/10 text-[#7FA93A] group-hover:bg-[#7FA93A] group-hover:text-white transition-all duration-300 flex items-center justify-center mb-3.5 border border-[#7FA93A]/20 group-hover:border-[#7FA93A] shadow-sm">
+                {/* Feature Icon - Primary Brand Green #7FA93A, 40-44px */}
+                <div className="text-[#7FA93A] mb-4 sm:mb-5 transition-transform duration-300 group-hover:scale-105 flex items-center justify-start">
                   {item.icon}
                 </div>
 
-                {/* Title */}
-                <h3 className="font-bold text-foreground text-sm sm:text-base tracking-wide font-sans group-hover:text-[#7FA93A] transition-colors duration-200 leading-snug">
+                {/* Title - Manrope SemiBold */}
+                <h3 className="font-sans font-semibold text-foreground text-base sm:text-lg tracking-wide group-hover:text-[#7FA93A] transition-colors duration-200 leading-snug">
                   {item.title}
                 </h3>
 
                 {/* Subtitle */}
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#7FA93A] mt-1 opacity-90">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-[#7FA93A] mt-1 opacity-90 font-sans">
                   {item.subtitle}
                 </p>
 
@@ -245,16 +201,16 @@ export function FiberplanterFeatures() {
               </div>
 
               {/* Card Footer Tag */}
-              <div className="mt-4 pt-2.5 border-t border-border/30 flex items-center justify-between text-[9px] text-muted-foreground/70 font-sans uppercase tracking-widest font-semibold">
+              <div className="mt-5 pt-3 border-t border-border/30 flex items-center justify-between text-[9px] text-muted-foreground/70 font-sans uppercase tracking-widest font-semibold">
                 <span>VASSIO</span>
-                <CheckCircle2 className="w-3 h-3 text-[#7FA93A]/50 group-hover:text-[#7FA93A] transition-colors" />
+                <CheckCircle2 className="w-3.5 h-3.5 text-[#7FA93A]/50 group-hover:text-[#7FA93A] transition-colors" />
               </div>
             </div>
           ))}
         </div>
 
         {/* Feature Comparison Banner */}
-        <div className="mt-12 md:mt-16 bg-card/90 border border-border/60 rounded-3xl p-6 sm:p-8 shadow-sm">
+        <div className="mt-12 md:mt-16 bg-white border border-border/50 rounded-3xl p-6 sm:p-8 shadow-sm">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center divide-y md:divide-y-0 md:divide-x divide-border/40">
             <div className="pt-3 md:pt-0 md:px-4">
               <span className="serif text-2xl sm:text-3xl font-extrabold text-[#7FA93A] block">70% Lighter</span>

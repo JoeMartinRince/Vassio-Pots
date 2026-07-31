@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useRef, useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import FiberplanterFeatures from "@/components/FiberplanterFeatures";
-import { Instagram, Heart, Share2, Volume2, VolumeX, X, ShoppingBag, Truck, RotateCcw, ShieldCheck, ExternalLink, ArrowRight, ShoppingCart, ArrowDownLeft, ArrowDownRight } from "lucide-react";
+import { Instagram, Heart, Share2, Volume2, VolumeX, X, ShoppingBag, Truck, RotateCcw, ShieldCheck, Phone, ExternalLink, ArrowRight, ShoppingCart, ArrowDownLeft, ArrowDownRight } from "lucide-react";
 import { toast, Toaster } from "sonner";
 import {
   products,
