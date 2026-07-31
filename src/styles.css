@@ -232,7 +232,7 @@
   .font-script,
   .serif,
   .font-serif {
-    font-family: var(--font-heading);
+    font-family: var(--font-heading) !important;
     font-weight: 800;
   }
 
