@@ -60,7 +60,7 @@ function Index() {
   return (
     <Layout>
       {/* Hero */}
-      <section className="relative min-h-[calc(100vh-4rem)] md:min-h-[calc(100vh-5.5rem)] h-screen w-full flex items-center justify-center bg-muted/30 overflow-hidden">
+      <section className="relative min-h-[75vh] h-[75vh] md:min-h-[calc(100vh-5.5rem)] md:h-screen w-full flex items-center justify-center bg-muted/30 overflow-hidden">
         <div className="absolute inset-0 overflow-hidden w-full h-full">
           <img
             src={heroPlants}
@@ -71,18 +71,18 @@ function Index() {
           <div className="absolute inset-0 bg-[#7FA93A]/25 mix-blend-soft-light" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#2F4B2F]/80 via-[#2F4B2F]/40 to-[#2F4B2F]/20" />
         </div>
-        <div className="relative text-center z-10 px-6 my-auto pt-6 max-w-4xl mx-auto">
-          <h1 className="serif text-5xl md:text-8xl tracking-wide uppercase font-extrabold leading-tight drop-shadow-md select-none">
+        <div className="relative text-center z-10 px-6 my-auto pt-4 md:pt-6 max-w-4xl mx-auto">
+          <h1 className="serif text-4xl sm:text-5xl md:text-8xl tracking-wide uppercase font-extrabold leading-tight drop-shadow-md select-none">
             <span className="text-[#FCFCF8] block">Elevate</span>
             <span className="text-[#7FA93A] block">Every Space</span>
           </h1>
-          <p className="text-[#FCFCF8]/90 text-xs md:text-sm tracking-wide mt-6 max-w-2xl mx-auto leading-relaxed font-sans font-medium">
+          <p className="text-[#FCFCF8]/90 text-[11px] sm:text-xs md:text-sm tracking-wide mt-4 md:mt-6 max-w-2xl mx-auto leading-relaxed font-sans font-medium">
             Discover premium fiberglass planters crafted to bring timeless elegance and greenery to homes, gardens, balconies, offices, hotels, cafés, and commercial spaces. Designed for durability, style, and modern living.
           </p>
-          <div className="mt-10">
+          <div className="mt-6 md:mt-10">
             <a
               href="#shop"
-              className="inline-block bg-[#7FA93A] text-[#FCFCF8] hover:bg-[#6E9432] px-10 py-4 text-[10px] uppercase tracking-[0.25em] font-semibold transition duration-300 rounded-full shadow-lg hover:scale-105 active:scale-95 duration-200 cursor-pointer font-sans"
+              className="inline-block bg-[#7FA93A] text-[#FCFCF8] hover:bg-[#6E9432] px-8 sm:px-10 py-3.5 sm:py-4 text-[10px] uppercase tracking-[0.25em] font-semibold transition duration-300 rounded-full shadow-lg hover:scale-105 active:scale-95 duration-200 cursor-pointer font-sans"
             >
               Shop Now
             </a>
