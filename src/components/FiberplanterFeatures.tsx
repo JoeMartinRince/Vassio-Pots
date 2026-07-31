@@ -22,8 +22,8 @@ interface Feature {
   category: "durability" | "craft" | "convenience";
 }
 
-// Custom Make in India Lion Silhouette SVG (consistent 44px size, primary green)
-function MakeInIndiaIcon({ className = "w-11 h-11" }: { className?: string }) {
+// Custom Make in India Lion Silhouette SVG (40px size, primary green)
+function MakeInIndiaIcon({ className = "w-10 h-10" }: { className?: string }) {
   return (
     <svg
       viewBox="0 0 100 60"
@@ -140,11 +140,11 @@ export function FiberplanterFeatures() {
             <span>Architectural Excellence</span>
           </div>
 
-          <h2 className="serif text-3xl sm:text-4xl md:text-5xl text-foreground tracking-wide font-extrabold">
+          <h2 className="serif text-3xl sm:text-4xl md:text-5xl text-foreground tracking-wide font-extrabold text-center">
             The Vassio Difference
           </h2>
 
-          <p className="mt-4 text-muted-foreground text-xs sm:text-sm md:text-base leading-relaxed max-w-2xl mx-auto font-sans font-medium">
+          <p className="mt-4 text-muted-foreground text-xs sm:text-sm md:text-base leading-relaxed max-w-2xl mx-auto font-sans font-medium text-center">
             Engineered with high-tensile fiberglass composite and handcrafted by master artisans—delivering lightweight convenience, lifetime durability, and weather resilience.
           </p>
 
@@ -171,15 +171,32 @@ export function FiberplanterFeatures() {
           </div>
         </div>
 
-        {/* Feature Cards Grid (2-column on mobile, 5-column on desktop) */}
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 sm:gap-5">
+        {/* Mobile Layout: Clean 2-column icon + label grid (No Cards) */}
+        <div className="grid lg:hidden grid-cols-2 gap-y-9 gap-x-4 max-w-lg mx-auto py-3">
+          {filteredFeatures.map((item) => (
+            <div key={item.id} className="flex flex-col items-center text-center px-2">
+              <div className="text-[#7FA93A] flex items-center justify-center mb-3">
+                {item.icon}
+              </div>
+              <h3 className="font-sans font-semibold text-foreground text-xs sm:text-sm tracking-wide leading-snug">
+                {item.title}
+              </h3>
+              <p className="text-[10px] text-muted-foreground mt-1 font-sans font-medium opacity-90 leading-tight">
+                {item.subtitle}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop Layout: 5-column white card grid (Unchanged) */}
+        <div className="hidden lg:grid grid-cols-5 gap-5">
           {filteredFeatures.map((item) => (
             <div
               key={item.id}
               className="group relative bg-white border border-border/50 hover:border-[#7FA93A]/40 rounded-2xl p-5 sm:p-6 transition-all duration-300 hover:-translate-y-1 shadow-sm hover:shadow-md flex flex-col justify-between"
             >
               <div>
-                {/* Feature Icon - Primary Brand Green #7FA93A, 40-44px */}
+                {/* Feature Icon - Primary Brand Green #7FA93A, 40px */}
                 <div className="text-[#7FA93A] mb-4 sm:mb-5 transition-transform duration-300 group-hover:scale-105 flex items-center justify-start">
                   {item.icon}
                 </div>
