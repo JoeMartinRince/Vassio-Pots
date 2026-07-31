@@ -1,40 +1,24 @@
 import React from "react";
-import {
-  Sun,
-  ShieldCheck,
-  Feather,
-  Snowflake,
-  Home,
-  Sparkles,
-  Award,
-  Palette,
-  Sliders,
-  CheckCircle2,
-  Wrench,
-} from "lucide-react";
+import { Award, CheckCircle2 } from "lucide-react";
+
+import uvProtectedImg from "@/assets/features/uv-protected.jpg";
+import durableImg from "@/assets/features/durable.jpg";
+import lightweightImg from "@/assets/features/lightweight.jpg";
+import frostResistantImg from "@/assets/features/frost-resistant.jpg";
+import indoorOutdoorImg from "@/assets/features/indoor-outdoor.jpg";
+import handmadeImg from "@/assets/features/handmade.jpg";
+import makeInIndiaImg from "@/assets/features/make-in-india.jpg";
+import fadeResistantImg from "@/assets/features/fade-resistant.jpg";
+import customizedDesignImg from "@/assets/features/customized-design.jpg";
+import lowMaintenanceImg from "@/assets/features/low-maintenance.jpg";
 
 interface Feature {
   id: string;
   title: string;
   subtitle: string;
   description: string;
-  icon: React.ReactNode;
+  image: string;
   category: "durability" | "craft" | "convenience";
-}
-
-// Custom Make in India Lion Silhouette SVG (40px size, primary green)
-function MakeInIndiaIcon({ className = "w-10 h-10" }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 100 60"
-      fill="currentColor"
-      className={className}
-      xmlns="http://www.w3.org/2000/svg"
-      aria-label="Make in India Lion Logo"
-    >
-      <path d="M92 28c-1.2-1.5-2.8-2.6-4.5-3.1 1-1.8 1.4-3.9 1.1-6-.4-2.8-2.2-5.1-4.8-6.1-1.2-.5-2.5-.6-3.8-.5-.8-2.2-2.5-4-4.7-4.9-2.6-1.1-5.6-.8-8 .7-1.4-1.9-3.6-3.1-6-3.3-2.9-.2-5.7 1-7.5 3.2-1.5-.9-3.3-1.3-5.1-1.1-2.4.3-4.6 1.6-6 3.6-1.8-1.2-4.1-1.6-6.4-1.1-2.6.6-4.8 2.4-5.8 4.8-1.5-.6-3.2-.7-4.8-.2-2.3.7-4.1 2.4-5 4.7-1.7-.3-3.5 0-5 1-2 1.3-3.3 3.4-3.6 5.8-.3 2.1.3 4.2 1.5 5.9-1.5 1.5-2.3 3.6-2.2 5.7.1 2.5 1.4 4.7 3.4 6 0 1.2.4 2.4 1.1 3.4 1.4 2 3.6 3.2 6.1 3.3.8 1.8 2.3 3.2 4.2 3.9 2.3.9 4.9.7 7-.5 1.2 1.6 3.1 2.7 5.1 2.9 2.5.2 4.9-.7 6.6-2.4 1.5 1.2 3.4 1.7 5.3 1.5 2.5-.3 4.7-1.7 6-3.8 1.6 1.1 3.6 1.5 5.6 1.1 2.4-.5 4.4-2.1 5.4-4.3 1.6.8 3.5.9 5.2.3 2.3-.8 4-2.6 4.7-4.9 1.8.3 3.7-.2 5.1-1.3 2-1.5 3.1-3.8 3.1-6.3.1-2.2-.8-4.4-2.4-5.9zM22 26c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2 2zm48 18H30v-2h40v2zm6-6H24v-2h50v2zm4-6H20v-2h58v2zm-2-6H22v-2h54v2z" />
-    </svg>
-  );
 }
 
 const features: Feature[] = [
@@ -43,7 +27,7 @@ const features: Feature[] = [
     title: "UV Protected",
     subtitle: "Sun & Heat Shield",
     description: "Resists intense solar radiation without yellowing, cracking, or surface degradation.",
-    icon: <Sun className="w-10 h-10 stroke-[1.75]" />,
+    image: uvProtectedImg,
     category: "durability",
   },
   {
@@ -51,7 +35,7 @@ const features: Feature[] = [
     title: "Durable & Tough",
     subtitle: "Impact Resistant",
     description: "Fiber-reinforced composite structure provides lifetime strength against accidental drops.",
-    icon: <ShieldCheck className="w-10 h-10 stroke-[1.75]" />,
+    image: durableImg,
     category: "durability",
   },
   {
@@ -59,7 +43,7 @@ const features: Feature[] = [
     title: "Light Weight",
     subtitle: "70% Lighter Than Concrete",
     description: "Ultra-light design makes moving and rearranging floor planters effortless.",
-    icon: <Feather className="w-10 h-10 stroke-[1.75]" />,
+    image: lightweightImg,
     category: "convenience",
   },
   {
@@ -67,7 +51,7 @@ const features: Feature[] = [
     title: "Frost Resistant",
     subtitle: "Sub-Zero Weatherproof",
     description: "Endures freezing temperatures, ice, and extreme thermal shock without fracturing.",
-    icon: <Snowflake className="w-10 h-10 stroke-[1.75]" />,
+    image: frostResistantImg,
     category: "durability",
   },
   {
@@ -75,7 +59,7 @@ const features: Feature[] = [
     title: "Indoor & Outdoor",
     subtitle: "All-Space Versatility",
     description: "Seamless aesthetic ideal for living rooms, sunlit balconies, gardens & commercial lounges.",
-    icon: <Home className="w-10 h-10 stroke-[1.75]" />,
+    image: indoorOutdoorImg,
     category: "convenience",
   },
   {
@@ -83,7 +67,7 @@ const features: Feature[] = [
     title: "Handmade",
     subtitle: "Artisan Sculpted",
     description: "Hand-finished by skilled craftsmen for smooth, organic tactile luxury.",
-    icon: <Sparkles className="w-10 h-10 stroke-[1.75]" />,
+    image: handmadeImg,
     category: "craft",
   },
   {
@@ -91,7 +75,7 @@ const features: Feature[] = [
     title: "Make in India",
     subtitle: "100% Indigenous Quality",
     description: "Proudly designed and manufactured locally using premium architectural-grade materials.",
-    icon: <MakeInIndiaIcon className="w-10 h-10" />,
+    image: makeInIndiaImg,
     category: "craft",
   },
   {
@@ -99,7 +83,7 @@ const features: Feature[] = [
     title: "Fade Resistant",
     subtitle: "Color-Lock Coatings",
     description: "UV-stabilized pigments preserve deep matte and smooth satin colors for years.",
-    icon: <Palette className="w-10 h-10 stroke-[1.75]" />,
+    image: fadeResistantImg,
     category: "durability",
   },
   {
@@ -107,7 +91,7 @@ const features: Feature[] = [
     title: "Customized Design",
     subtitle: "Architectural Bespoke",
     description: "Tailored dimensions, custom color matching, and textures available for projects.",
-    icon: <Sliders className="w-10 h-10 stroke-[1.75]" />,
+    image: customizedDesignImg,
     category: "craft",
   },
   {
@@ -115,7 +99,7 @@ const features: Feature[] = [
     title: "Low Maintenance",
     subtitle: "Stain & Water Resistant",
     description: "Non-porous surface resists soil stains and wipes clean easily in seconds.",
-    icon: <Wrench className="w-10 h-10 stroke-[1.75]" />,
+    image: lowMaintenanceImg,
     category: "convenience",
   },
 ];
@@ -171,12 +155,16 @@ export function FiberplanterFeatures() {
           </div>
         </div>
 
-        {/* Mobile Layout: Clean 2-column icon + label grid (No Cards) */}
+        {/* Mobile Layout: Clean 2-column illustration + label grid (No Cards) */}
         <div className="grid lg:hidden grid-cols-2 gap-y-9 gap-x-4 max-w-lg mx-auto py-3">
           {filteredFeatures.map((item) => (
-            <div key={item.id} className="flex flex-col items-center text-center px-2">
-              <div className="text-[#7FA93A] flex items-center justify-center mb-3">
-                {item.icon}
+            <div key={item.id} className="flex flex-col items-center text-center px-2 group">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden shadow-sm border border-border/40 mb-3 shrink-0 bg-card">
+                <img
+                  src={item.image}
+                  alt={item.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
               </div>
               <h3 className="font-sans font-semibold text-foreground text-xs sm:text-sm tracking-wide leading-snug">
                 {item.title}
@@ -188,7 +176,7 @@ export function FiberplanterFeatures() {
           ))}
         </div>
 
-        {/* Desktop Layout: 5-column white card grid (Unchanged) */}
+        {/* Desktop Layout: 5-column white card grid with lifestyle illustrations */}
         <div className="hidden lg:grid grid-cols-5 gap-5">
           {filteredFeatures.map((item) => (
             <div
@@ -196,9 +184,13 @@ export function FiberplanterFeatures() {
               className="group relative bg-white border border-border/50 hover:border-[#7FA93A]/40 rounded-2xl p-5 sm:p-6 transition-all duration-300 hover:-translate-y-1 shadow-sm hover:shadow-md flex flex-col justify-between"
             >
               <div>
-                {/* Feature Icon - Primary Brand Green #7FA93A, 40px */}
-                <div className="text-[#7FA93A] mb-4 sm:mb-5 transition-transform duration-300 group-hover:scale-105 flex items-center justify-start">
-                  {item.icon}
+                {/* Feature Illustration */}
+                <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-sm border border-border/40 mb-4 shrink-0 bg-card">
+                  <img
+                    src={item.image}
+                    alt={item.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
                 </div>
 
                 {/* Title - Manrope SemiBold */}
