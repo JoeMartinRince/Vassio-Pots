@@ -175,7 +175,7 @@
     background-color: var(--color-background);
     color: var(--color-muted-foreground);
     font-family: var(--font-sans);
-    font-weight: 500;
+    font-weight: 500; /* Manrope Medium (500) for Body Text */
   }
 
   /* Ensure transparent background on all text, headings, paragraphs, and font elements */
@@ -201,16 +201,26 @@
     box-shadow: none;
   }
 
-  /* Secondary Font: Manrope for Body text, descriptions, forms, footer, small labels */
+  /* Secondary Font: Manrope Medium (500) for Body text, descriptions, forms, footer, small labels */
   p,
   li,
   label,
   input,
   textarea,
-  select {
+  select,
+  small,
+  figcaption {
     color: var(--color-muted-foreground);
     font-family: var(--font-sans);
     font-weight: 500;
+  }
+
+  /* Navigation: Manrope SemiBold (600) */
+  nav a,
+  .nav-link,
+  .nav-item {
+    font-family: var(--font-sans);
+    font-weight: 600;
   }
 
   /* Primary Display Font: JHC Rasbora ExtraBold for Hero heading, Section headings, Collection titles, Category titles, Promotional headlines, CTA headings, Footer CTA headings */
@@ -236,26 +246,26 @@
     font-weight: 800;
   }
 
-  /* Product names: Manrope ExtraBold (800) */
+  /* Product names: Manrope Bold (700) */
   .product-name,
   .product-title {
-    font-family: var(--font-sans);
-    font-weight: 800;
-  }
-
-  /* Product prices: Manrope Bold (700) */
-  .product-price {
     font-family: var(--font-sans);
     font-weight: 700;
   }
 
-  /* Buttons: Manrope SemiBold (600) */
+  /* Product prices: Manrope SemiBold (600) */
+  .product-price {
+    font-family: var(--font-sans);
+    font-weight: 600;
+  }
+
+  /* Buttons: Manrope Bold (700) */
   button,
   .btn,
   a.inline-block,
   [role="button"] {
     font-family: var(--font-sans);
-    font-weight: 600;
+    font-weight: 700;
   }
 }
 

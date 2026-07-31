@@ -163,8 +163,8 @@ export function FiberplanterFeatures() {
                 />
               </div>
 
-              {/* Title using Manrope SemiBold and Brand Green #739D30 */}
-              <h3 className="font-sans font-semibold text-[#739D30] text-sm sm:text-base mt-3.5 tracking-wide leading-snug group-hover:opacity-90 transition-opacity">
+              {/* Title using Manrope Bold (700) and Brand Green #739D30 */}
+              <h3 className="font-sans font-bold text-[#739D30] text-sm sm:text-base mt-3.5 tracking-wide leading-snug group-hover:opacity-90 transition-opacity">
                 {item.title}
               </h3>
             </div>
