@@ -81,12 +81,12 @@ function Index() {
             Discover premium fiberglass planters crafted to bring timeless elegance and greenery to homes, gardens, balconies, offices, hotels, cafés, and commercial spaces. Designed for durability, style, and modern living.
           </p>
           <div className="mt-6 md:mt-10">
-            <a
-              href="#shop"
+            <Link
+              to="/frp-pots"
               className="inline-block bg-[#7FA93A] text-[#FCFCF8] hover:bg-[#6E9432] px-8 sm:px-10 py-3.5 sm:py-4 text-[10px] uppercase tracking-[0.25em] font-semibold transition duration-300 rounded-full shadow-lg hover:scale-105 active:scale-95 duration-200 cursor-pointer font-sans"
             >
               Shop Now
-            </a>
+            </Link>
           </div>
         </div>
       </section>
@@ -174,8 +174,7 @@ function Index() {
         </div>
         <div className="mt-8 md:mt-16 text-center">
           <Link
-            to="/shop"
-            search={{ category: "plants" }}
+            to="/frp-pots"
             className="inline-block bg-primary hover:bg-primary/90 text-white px-10 py-3.5 text-xs uppercase tracking-[0.25em] font-semibold transition duration-300 rounded cursor-pointer animate-fade-in"
           >
             View All
@@ -254,8 +253,7 @@ function Index() {
           </div>
           <div className="mt-16 text-center">
             <Link
-              to="/shop"
-              search={{ category: "vases" }}
+              to="/terracotta-pots"
               className="inline-block bg-secondary hover:bg-secondary/90 text-foreground px-10 py-3.5 text-xs uppercase tracking-[0.25em] font-semibold transition duration-300 rounded cursor-pointer animate-fade-in"
             >
               View All
@@ -274,8 +272,7 @@ function Index() {
           {categories.map((c) => (
             <Link
               key={c.name}
-              to="/shop"
-              search={c.shopSearch}
+              to={c.href}
               className="group block text-center cursor-pointer"
             >
               <div className="h-28 w-28 md:h-36 md:w-36 overflow-hidden rounded-full border border-border/40 bg-secondary mx-auto">

@@ -32,34 +32,32 @@ export const mainNavigationItems: NavItem[] = [
   { label: "Home", href: "/" },
   {
     label: "FRP Pots",
-    href: "/shop",
-    search: { category: "frp-pots" },
+    href: "/frp-pots",
     subItems: [
-      { label: "Off-White", href: "/shop", search: { category: "frp-pots", color: "off-white" } },
-      { label: "Black", href: "/shop", search: { category: "frp-pots", color: "black" } },
-      { label: "Beige", href: "/shop", search: { category: "frp-pots", color: "beige" } },
-      { label: "Grey", href: "/shop", search: { category: "frp-pots", color: "grey" } },
-      { label: "Other Colors", href: "/shop", search: { category: "frp-pots", color: "other" } },
+      { label: "Off-White", href: "/frp-pots", search: { color: "off-white" } },
+      { label: "Black", href: "/frp-pots", search: { color: "black" } },
+      { label: "Beige", href: "/frp-pots", search: { color: "beige" } },
+      { label: "Grey", href: "/frp-pots", search: { color: "grey" } },
+      { label: "Other Colors", href: "/frp-pots", search: { color: "other" } },
     ],
   },
   {
     label: "Artificial Plants",
-    href: "/shop",
-    search: { category: "artificial-plants" },
+    href: "/artificial-plants",
     subItems: [
-      { label: "1 ft", href: "/shop", search: { category: "artificial-plants", height: "1-ft" } },
-      { label: "2 ft", href: "/shop", search: { category: "artificial-plants", height: "2-ft" } },
-      { label: "3 ft", href: "/shop", search: { category: "artificial-plants", height: "3-ft" } },
-      { label: "4 ft", href: "/shop", search: { category: "artificial-plants", height: "4-ft" } },
-      { label: "5 ft", href: "/shop", search: { category: "artificial-plants", height: "5-ft" } },
-      { label: "6 ft+", href: "/shop", search: { category: "artificial-plants", height: "6-ft-plus" } },
+      { label: "1 ft", href: "/artificial-plants", search: { height: "1-ft" } },
+      { label: "2 ft", href: "/artificial-plants", search: { height: "2-ft" } },
+      { label: "3 ft", href: "/artificial-plants", search: { height: "3-ft" } },
+      { label: "4 ft", href: "/artificial-plants", search: { height: "4-ft" } },
+      { label: "5 ft", href: "/artificial-plants", search: { height: "5-ft" } },
+      { label: "6 ft+", href: "/artificial-plants", search: { height: "6-ft-plus" } },
     ],
   },
-  { label: "Terracotta Pots", href: "/shop", search: { category: "terracotta-pots" } },
-  { label: "Pebbles", href: "/shop", search: { category: "pebbles" } },
-  { label: "New Arrivals", href: "/shop", search: { filter: "new-arrivals" } },
+  { label: "Terracotta Pots", href: "/terracotta-pots" },
+  { label: "Pebbles", href: "/pebbles" },
+  { label: "New Arrivals", href: "/new-arrivals" },
   { label: "Track My Order", href: "/track-order" },
-  { label: "Locations", href: "/locations" },
+  { label: "Location", href: "/location" },
   { label: "Contact", href: "/contact" },
 ];
 
@@ -225,6 +223,8 @@ export default function Layout({ children }: { children: ReactNode }) {
                     <Link
                       to={item.href}
                       search={item.search}
+                      activeProps={{ className: "!text-black underline underline-offset-4 font-black" }}
+                      activeOptions={{ exact: item.href === "/" }}
                       className="inline-flex items-center gap-1.5 hover:text-black transition-colors cursor-pointer py-1 text-[#1C331C] font-bold"
                     >
                       <span>{item.label}</span>
@@ -241,6 +241,7 @@ export default function Layout({ children }: { children: ReactNode }) {
                               <Link
                                 to={sub.href}
                                 search={sub.search}
+                                activeProps={{ className: "!text-black font-black bg-white/20" }}
                                 className="block px-3.5 py-2 text-[10px] font-bold uppercase tracking-wider text-[#1C331C] hover:text-black hover:bg-white/20 rounded-lg transition-colors"
                               >
                                 {sub.label}
@@ -292,6 +293,8 @@ export default function Layout({ children }: { children: ReactNode }) {
                             <Link
                               to={item.href}
                               search={item.search}
+                              activeProps={{ className: "!text-black font-black underline underline-offset-4" }}
+                              activeOptions={{ exact: item.href === "/" }}
                               onClick={() => setIsMobileMenuOpen(false)}
                               className="hover:text-black transition-colors py-1 flex-1 text-[#1C331C] font-bold"
                             >
@@ -318,6 +321,7 @@ export default function Layout({ children }: { children: ReactNode }) {
                                   <Link
                                     to={sub.href}
                                     search={sub.search}
+                                    activeProps={{ className: "!text-black font-black" }}
                                     onClick={() => setIsMobileMenuOpen(false)}
                                     className="block text-[11px] font-bold tracking-wider text-[#1C331C]/90 hover:text-black transition-colors py-0.5"
                                   >
@@ -332,6 +336,8 @@ export default function Layout({ children }: { children: ReactNode }) {
                         <Link
                           to={item.href}
                           search={item.search}
+                          activeProps={{ className: "!text-black font-black underline underline-offset-4" }}
+                          activeOptions={{ exact: item.href === "/" }}
                           onClick={() => setIsMobileMenuOpen(false)}
                           className="block text-[#1C331C] font-bold hover:text-black transition-colors py-1"
                         >

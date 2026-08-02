@@ -10,7 +10,16 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WishlistRouteImport } from './routes/wishlist'
+import { Route as TrackOrderRouteImport } from './routes/track-order'
+import { Route as TerracottaPotsRouteImport } from './routes/terracotta-pots'
 import { Route as ShopRouteImport } from './routes/shop'
+import { Route as PebblesRouteImport } from './routes/pebbles'
+import { Route as NewArrivalsRouteImport } from './routes/new-arrivals'
+import { Route as LocationsRouteImport } from './routes/locations'
+import { Route as LocationRouteImport } from './routes/location'
+import { Route as FrpPotsRouteImport } from './routes/frp-pots'
+import { Route as ContactRouteImport } from './routes/contact'
+import { Route as ArtificialPlantsRouteImport } from './routes/artificial-plants'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProductProductIdRouteImport } from './routes/product/$productId'
@@ -20,9 +29,54 @@ const WishlistRoute = WishlistRouteImport.update({
   path: '/wishlist',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TrackOrderRoute = TrackOrderRouteImport.update({
+  id: '/track-order',
+  path: '/track-order',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TerracottaPotsRoute = TerracottaPotsRouteImport.update({
+  id: '/terracotta-pots',
+  path: '/terracotta-pots',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ShopRoute = ShopRouteImport.update({
   id: '/shop',
   path: '/shop',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PebblesRoute = PebblesRouteImport.update({
+  id: '/pebbles',
+  path: '/pebbles',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NewArrivalsRoute = NewArrivalsRouteImport.update({
+  id: '/new-arrivals',
+  path: '/new-arrivals',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LocationsRoute = LocationsRouteImport.update({
+  id: '/locations',
+  path: '/locations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LocationRoute = LocationRouteImport.update({
+  id: '/location',
+  path: '/location',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FrpPotsRoute = FrpPotsRouteImport.update({
+  id: '/frp-pots',
+  path: '/frp-pots',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ArtificialPlantsRoute = ArtificialPlantsRouteImport.update({
+  id: '/artificial-plants',
+  path: '/artificial-plants',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -44,14 +98,32 @@ const ProductProductIdRoute = ProductProductIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/artificial-plants': typeof ArtificialPlantsRoute
+  '/contact': typeof ContactRoute
+  '/frp-pots': typeof FrpPotsRoute
+  '/location': typeof LocationRoute
+  '/locations': typeof LocationsRoute
+  '/new-arrivals': typeof NewArrivalsRoute
+  '/pebbles': typeof PebblesRoute
   '/shop': typeof ShopRoute
+  '/terracotta-pots': typeof TerracottaPotsRoute
+  '/track-order': typeof TrackOrderRoute
   '/wishlist': typeof WishlistRoute
   '/product/$productId': typeof ProductProductIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/artificial-plants': typeof ArtificialPlantsRoute
+  '/contact': typeof ContactRoute
+  '/frp-pots': typeof FrpPotsRoute
+  '/location': typeof LocationRoute
+  '/locations': typeof LocationsRoute
+  '/new-arrivals': typeof NewArrivalsRoute
+  '/pebbles': typeof PebblesRoute
   '/shop': typeof ShopRoute
+  '/terracotta-pots': typeof TerracottaPotsRoute
+  '/track-order': typeof TrackOrderRoute
   '/wishlist': typeof WishlistRoute
   '/product/$productId': typeof ProductProductIdRoute
 }
@@ -59,20 +131,66 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/artificial-plants': typeof ArtificialPlantsRoute
+  '/contact': typeof ContactRoute
+  '/frp-pots': typeof FrpPotsRoute
+  '/location': typeof LocationRoute
+  '/locations': typeof LocationsRoute
+  '/new-arrivals': typeof NewArrivalsRoute
+  '/pebbles': typeof PebblesRoute
   '/shop': typeof ShopRoute
+  '/terracotta-pots': typeof TerracottaPotsRoute
+  '/track-order': typeof TrackOrderRoute
   '/wishlist': typeof WishlistRoute
   '/product/$productId': typeof ProductProductIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/admin' | '/shop' | '/wishlist' | '/product/$productId'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/artificial-plants'
+    | '/contact'
+    | '/frp-pots'
+    | '/location'
+    | '/locations'
+    | '/new-arrivals'
+    | '/pebbles'
+    | '/shop'
+    | '/terracotta-pots'
+    | '/track-order'
+    | '/wishlist'
+    | '/product/$productId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin' | '/shop' | '/wishlist' | '/product/$productId'
+  to:
+    | '/'
+    | '/admin'
+    | '/artificial-plants'
+    | '/contact'
+    | '/frp-pots'
+    | '/location'
+    | '/locations'
+    | '/new-arrivals'
+    | '/pebbles'
+    | '/shop'
+    | '/terracotta-pots'
+    | '/track-order'
+    | '/wishlist'
+    | '/product/$productId'
   id:
     | '__root__'
     | '/'
     | '/admin'
+    | '/artificial-plants'
+    | '/contact'
+    | '/frp-pots'
+    | '/location'
+    | '/locations'
+    | '/new-arrivals'
+    | '/pebbles'
     | '/shop'
+    | '/terracotta-pots'
+    | '/track-order'
     | '/wishlist'
     | '/product/$productId'
   fileRoutesById: FileRoutesById
@@ -80,7 +198,16 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  ArtificialPlantsRoute: typeof ArtificialPlantsRoute
+  ContactRoute: typeof ContactRoute
+  FrpPotsRoute: typeof FrpPotsRoute
+  LocationRoute: typeof LocationRoute
+  LocationsRoute: typeof LocationsRoute
+  NewArrivalsRoute: typeof NewArrivalsRoute
+  PebblesRoute: typeof PebblesRoute
   ShopRoute: typeof ShopRoute
+  TerracottaPotsRoute: typeof TerracottaPotsRoute
+  TrackOrderRoute: typeof TrackOrderRoute
   WishlistRoute: typeof WishlistRoute
   ProductProductIdRoute: typeof ProductProductIdRoute
 }
@@ -94,11 +221,74 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WishlistRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/track-order': {
+      id: '/track-order'
+      path: '/track-order'
+      fullPath: '/track-order'
+      preLoaderRoute: typeof TrackOrderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terracotta-pots': {
+      id: '/terracotta-pots'
+      path: '/terracotta-pots'
+      fullPath: '/terracotta-pots'
+      preLoaderRoute: typeof TerracottaPotsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/shop': {
       id: '/shop'
       path: '/shop'
       fullPath: '/shop'
       preLoaderRoute: typeof ShopRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pebbles': {
+      id: '/pebbles'
+      path: '/pebbles'
+      fullPath: '/pebbles'
+      preLoaderRoute: typeof PebblesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/new-arrivals': {
+      id: '/new-arrivals'
+      path: '/new-arrivals'
+      fullPath: '/new-arrivals'
+      preLoaderRoute: typeof NewArrivalsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/locations': {
+      id: '/locations'
+      path: '/locations'
+      fullPath: '/locations'
+      preLoaderRoute: typeof LocationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/location': {
+      id: '/location'
+      path: '/location'
+      fullPath: '/location'
+      preLoaderRoute: typeof LocationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/frp-pots': {
+      id: '/frp-pots'
+      path: '/frp-pots'
+      fullPath: '/frp-pots'
+      preLoaderRoute: typeof FrpPotsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/artificial-plants': {
+      id: '/artificial-plants'
+      path: '/artificial-plants'
+      fullPath: '/artificial-plants'
+      preLoaderRoute: typeof ArtificialPlantsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -128,7 +318,16 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  ArtificialPlantsRoute: ArtificialPlantsRoute,
+  ContactRoute: ContactRoute,
+  FrpPotsRoute: FrpPotsRoute,
+  LocationRoute: LocationRoute,
+  LocationsRoute: LocationsRoute,
+  NewArrivalsRoute: NewArrivalsRoute,
+  PebblesRoute: PebblesRoute,
   ShopRoute: ShopRoute,
+  TerracottaPotsRoute: TerracottaPotsRoute,
+  TrackOrderRoute: TrackOrderRoute,
   WishlistRoute: WishlistRoute,
   ProductProductIdRoute: ProductProductIdRoute,
 }
