@@ -272,7 +272,12 @@ function Index() {
         </div>
         <div className="flex flex-wrap justify-center gap-8 md:gap-14">
           {categories.map((c) => (
-            <a key={c.name} href="#" className="group block text-center">
+            <Link
+              key={c.name}
+              to="/shop"
+              search={c.shopSearch}
+              className="group block text-center cursor-pointer"
+            >
               <div className="h-28 w-28 md:h-36 md:w-36 overflow-hidden rounded-full border border-border/40 bg-secondary mx-auto">
                 <img
                   src={c.img}
@@ -283,10 +288,10 @@ function Index() {
                   className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
                 />
               </div>
-              <p className="mt-4 text-xs font-semibold uppercase tracking-[0.2em] text-foreground/85 transition group-hover:text-primary">
+              <p className="mt-4 text-xs font-semibold uppercase tracking-[0.2em] text-foreground/85 transition group-hover:text-primary font-sans">
                 {c.name}
               </p>
-            </a>
+            </Link>
           ))}
         </div>
       </section>

@@ -91,11 +91,36 @@ export const announcements = [
 export const navLinks = ["New Arrival", "Shop", "Blogs", "About Us", "Our Stores", "Contact Us"];
 
 export const categories = [
-  { name: "Vases", img: potBg },
-  { name: "Planters & Pots", img: potBg },
-  { name: "Decoratives", img: potBg },
-  { name: "Aromas", img: potBg },
-  { name: "Lamps & Lighting", img: potBg },
+  {
+    name: "FRP Pots",
+    href: "/frp-pots",
+    shopSearch: { category: "frp-pots" },
+    img: potBg,
+  },
+  {
+    name: "Artificial Plants",
+    href: "/artificial-plants",
+    shopSearch: { category: "artificial-plants" },
+    img: potBg,
+  },
+  {
+    name: "Terracotta Pots",
+    href: "/terracotta-pots",
+    shopSearch: { category: "terracotta-pots" },
+    img: potBg,
+  },
+  {
+    name: "Pebbles",
+    href: "/pebbles",
+    shopSearch: { category: "pebbles" },
+    img: potBg,
+  },
+  {
+    name: "New Arrivals",
+    href: "/new-arrivals",
+    shopSearch: { filter: "new-arrivals" },
+    img: potBg,
+  },
 ];
 
 export const products = [
