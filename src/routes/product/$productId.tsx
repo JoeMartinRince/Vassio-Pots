@@ -146,7 +146,6 @@ function ProductDetails({
   product: ReturnType<typeof getProductByCode> & { code: string; sizes?: any[] };
 }) {
   const [quantity, setQuantity] = useState(1);
-  const [selectedSize, setSelectedSize] = useState(product.sizes ? product.sizes[0] : null);
   const { addToCart } = useStore();
 
   // ── Variant State ──────────────────────────────────────────────────────────
@@ -161,21 +160,35 @@ function ProductDetails({
     sortedColors.find((c) => c.available) ?? null
   );
 
-  // Reset variant + legacy size selections when product changes
+  // Reset variant selections when product changes
   useEffect(() => {
-    setSelectedSize(product.sizes ? product.sizes[0] : null);
     const freshVariants = getVariants(product.code);
     const freshSizes = [...freshVariants.sizes].sort((a, b) => a.displayOrder - b.displayOrder);
     const freshColors = [...freshVariants.colors].sort((a, b) => a.displayOrder - b.displayOrder);
     setSelectedVariantSize(freshSizes.find((s) => s.available) ?? null);
     setSelectedVariantColor(freshColors.find((c) => c.available) ?? null);
-  }, [product.code, product.sizes]);
+  }, [product.code]);
 
-  // Pricing: legacy size-based pricing still applies if product has those old `sizes`
-  const displayPrice = selectedSize ? selectedSize.price : product.price;
-  const displayMrp = selectedSize ? selectedSize.mrp : product.mrp;
+  // Pricing: match legacy size-based pricing if product has old `sizes` array
+  const matchedLegacySize = product.sizes?.find((sz: any) => {
+    if (!selectedVariantSize) return false;
+    const label = selectedVariantSize.label.toUpperCase();
+    const name = sz.name.toUpperCase();
+    return (
+      name.includes(`-${label}`) ||
+      name.includes(`SIZE ${label}`) ||
+      name.startsWith(`${label} `) ||
+      name.includes(` ${label} `) ||
+      name.includes(`(${label})`)
+    );
+  });
+
+  const displayPrice = matchedLegacySize ? matchedLegacySize.price : product.price;
+  const displayMrp = matchedLegacySize ? matchedLegacySize.mrp : product.mrp;
   const off = Math.round(((displayMrp - displayPrice) / displayMrp) * 100);
-  const displayDimensions = selectedSize ? selectedSize.dimensions : product.dimensions;
+  const displayDimensions = matchedLegacySize
+    ? matchedLegacySize.dimensions
+    : selectedVariantSize?.dimensions || product.dimensions;
 
   const handleAddToCart = () => {
     addToCart({
@@ -190,7 +203,7 @@ function ProductDetails({
         selectedVariantColor ? selectedVariantColor.name : null,
       ]
         .filter(Boolean)
-        .join(" · ") || selectedSize?.name,
+        .join(" · "),
     });
     toast.success(`${product.name} added to cart!`);
   };
@@ -223,31 +236,7 @@ function ProductDetails({
           (Inclusive of all Taxes)
         </p>
 
-        {/* ─── Legacy Size Selection (price-based sizes from old data) ──────── */}
-        {product.sizes && (
-          <div className="mt-6">
-            <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-bold mb-3">
-              Select Size
-            </p>
-            <div className="flex flex-wrap gap-2.5">
-              {product.sizes.map((sz) => (
-                <button
-                  key={sz.name}
-                  onClick={() => setSelectedSize(sz)}
-                  className={`px-4 py-2 text-xs font-semibold tracking-wide border transition-all duration-200 rounded-xl cursor-pointer ${
-                    selectedSize?.name === sz.name
-                      ? "border-primary bg-primary text-primary-foreground shadow-sm"
-                      : "border-border/60 bg-background text-foreground hover:border-primary/40"
-                  }`}
-                >
-                  {sz.name.split(" (")[0]}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* ─── Variant: Size (A / B / C) ─────────────────────────────────────── */}
+        {/* ─── Single Size Variant Selector (A / B / C) ────────────────────── */}
         {sortedSizes.length > 0 && (
           <div className="mt-6">
             <div className="flex items-center justify-between mb-3">
@@ -255,11 +244,11 @@ function ProductDetails({
                 Size
               </p>
               {selectedVariantSize && (
-                <p className="text-[10px] text-primary font-semibold">
-                  Selected: <span className="font-bold">{selectedVariantSize.label}</span>
+                <p className="text-xs text-primary font-semibold">
+                  Selected Size: <span className="font-bold">{selectedVariantSize.label}</span>
                   {selectedVariantSize.dimensions && (
                     <span className="text-muted-foreground font-normal ml-1">
-                      — {selectedVariantSize.dimensions}
+                      ({selectedVariantSize.dimensions})
                     </span>
                   )}
                 </p>
@@ -271,12 +260,13 @@ function ProductDetails({
                 return (
                   <button
                     key={sz.id}
+                    type="button"
                     onClick={() => sz.available && setSelectedVariantSize(sz)}
                     disabled={!sz.available}
-                    title={!sz.available ? "Unavailable" : sz.label}
+                    title={!sz.available ? "Unavailable" : `Size ${sz.label}`}
                     className={`
                       relative h-11 min-w-[44px] px-4 text-sm font-bold tracking-wide border-2
-                      rounded-xl transition-all duration-200 select-none
+                      rounded-xl transition-all duration-200 select-none shadow-sm
                       ${isSelected
                         ? "border-primary bg-primary text-white shadow-md scale-105"
                         : sz.available
