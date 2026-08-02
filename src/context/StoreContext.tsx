@@ -1,203 +1,227 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
-import { products as staticProducts } from "@/data/products";
-import { toast } from "sonner";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  type ReactNode,
+} from "react";
+import { allProducts } from "@/data/products";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface CartItem {
-  id: string; // Unique key e.g. "FLX48-Flax-D"
-  product_code: string;
+  code: string;
   name: string;
+  img: string;
   price: number;
   mrp: number;
-  sizeName?: string;
-  img: any;
   quantity: number;
+  /** Optional: selected size name */
+  sizeName?: string;
 }
 
-interface StoreContextType {
-  // Cart State & Operations
-  cart: CartItem[];
-  addToCart: (product: any, sizeObj?: any, quantity?: number) => void;
-  removeFromCart: (cartItemId: string) => void;
-  updateQuantity: (cartItemId: string, delta: number) => void;
-  clearCart: () => void;
-  cartCount: number;
-  cartSubtotal: number;
-  cartSavings: number;
+export interface StoreState {
+  // Cart
+  cartItems: CartItem[];
   isCartOpen: boolean;
-  setIsCartOpen: (open: boolean) => void;
-
-  // Wishlist State & Operations
-  wishlist: string[];
-  toggleWishlist: (productCode: string) => void;
-  isInWishlist: (productCode: string) => boolean;
-  wishlistCount: number;
-
-  // Search State & Operations
-  searchQuery: string;
-  setSearchQuery: (query: string) => void;
+  // Wishlist
+  wishlistIds: Set<string>;
+  // Search
   isSearchOpen: boolean;
-  setIsSearchOpen: (open: boolean) => void;
+  searchQuery: string;
 }
 
-const StoreContext = createContext<StoreContextType | undefined>(undefined);
+export interface StoreActions {
+  // Cart
+  addToCart: (product: Omit<CartItem, "quantity"> & { quantity?: number }) => void;
+  removeFromCart: (code: string) => void;
+  updateCartQuantity: (code: string, quantity: number) => void;
+  clearCart: () => void;
+  openCart: () => void;
+  closeCart: () => void;
+  // Wishlist
+  toggleWishlist: (code: string) => void;
+  isInWishlist: (code: string) => boolean;
+  // Search
+  openSearch: () => void;
+  closeSearch: () => void;
+  setSearchQuery: (q: string) => void;
+}
 
-export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Persistent Cart state
-  const [cart, setCart] = useState<CartItem[]>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("vassio_cart");
-      if (saved) {
-        try {
-          return JSON.parse(saved);
-        } catch (e) {
-          console.error("Failed to parse stored cart", e);
-        }
-      }
-    }
-    return [];
-  });
+export type StoreContextType = StoreState & StoreActions;
 
-  // Persistent Wishlist state
-  const [wishlist, setWishlist] = useState<string[]>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("vassio_wishlist");
-      if (saved) {
-        try {
-          return JSON.parse(saved);
-        } catch (e) {
-          console.error("Failed to parse stored wishlist", e);
-        }
-      }
-    }
-    return [];
-  });
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-  // Search & Overlay states
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
+const CART_KEY = "vassio_cart_v1";
+const WISHLIST_KEY = "vassio_wishlist_v1";
+
+function readLocalJson<T>(key: string, fallback: T): T {
+  if (typeof window === "undefined") return fallback;
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as T) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function writeLocal(key: string, value: unknown) {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch { /* quota exceeded – ignore */ }
+}
+
+// ─── Context ──────────────────────────────────────────────────────────────────
+
+const StoreCtx = createContext<StoreContextType | null>(null);
+
+export function StoreProvider({ children }: { children: ReactNode }) {
+  // ---------- Cart ----------
+  const [cartItems, setCartItems] = useState<CartItem[]>(() =>
+    readLocalJson<CartItem[]>(CART_KEY, [])
+  );
   const [isCartOpen, setIsCartOpen] = useState(false);
 
-  // Sync to localStorage
   useEffect(() => {
-    localStorage.setItem("vassio_cart", JSON.stringify(cart));
-  }, [cart]);
+    writeLocal(CART_KEY, cartItems);
+  }, [cartItems]);
 
-  useEffect(() => {
-    localStorage.setItem("vassio_wishlist", JSON.stringify(wishlist));
-  }, [wishlist]);
-
-  // Cart operations
-  const addToCart = (product: any, sizeObj?: any, quantity: number = 1) => {
-    const sizeName = sizeObj ? sizeObj.name.split(" (")[0] : undefined;
-    const price = sizeObj ? sizeObj.price : product.price;
-    const mrp = sizeObj ? sizeObj.mrp : product.mrp;
-    const cartItemId = sizeName ? `${product.code}-${sizeName}` : product.code;
-
-    setCart((prev) => {
-      const existingIdx = prev.findIndex((item) => item.id === cartItemId);
-      if (existingIdx > -1) {
-        const updated = [...prev];
-        updated[existingIdx].quantity += quantity;
-        return updated;
-      } else {
-        return [
-          ...prev,
-          {
-            id: cartItemId,
-            product_code: product.code,
-            name: product.name,
-            price,
-            mrp,
-            sizeName,
-            img: product.img,
-            quantity,
-          },
-        ];
-      }
-    });
-
-    toast.success(`Added ${product.name} to Cart!`);
-    setIsCartOpen(true);
-  };
-
-  const removeFromCart = (cartItemId: string) => {
-    setCart((prev) => prev.filter((item) => item.id !== cartItemId));
-    toast.info("Item removed from Cart");
-  };
-
-  const updateQuantity = (cartItemId: string, delta: number) => {
-    setCart((prev) =>
-      prev
-        .map((item) => {
-          if (item.id === cartItemId) {
-            const newQty = item.quantity + delta;
-            return newQty > 0 ? { ...item, quantity: newQty } : null;
-          }
-          return item;
-        })
-        .filter(Boolean) as CartItem[]
-    );
-  };
-
-  const clearCart = () => {
-    setCart([]);
-  };
-
-  // Calculations
-  const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-  const cartSubtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const cartMrpTotal = cart.reduce((sum, item) => sum + item.mrp * item.quantity, 0);
-  const cartSavings = Math.max(0, cartMrpTotal - cartSubtotal);
-
-  // Wishlist operations
-  const toggleWishlist = (productCode: string) => {
-    setWishlist((prev) => {
-      const exists = prev.includes(productCode);
-      if (exists) {
-        toast.info("Removed from Wishlist");
-        return prev.filter((code) => code !== productCode);
-      } else {
-        toast.success("Saved to Wishlist!");
-        return [...prev, productCode];
-      }
-    });
-  };
-
-  const isInWishlist = (productCode: string) => wishlist.includes(productCode);
-  const wishlistCount = wishlist.length;
-
-  return (
-    <StoreContext.Provider
-      value={{
-        cart,
-        addToCart,
-        removeFromCart,
-        updateQuantity,
-        clearCart,
-        cartCount,
-        cartSubtotal,
-        cartSavings,
-        isCartOpen,
-        setIsCartOpen,
-        wishlist,
-        toggleWishlist,
-        isInWishlist,
-        wishlistCount,
-        searchQuery,
-        setSearchQuery,
-        isSearchOpen,
-        setIsSearchOpen,
-      }}
-    >
-      {children}
-    </StoreContext.Provider>
+  const addToCart = useCallback(
+    (product: Omit<CartItem, "quantity"> & { quantity?: number }) => {
+      setCartItems((prev) => {
+        const key = product.sizeName ? `${product.code}__${product.sizeName}` : product.code;
+        const existing = prev.find((i) =>
+          (i.sizeName ? `${i.code}__${i.sizeName}` : i.code) === key
+        );
+        if (existing) {
+          return prev.map((i) =>
+            (i.sizeName ? `${i.code}__${i.sizeName}` : i.code) === key
+              ? { ...i, quantity: i.quantity + (product.quantity ?? 1) }
+              : i
+          );
+        }
+        return [...prev, { ...product, quantity: product.quantity ?? 1 }];
+      });
+      setIsCartOpen(true);
+    },
+    []
   );
-};
 
-export const useStore = () => {
-  const context = useContext(StoreContext);
-  if (!context) {
-    throw new Error("useStore must be used within a StoreProvider");
-  }
-  return context;
-};
+  const removeFromCart = useCallback((code: string) => {
+    setCartItems((prev) => prev.filter((i) => i.code !== code));
+  }, []);
+
+  const updateCartQuantity = useCallback((code: string, quantity: number) => {
+    if (quantity < 1) return;
+    setCartItems((prev) =>
+      prev.map((i) => (i.code === code ? { ...i, quantity } : i))
+    );
+  }, []);
+
+  const clearCart = useCallback(() => setCartItems([]), []);
+  const openCart = useCallback(() => setIsCartOpen(true), []);
+  const closeCart = useCallback(() => setIsCartOpen(false), []);
+
+  // ---------- Wishlist ----------
+  const [wishlistIds, setWishlistIds] = useState<Set<string>>(() => {
+    const arr = readLocalJson<string[]>(WISHLIST_KEY, []);
+    return new Set(arr);
+  });
+
+  useEffect(() => {
+    writeLocal(WISHLIST_KEY, [...wishlistIds]);
+  }, [wishlistIds]);
+
+  const toggleWishlist = useCallback((code: string) => {
+    setWishlistIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(code)) next.delete(code);
+      else next.add(code);
+      return next;
+    });
+  }, []);
+
+  const isInWishlist = useCallback(
+    (code: string) => wishlistIds.has(code),
+    [wishlistIds]
+  );
+
+  // ---------- Search ----------
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const openSearch = useCallback(() => setIsSearchOpen(true), []);
+  const closeSearch = useCallback(() => {
+    setIsSearchOpen(false);
+    setSearchQuery("");
+  }, []);
+
+  const ctx: StoreContextType = {
+    // Cart
+    cartItems,
+    isCartOpen,
+    addToCart,
+    removeFromCart,
+    updateCartQuantity,
+    clearCart,
+    openCart,
+    closeCart,
+    // Wishlist
+    wishlistIds,
+    isInWishlist,
+    toggleWishlist,
+    // Search
+    isSearchOpen,
+    searchQuery,
+    openSearch,
+    closeSearch,
+    setSearchQuery,
+  };
+
+  return <StoreCtx.Provider value={ctx}>{children}</StoreCtx.Provider>;
+}
+
+// ─── Hook ─────────────────────────────────────────────────────────────────────
+
+export function useStore(): StoreContextType {
+  const ctx = useContext(StoreCtx);
+  if (!ctx) throw new Error("useStore must be used within a StoreProvider");
+  return ctx;
+}
+
+// ─── Derived selectors ────────────────────────────────────────────────────────
+
+/** Total item count in cart */
+export function useCartCount() {
+  const { cartItems } = useStore();
+  return cartItems.reduce((sum, i) => sum + i.quantity, 0);
+}
+
+/** Cart subtotal */
+export function useCartSubtotal() {
+  const { cartItems } = useStore();
+  return cartItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
+}
+
+/** All products that are in the wishlist */
+export function useWishlistProducts() {
+  const { wishlistIds } = useStore();
+  return allProducts.filter((p) => wishlistIds.has(p.code));
+}
+
+/**
+ * Search result: fuzzy filter over allProducts.
+ * Future: replace `allProducts` with a Supabase query here.
+ */
+export function useSearchResults(query: string) {
+  if (!query.trim()) return [];
+  const q = query.toLowerCase();
+  return allProducts.filter(
+    (p) =>
+      p.name.toLowerCase().includes(q) ||
+      (p as any).category?.toLowerCase().includes(q) ||
+      (p as any).keywords?.some((k: string) => k.toLowerCase().includes(q))
+  );
+}

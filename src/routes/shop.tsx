@@ -2,9 +2,8 @@ import { createFileRoute, Link, useSearch } from "@tanstack/react-router";
 import Layout from "@/components/Layout";
 import { useState, useMemo } from "react";
 import { products, vases, auxiliaryProducts } from "@/data/products";
-import { ShoppingBag, ChevronDown, SlidersHorizontal, Check, Heart } from "lucide-react";
+import { ShoppingBag, ChevronDown, SlidersHorizontal, Check } from "lucide-react";
 import { toast } from "sonner";
-import { useStore } from "@/context/StoreContext";
 
 interface ShopSearch {
   category?: string;
@@ -22,7 +21,6 @@ export const Route = createFileRoute("/shop")({
 });
 
 function ShopPage() {
-  const { addToCart, toggleWishlist, isInWishlist } = useStore();
   const search = useSearch({ from: "/shop" });
   const [selectedCategory, setSelectedCategory] = useState<string>(search.category || "all");
   const [sortBy, setSortBy] = useState<string>(search.sort || "featured");
@@ -310,7 +308,6 @@ function ShopPage() {
           >
             {filteredProducts.map((p) => {
               const off = Math.round(((p.mrp - p.price) / p.mrp) * 100);
-              const isSaved = isInWishlist(p.code);
               return (
                 <Link
                   key={p.code}
@@ -330,24 +327,6 @@ function ShopPage() {
                     <span className="absolute left-3 top-3 bg-[#3F673F] text-white border border-[#5B8550] text-[10px] uppercase tracking-[0.25em] px-2.5 py-1 font-bold rounded shadow-sm">
                       {(p as any).isSoldOut ? "Sold Out" : `${off}% OFF`}
                     </span>
-
-                    {/* Wishlist button */}
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        toggleWishlist(p.code);
-                      }}
-                      className={`absolute right-3 top-3 p-2 rounded-full shadow-sm transition-colors cursor-pointer z-20 ${
-                        isSaved
-                          ? "bg-white text-rose-500"
-                          : "bg-white/80 hover:bg-white text-muted-foreground hover:text-rose-500"
-                      }`}
-                      aria-label="Toggle Wishlist"
-                    >
-                      <Heart className={`h-4 w-4 ${isSaved ? "fill-rose-500" : ""}`} />
-                    </button>
-
                     {/* View Product Banner (Desktop hover) */}
                     <div className="hidden lg:block absolute bottom-0 left-0 right-0 bg-primary py-3.5 text-center transition-all duration-300 ease-out translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 shadow-md">
                       <span className="text-white text-xs font-semibold tracking-[0.2em] uppercase font-serif">
@@ -359,7 +338,7 @@ function ShopPage() {
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        addToCart(p);
+                        toast.success(`Added ${p.name} to Cart!`);
                       }}
                       className="lg:hidden absolute bottom-3 right-3 bg-primary hover:bg-primary/90 text-white w-8 h-8 flex items-center justify-center rounded-full shadow-md transition-colors z-20"
                       aria-label="Add to Cart"

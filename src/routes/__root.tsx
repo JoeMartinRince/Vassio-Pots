@@ -7,10 +7,13 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import favicon from "../assets/logo.png";
+import { StoreProvider } from "@/context/StoreContext";
+import CartDrawer from "@/components/CartDrawer";
+import SearchOverlay from "@/components/SearchOverlay";
 
 function NotFoundComponent() {
   return (
@@ -122,8 +125,13 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <StoreProvider>
+        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+        <Outlet />
+        {/* Global overlays — mounted once, available on every page */}
+        <CartDrawer />
+        <SearchOverlay />
+      </StoreProvider>
     </QueryClientProvider>
   );
 }

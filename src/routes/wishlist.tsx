@@ -1,30 +1,26 @@
-import React from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import Layout from "@/components/Layout";
-import { useStore } from "@/context/StoreContext";
-import { products, getProductByCode } from "@/data/products";
-import { Heart, ShoppingBag, Trash2, ArrowRight } from "lucide-react";
+import { Heart, ShoppingBag, ArrowRight } from "lucide-react";
+import { useStore, useWishlistProducts } from "@/context/StoreContext";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/wishlist")({
   head: () => ({
     meta: [
-      { title: "My Saved Wishlist — Vassio" },
-      { name: "description", content: "Saved luxury fiberglass planters and minimalist ceramic vases." },
+      { title: "Wishlist — Vassio" },
+      { name: "description", content: "Your saved Vassio planters and decoratives." },
     ],
   }),
   component: WishlistPage,
 });
 
 function WishlistPage() {
-  const { wishlist, toggleWishlist, addToCart } = useStore();
-
-  const savedProducts = wishlist
-    .map((code) => getProductByCode(code))
-    .filter(Boolean) as typeof products;
+  const { toggleWishlist, addToCart } = useStore();
+  const wishlistProducts = useWishlistProducts();
 
   return (
     <Layout>
-      <div className="mx-auto max-w-[1400px] px-6 py-12 md:py-16 font-sans">
+      <div className="mx-auto max-w-[1400px] px-6 py-12 md:py-16">
         {/* Breadcrumb */}
         <nav className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground font-semibold mb-8 flex items-center gap-1.5">
           <Link to="/" className="hover:text-foreground transition-colors">
@@ -34,108 +30,136 @@ function WishlistPage() {
           <span className="text-foreground">Wishlist</span>
         </nav>
 
-        {/* Page Title */}
-        <div className="mb-12 text-center max-w-2xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/10 border border-primary/25 text-primary text-[11px] font-bold uppercase tracking-[0.2em] mb-4">
-            <Heart className="w-3.5 h-3.5 fill-primary text-primary" />
-            <span>Saved Botanicals</span>
-          </div>
-
-          <h1 className="serif text-4xl md:text-5xl text-foreground">My Wishlist</h1>
-          <p className="mt-3 text-xs md:text-sm text-muted-foreground leading-relaxed">
-            Your curated collection of premium fiberglass planters & architectural ceramic vases.
-          </p>
+        {/* Heading */}
+        <div className="mb-10">
+          <p className="text-xs uppercase tracking-[0.4em] text-muted-foreground mb-2">Saved Items</p>
+          <h1 className="serif text-4xl md:text-5xl text-foreground flex items-center gap-3">
+            Your Wishlist
+            {wishlistProducts.length > 0 && (
+              <span className="bg-primary text-white text-sm font-bold px-3 py-1 rounded-full">
+                {wishlistProducts.length}
+              </span>
+            )}
+          </h1>
         </div>
 
-        {/* Wishlist Items Grid */}
-        {savedProducts.length === 0 ? (
-          <div className="max-w-md mx-auto text-center py-20 bg-white border border-border/40 rounded-3xl p-8 shadow-sm space-y-4">
-            <div className="w-16 h-16 rounded-full bg-secondary text-muted-foreground flex items-center justify-center mx-auto">
-              <Heart className="w-8 h-8" />
-            </div>
-            <h2 className="serif text-2xl font-bold text-foreground">Your wishlist is empty.</h2>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              Explore our handcrafted collections and click the heart icon on any planter to save it for later.
+        {wishlistProducts.length === 0 ? (
+          /* Empty State */
+          <div className="flex flex-col items-center justify-center text-center py-24 border border-dashed border-border/40 rounded-2xl">
+            <Heart className="h-16 w-16 text-muted-foreground/20 mb-5" />
+            <p className="serif text-2xl text-foreground mb-2">Your wishlist is empty</p>
+            <p className="text-sm text-muted-foreground mb-8 max-w-xs">
+              Save your favourite Vassio planters and decoratives here to revisit them later.
             </p>
-            <div className="pt-3">
-              <Link
-                to="/shop"
-                className="inline-block bg-primary hover:bg-primary/90 text-white px-8 py-3 text-xs uppercase tracking-[0.2em] font-bold transition duration-300 rounded-full shadow-sm cursor-pointer"
-              >
-                Continue Shopping
-              </Link>
-            </div>
+            <Link
+              to="/shop"
+              className="inline-flex items-center gap-2 bg-primary text-white px-8 py-3.5 text-xs font-bold uppercase tracking-[0.2em] rounded hover:bg-primary/90 transition-colors"
+            >
+              Continue Shopping
+              <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-            {savedProducts.map((p) => {
-              const off = Math.round(((p.mrp - p.price) / p.mrp) * 100);
-              return (
-                <div
-                  key={p.code}
-                  className="bg-white border border-border/40 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between group"
-                >
-                  <div>
-                    {/* Image Container */}
-                    <div className="relative overflow-hidden bg-secondary aspect-[4/5] rounded-xl border border-border/30 mb-4">
-                      <img
-                        src={p.img}
-                        alt={p.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                      />
+          <>
+            {/* Product Grid */}
+            <div className="grid grid-cols-2 gap-x-4 gap-y-8 md:gap-x-5 md:gap-y-12 lg:grid-cols-4">
+              {wishlistProducts.map((p) => {
+                const off = Math.round(((p.mrp - p.price) / p.mrp) * 100);
+                return (
+                  <div key={p.code} className="group flex flex-col">
+                    <div className="relative overflow-hidden bg-secondary aspect-[4/5] border border-border/40 rounded-2xl shadow-sm group-hover:shadow-md transition-all duration-300">
+                      <Link to="/product/$productId" params={{ productId: p.code }}>
+                        <img
+                          src={p.img}
+                          alt={p.name}
+                          className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+                          loading="lazy"
+                        />
+                      </Link>
+
+                      {/* Off Badge */}
                       <span className="absolute left-3 top-3 bg-[#3F673F] text-white border border-[#5B8550] text-[10px] uppercase tracking-[0.2em] px-2.5 py-1 font-bold rounded shadow-sm">
                         {off}% OFF
                       </span>
+
+                      {/* Remove from Wishlist */}
                       <button
-                        onClick={() => toggleWishlist(p.code)}
-                        className="absolute right-3 top-3 bg-white/90 hover:bg-white text-rose-500 p-2 rounded-full shadow-sm transition-colors cursor-pointer"
-                        aria-label="Remove from Wishlist"
+                        onClick={() => {
+                          toggleWishlist(p.code);
+                          toast.success(`Removed from wishlist`);
+                        }}
+                        className="absolute top-3 right-3 h-8 w-8 flex items-center justify-center bg-white/90 rounded-full shadow text-primary hover:bg-white hover:scale-110 transition-all duration-200 cursor-pointer"
+                        aria-label="Remove from wishlist"
                       >
-                        <Heart className="w-4 h-4 fill-rose-500 text-rose-500" />
+                        <Heart className="h-4 w-4 fill-primary" />
+                      </button>
+
+                      {/* Quick Add to Cart */}
+                      <div className="hidden lg:block absolute bottom-0 left-0 right-0 bg-primary py-3.5 text-center transition-all duration-300 ease-out translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 shadow-md cursor-pointer"
+                        onClick={() => {
+                          addToCart({
+                            code: p.code,
+                            name: p.name,
+                            img: p.img,
+                            price: p.price,
+                            mrp: p.mrp,
+                          });
+                          toast.success(`${p.name} added to cart!`);
+                        }}
+                      >
+                        <span className="text-white text-xs font-semibold tracking-[0.2em] uppercase">
+                          Add to Cart
+                        </span>
+                      </div>
+
+                      {/* Mobile cart button */}
+                      <button
+                        onClick={() => {
+                          addToCart({
+                            code: p.code,
+                            name: p.name,
+                            img: p.img,
+                            price: p.price,
+                            mrp: p.mrp,
+                          });
+                          toast.success(`${p.name} added to cart!`);
+                        }}
+                        className="lg:hidden absolute bottom-3 right-3 bg-primary hover:bg-primary/90 text-white w-8 h-8 flex items-center justify-center rounded-full shadow-md transition-colors z-20 cursor-pointer"
+                        aria-label="Add to cart"
+                      >
+                        <ShoppingBag className="h-4 w-4" />
                       </button>
                     </div>
 
-                    {/* Product Info */}
                     <Link to="/product/$productId" params={{ productId: p.code }}>
-                      <h3 className="font-sans font-bold text-foreground text-sm tracking-wide group-hover:text-primary transition-colors leading-snug">
+                      <p className="product-name font-sans font-bold mt-4 text-base tracking-wide text-foreground/90 leading-tight hover:text-primary transition-colors">
                         {p.name}
-                      </h3>
+                      </p>
                     </Link>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-1">
-                      SKU: {p.code}
-                    </p>
-
-                    <div className="mt-2 flex items-center gap-2">
-                      <span className="font-semibold text-sm text-primary">
+                    <p className="mt-1.5 text-sm">
+                      <span className="product-price font-sans font-semibold text-primary">
                         ₹{p.price.toLocaleString("en-IN")}
                       </span>
-                      <span className="text-xs text-muted-foreground line-through font-medium">
+                      <span className="ml-2 text-muted-foreground line-through text-xs font-sans font-medium">
                         ₹{p.mrp.toLocaleString("en-IN")}
                       </span>
-                    </div>
+                    </p>
                   </div>
+                );
+              })}
+            </div>
 
-                  {/* Actions */}
-                  <div className="mt-5 pt-3 border-t border-border/30 flex items-center gap-2">
-                    <button
-                      onClick={() => addToCart(p)}
-                      className="flex-1 py-2.5 bg-primary hover:bg-primary/90 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition shadow-xs cursor-pointer flex items-center justify-center gap-1.5"
-                    >
-                      <ShoppingBag className="w-3.5 h-3.5" />
-                      <span>Add to Cart</span>
-                    </button>
-                    <button
-                      onClick={() => toggleWishlist(p.code)}
-                      className="p-2.5 rounded-xl border border-border/50 text-muted-foreground hover:text-rose-600 hover:bg-rose-50 transition cursor-pointer"
-                      title="Remove"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+            {/* Continue Shopping */}
+            <div className="mt-16 text-center">
+              <Link
+                to="/shop"
+                className="inline-flex items-center gap-2 bg-primary text-white px-10 py-3.5 text-xs font-bold uppercase tracking-[0.25em] rounded hover:bg-primary/90 transition-colors"
+              >
+                Continue Shopping
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </>
         )}
       </div>
     </Layout>

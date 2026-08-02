@@ -2,7 +2,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useRef, useState, useEffect } from "react";
 import Layout from "@/components/Layout";
 import FiberplanterFeatures from "@/components/FiberplanterFeatures";
-import { useStore } from "@/context/StoreContext";
 import { Instagram, Heart, Share2, Volume2, VolumeX, X, ShoppingBag, Truck, RotateCcw, ShieldCheck, Phone, ExternalLink, ArrowRight, ShoppingCart, ArrowDownLeft, ArrowDownRight } from "lucide-react";
 import { toast, Toaster } from "sonner";
 import {
@@ -55,7 +54,6 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const { addToCart, toggleWishlist, isInWishlist } = useStore();
   const [selectedReelIndex, setSelectedReelIndex] = useState<number | null>(null);
   const visibleProducts = products.slice(0, 4);
   const visibleVases = vases.slice(0, 4);
@@ -121,7 +119,6 @@ function Index() {
         <div className="flex overflow-x-auto gap-x-4 pb-6 snap-x snap-mandatory scrollbar-none lg:grid lg:grid-cols-4 lg:gap-x-5 lg:gap-y-12 lg:overflow-visible lg:pb-0 scroll-smooth">
           {visibleProducts.map((p) => {
             const off = Math.round(((p.mrp - p.price) / p.mrp) * 100);
-            const isSaved = isInWishlist(p.code);
             return (
               <Link
                 key={p.code}
@@ -141,24 +138,6 @@ function Index() {
                   <span className="absolute left-3 top-3 bg-[#3F673F] text-white border border-[#5B8550] text-[10px] uppercase tracking-[0.2em] px-2.5 py-1 font-bold rounded shadow-sm">
                     {(p as any).isSoldOut ? "Sold Out" : `${off}% OFF`}
                   </span>
-
-                  {/* Wishlist toggle button */}
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      toggleWishlist(p.code);
-                    }}
-                    className={`absolute right-3 top-3 p-2 rounded-full shadow-sm transition-colors cursor-pointer z-20 ${
-                      isSaved
-                        ? "bg-white text-rose-500"
-                        : "bg-white/80 hover:bg-white text-muted-foreground hover:text-rose-500"
-                    }`}
-                    aria-label="Toggle Wishlist"
-                  >
-                    <Heart className={`h-4 w-4 ${isSaved ? "fill-rose-500" : ""}`} />
-                  </button>
-
                   {/* View Product Banner (aligned to the bottom of the image container, appearing on hover - Desktop only) */}
                   <div className="hidden lg:block absolute bottom-0 left-0 right-0 bg-primary py-3.5 text-center transition-all duration-300 ease-out translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 shadow-md">
                     <span className="text-white text-xs font-semibold tracking-[0.2em] uppercase font-serif">
@@ -170,7 +149,7 @@ function Index() {
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      addToCart(p);
+                      toast.success(`Added ${p.name} to Cart!`);
                     }}
                     className="lg:hidden absolute bottom-3 right-3 bg-primary hover:bg-primary/90 text-white w-8 h-8 flex items-center justify-center rounded-full shadow-md transition-colors z-20"
                     aria-label="Add to Cart"
@@ -220,7 +199,6 @@ function Index() {
           <div className="flex overflow-x-auto gap-x-4 pb-6 snap-x snap-mandatory scrollbar-none lg:grid lg:grid-cols-4 lg:gap-x-5 lg:gap-y-12 lg:overflow-visible lg:pb-0 scroll-smooth">
             {visibleVases.map((p) => {
               const off = Math.round(((p.mrp - p.price) / p.mrp) * 100);
-              const isSaved = isInWishlist(p.code);
               return (
                 <Link
                   key={p.code}
@@ -240,24 +218,6 @@ function Index() {
                     <span className="absolute left-3 top-3 bg-[#3F673F] text-white border border-[#5B8550] text-[10px] uppercase tracking-[0.2em] px-2.5 py-1 font-bold rounded shadow-sm">
                       {(p as any).isSoldOut ? "Sold Out" : `${off}% OFF`}
                     </span>
-
-                    {/* Wishlist toggle button */}
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        toggleWishlist(p.code);
-                      }}
-                      className={`absolute right-3 top-3 p-2 rounded-full shadow-sm transition-colors cursor-pointer z-20 ${
-                        isSaved
-                          ? "bg-white text-rose-500"
-                          : "bg-white/80 hover:bg-white text-muted-foreground hover:text-rose-500"
-                      }`}
-                      aria-label="Toggle Wishlist"
-                    >
-                      <Heart className={`h-4 w-4 ${isSaved ? "fill-rose-500" : ""}`} />
-                    </button>
-
                     {/* View Product Banner (aligned to the bottom of the image container, appearing on hover - Desktop only) */}
                     <div className="hidden lg:block absolute bottom-0 left-0 right-0 bg-[#FCFCF8] py-3.5 text-center transition-all duration-300 ease-out translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 shadow-md">
                       <span className="text-primary text-xs font-semibold tracking-[0.2em] uppercase font-serif">
@@ -269,7 +229,7 @@ function Index() {
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        addToCart(p);
+                        toast.success(`Added ${p.name} to Cart!`);
                       }}
                       className="lg:hidden absolute bottom-3 right-3 bg-secondary hover:bg-secondary/90 text-foreground w-8 h-8 flex items-center justify-center rounded-full shadow-md transition-colors z-20"
                       aria-label="Add to Cart"

@@ -567,3 +567,11 @@ export function getProductByCode(code: string) {
 
   return null;
 }
+
+/**
+ * All products from every collection combined.
+ * Use this for search, wishlist, and any cross-collection queries.
+ * Future: replace/augment with a Supabase query.
+ */
+export const allProducts = [...products, ...vases, ...auxiliaryProducts];
+

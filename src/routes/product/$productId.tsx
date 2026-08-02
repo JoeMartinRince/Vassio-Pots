@@ -4,6 +4,7 @@ import Layout from "@/components/Layout";
 import { useState, useEffect } from "react";
 import { Truck, RotateCcw, Phone, ShieldCheck, Heart } from "lucide-react";
 import { useStore } from "@/context/StoreContext";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/product/$productId")({
   head: ({ params }) => {
@@ -82,6 +83,8 @@ function ProductImages({
 }) {
   const [activeImage, setActiveImage] = useState(product.img);
   const thumbnails = product.thumbnails || [product.img];
+  const { toggleWishlist, isInWishlist } = useStore();
+  const wishlisted = isInWishlist(product.code);
 
   // Reset active image if the product updates
   useEffect(() => {
@@ -115,6 +118,21 @@ function ProductImages({
             Sold Out
           </span>
         )}
+        {/* Wishlist heart button */}
+        <button
+          onClick={() => {
+            toggleWishlist(product.code);
+            toast.success(wishlisted ? "Removed from wishlist" : "Saved to wishlist!");
+          }}
+          className={`absolute top-4 right-4 h-9 w-9 flex items-center justify-center rounded-full shadow-md transition-all duration-200 cursor-pointer ${
+            wishlisted
+              ? "bg-white text-primary scale-110"
+              : "bg-white/80 text-muted-foreground hover:text-primary hover:scale-110"
+          }`}
+          aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
+        >
+          <Heart className={`h-4.5 w-4.5 ${wishlisted ? "fill-primary" : ""}`} />
+        </button>
       </div>
     </div>
   );
@@ -125,10 +143,9 @@ function ProductDetails({
 }: {
   product: ReturnType<typeof getProductByCode> & { code: string; sizes?: any[] };
 }) {
-  const { addToCart, toggleWishlist, isInWishlist } = useStore();
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState(product.sizes ? product.sizes[0] : null);
-  const isSaved = isInWishlist(product.code);
+  const { addToCart } = useStore();
 
   // Reset selected size when product changes
   useEffect(() => {
@@ -140,26 +157,24 @@ function ProductDetails({
   const off = Math.round(((displayMrp - displayPrice) / displayMrp) * 100);
   const displayDimensions = selectedSize ? selectedSize.dimensions : product.dimensions;
 
+  const handleAddToCart = () => {
+    addToCart({
+      code: product.code,
+      name: product.name,
+      img: product.img,
+      price: displayPrice,
+      mrp: displayMrp,
+      quantity,
+      sizeName: selectedSize?.name,
+    });
+    toast.success(`${product.name} added to cart!`);
+  };
+
   return (
     <div className="w-full lg:w-1/2 flex flex-col justify-between">
       <div>
         {/* Title */}
-        <div className="flex items-start justify-between gap-4">
-          <h1 className="product-name font-sans font-bold text-3xl md:text-5xl text-foreground leading-tight">
-            {product.name}
-          </h1>
-          <button
-            onClick={() => toggleWishlist(product.code)}
-            className={`p-3 rounded-full border transition cursor-pointer shrink-0 ${
-              isSaved
-                ? "bg-rose-50 border-rose-200 text-rose-500"
-                : "bg-white border-border/50 text-muted-foreground hover:text-rose-500"
-            }`}
-            title={isSaved ? "Saved in Wishlist" : "Save to Wishlist"}
-          >
-            <Heart className={`w-5 h-5 ${isSaved ? "fill-rose-500" : ""}`} />
-          </button>
-        </div>
+        <h1 className="product-name font-sans font-extrabold text-3xl md:text-5xl text-foreground leading-tight">{product.name}</h1>
 
         {/* Product Code */}
         <p className="text-[11px] text-muted-foreground uppercase tracking-widest mt-2">
@@ -168,7 +183,7 @@ function ProductDetails({
 
         {/* Price Tag */}
         <div className="mt-5 flex items-center gap-3.5">
-          <span className="product-price font-sans font-semibold text-2xl md:text-3xl text-primary">
+          <span className="product-price font-sans font-bold text-2xl md:text-3xl text-primary">
             ₹{displayPrice.toLocaleString("en-IN")}
           </span>
           <span className="text-base text-muted-foreground line-through font-sans">
@@ -257,7 +272,7 @@ function ProductDetails({
             <div className="flex items-center border border-border/70 rounded-md overflow-hidden bg-background">
               <button
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="h-11 w-11 flex items-center justify-center font-semibold hover:bg-secondary/40 transition active:scale-95 cursor-pointer"
+                className="h-11 w-11 flex items-center justify-center font-semibold hover:bg-secondary/40 transition active:scale-95"
               >
                 -
               </button>
@@ -266,7 +281,7 @@ function ProductDetails({
               </span>
               <button
                 onClick={() => setQuantity(quantity + 1)}
-                className="h-11 w-11 flex items-center justify-center font-semibold hover:bg-secondary/40 transition active:scale-95 cursor-pointer"
+                className="h-11 w-11 flex items-center justify-center font-semibold hover:bg-secondary/40 transition active:scale-95"
               >
                 +
               </button>
@@ -274,8 +289,8 @@ function ProductDetails({
 
             {/* Cart trigger button */}
             <button
-              onClick={() => addToCart(product, selectedSize, quantity)}
-              className="flex-1 bg-primary text-primary-foreground py-4 text-xs uppercase tracking-[0.2em] font-bold hover:bg-primary/95 transition duration-300 rounded-md shadow-sm active:scale-[0.99] cursor-pointer"
+              onClick={handleAddToCart}
+              className="flex-1 bg-primary text-primary-foreground py-4 text-xs uppercase tracking-[0.2em] font-semibold hover:bg-primary/95 transition duration-300 rounded-md shadow-sm active:scale-[0.99] cursor-pointer"
             >
               Add to Cart
             </button>

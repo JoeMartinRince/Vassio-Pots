@@ -3,7 +3,6 @@ import { Link } from "@tanstack/react-router";
 import {
   Search,
   ShoppingBag,
-  User,
   Heart,
   Menu,
   X,
@@ -14,9 +13,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { announcements, logo } from "@/data/products";
-import { StoreProvider, useStore } from "@/context/StoreContext";
-import { SearchOverlay } from "@/components/SearchOverlay";
-import { CartDrawer } from "@/components/CartDrawer";
+import { useStore, useCartCount } from "@/context/StoreContext";
 
 export interface NavSubItem {
   label: string;
@@ -86,20 +83,16 @@ function FooterTime() {
 }
 
 export default function Layout({ children }: { children: ReactNode }) {
-  return (
-    <StoreProvider>
-      <LayoutInner>{children}</LayoutInner>
-    </StoreProvider>
-  );
-}
-
-function LayoutInner({ children }: { children: ReactNode }) {
-  const { cartCount, wishlistCount, setIsSearchOpen, setIsCartOpen } = useStore();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openMobileAccordions, setOpenMobileAccordions] = useState<Record<string, boolean>>({});
   const [isScrolled, setIsScrolled] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+
+  // Global store
+  const { openSearch, openCart, wishlistIds } = useStore();
+  const cartCount = useCartCount();
+  const wishlistCount = wishlistIds.size;
 
   const toggleMobileAccordion = (label: string) => {
     setOpenMobileAccordions((prev) => ({
@@ -163,7 +156,7 @@ function LayoutInner({ children }: { children: ReactNode }) {
             </button>
             {/* Search - desktop only */}
             <button
-              onClick={() => setIsSearchOpen(true)}
+              onClick={openSearch}
               className="hidden lg:inline-flex items-center gap-2 text-sm text-primary-foreground/90 hover:text-white transition-colors cursor-pointer"
               aria-label="Search"
             >
@@ -188,30 +181,28 @@ function LayoutInner({ children }: { children: ReactNode }) {
           <div className="flex items-center gap-4 sm:gap-5 z-10">
             {/* Search - mobile only */}
             <button
-              onClick={() => setIsSearchOpen(true)}
+              onClick={openSearch}
               className="lg:hidden text-primary-foreground/90 hover:text-white transition-colors cursor-pointer"
               aria-label="Search"
             >
               <Search className="h-5 w-5" />
             </button>
-
             {/* Wishlist */}
             <Link
               to="/wishlist"
               aria-label="Wishlist"
-              className="relative text-primary-foreground/90 hover:text-white transition-colors cursor-pointer flex items-center"
+              className="relative text-primary-foreground/90 hover:text-white transition-colors cursor-pointer"
             >
               <Heart className="h-5 w-5" />
               {wishlistCount > 0 && (
-                <span className="absolute -right-2 -top-2 grid h-4 w-4 place-items-center rounded-full text-[10px] font-bold bg-[#3F673F] text-white shadow-sm border border-[#5B8550]">
+                <span className="absolute -right-2 -top-2 grid h-4 w-4 place-items-center rounded-full text-[10px] font-bold bg-white text-primary shadow-sm">
                   {wishlistCount}
                 </span>
               )}
             </Link>
-
             {/* Cart */}
             <button
-              onClick={() => setIsCartOpen(true)}
+              onClick={openCart}
               aria-label="Cart"
               className="relative text-primary-foreground/90 hover:text-white transition-colors cursor-pointer"
             >
@@ -501,10 +492,6 @@ function LayoutInner({ children }: { children: ReactNode }) {
           </div>
         </div>
       </footer>
-
-      {/* Global Search Overlay & Cart Drawer */}
-      <SearchOverlay />
-      <CartDrawer />
     </div>
   );
 }
