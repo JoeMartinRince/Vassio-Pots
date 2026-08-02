@@ -109,7 +109,7 @@ function Index() {
       </section>
 
       {/* Shop our products */}
-      <section id="shop" className="mx-auto max-w-[1400px] px-6 pt-24 pb-12 md:pb-24">
+      <section id="shop" className="mx-auto max-w-[1400px] px-6 py-16 md:py-24">
         <div className="mb-14 text-center">
           <p className="text-xs uppercase tracking-[0.4em] text-muted-foreground">
             Curated Greenery
@@ -124,9 +124,9 @@ function Index() {
                 key={p.code}
                 to="/product/$productId"
                 params={{ productId: p.code }}
-                className="group snap-start flex-none w-[43%] sm:w-[200px] lg:w-auto cursor-pointer"
+                className="group snap-start flex-none w-[43%] sm:w-[200px] lg:w-auto cursor-pointer flex flex-col"
               >
-                <div className="relative overflow-hidden bg-secondary aspect-[4/5] border border-border/40">
+                <div className="relative overflow-hidden bg-secondary aspect-[4/5] border border-border/40 rounded-2xl shadow-sm group-hover:shadow-md transition-all duration-300">
                   <img
                     src={p.img}
                     alt={p.name}
@@ -135,7 +135,7 @@ function Index() {
                     loading="lazy"
                     className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
                   />
-                  <span className="absolute left-3 top-3 bg-[#3F673F] text-white border border-[#5B8550] text-[10px] uppercase tracking-[0.2em] px-2 py-1 font-semibold rounded shadow-sm">
+                  <span className="absolute left-3 top-3 bg-[#3F673F] text-white border border-[#5B8550] text-[10px] uppercase tracking-[0.2em] px-2.5 py-1 font-bold rounded shadow-sm">
                     {(p as any).isSoldOut ? "Sold Out" : `${off}% OFF`}
                   </span>
                   {/* View Product Banner (aligned to the bottom of the image container, appearing on hover - Desktop only) */}
@@ -157,14 +157,14 @@ function Index() {
                     <ShoppingBag className="h-4 w-4" />
                   </button>
                 </div>
-                <p className="product-name font-sans font-extrabold mt-4 text-base tracking-wide text-foreground/90 leading-tight group-hover:text-primary transition-colors">
+                <p className="product-name font-sans font-bold mt-4 text-base tracking-wide text-foreground/90 leading-tight group-hover:text-primary transition-colors">
                   {p.name}
                 </p>
-                <p className="mt-1 text-sm">
-                  <span className="product-price font-sans font-bold text-primary">
+                <p className="mt-1.5 text-sm">
+                  <span className="product-price font-sans font-semibold text-primary">
                     ₹{p.price.toLocaleString("en-IN")}
                   </span>
-                  <span className="ml-2 text-muted-foreground line-through text-xs font-sans">
+                  <span className="ml-2 text-muted-foreground line-through text-xs font-sans font-medium">
                     ₹{p.mrp.toLocaleString("en-IN")}
                   </span>
                 </p>
@@ -184,7 +184,7 @@ function Index() {
       </section>
 
       {/* Combined Curved Forest-Green Section (Watch & Buy + Gifts & Vases) */}
-      <section className="bg-primary text-primary-foreground pt-16 pb-24 rounded-t-[40px] md:rounded-t-[60px] rounded-b-[40px] md:rounded-b-[60px] my-12 shadow-xl">
+      <section className="bg-primary text-primary-foreground py-16 md:py-24 rounded-t-[40px] md:rounded-t-[60px] rounded-b-[40px] md:rounded-b-[60px] my-12 shadow-xl">
         {/* Watch and Buy */}
         <WatchAndBuy onReelClick={(index) => setSelectedReelIndex(index)} />
 
@@ -204,9 +204,9 @@ function Index() {
                   key={p.code}
                   to="/product/$productId"
                   params={{ productId: p.code }}
-                  className="group snap-start flex-none w-[43%] sm:w-[200px] lg:w-auto cursor-pointer"
+                  className="group snap-start flex-none w-[43%] sm:w-[200px] lg:w-auto cursor-pointer flex flex-col"
                 >
-                  <div className="relative overflow-hidden bg-secondary aspect-[4/5] border border-border/40 rounded-2xl">
+                  <div className="relative overflow-hidden bg-secondary aspect-[4/5] border border-border/40 rounded-2xl shadow-sm group-hover:shadow-md transition-all duration-300">
                     <img
                       src={p.img}
                       alt={p.name}
@@ -215,7 +215,7 @@ function Index() {
                       loading="lazy"
                       className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
                     />
-                    <span className="absolute left-3 top-3 bg-[#3F673F] text-white border border-[#5B8550] text-[10px] uppercase tracking-[0.2em] px-2 py-1 font-semibold rounded shadow-sm">
+                    <span className="absolute left-3 top-3 bg-[#3F673F] text-white border border-[#5B8550] text-[10px] uppercase tracking-[0.2em] px-2.5 py-1 font-bold rounded shadow-sm">
                       {(p as any).isSoldOut ? "Sold Out" : `${off}% OFF`}
                     </span>
                     {/* View Product Banner (aligned to the bottom of the image container, appearing on hover - Desktop only) */}
@@ -237,14 +237,14 @@ function Index() {
                       <ShoppingBag className="h-4 w-4" />
                     </button>
                   </div>
-                  <p className="product-name font-sans font-extrabold mt-4 text-base tracking-wide text-primary-foreground/95 leading-tight group-hover:text-secondary transition-colors">
+                  <p className="product-name font-sans font-bold mt-4 text-base tracking-wide text-primary-foreground/95 leading-tight group-hover:text-secondary transition-colors">
                     {p.name}
                   </p>
-                  <p className="mt-1 text-sm">
-                    <span className="product-price font-sans font-bold text-secondary">
+                  <p className="mt-1.5 text-sm">
+                    <span className="product-price font-sans font-semibold text-secondary">
                       ₹{p.price.toLocaleString("en-IN")}
                     </span>
-                    <span className="ml-2 text-primary-foreground/60 line-through text-xs font-sans">
+                    <span className="ml-2 text-primary-foreground/60 line-through text-xs font-sans font-medium">
                       ₹{p.mrp.toLocaleString("en-IN")}
                     </span>
                   </p>

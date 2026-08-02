@@ -315,7 +315,7 @@ function ShopPage() {
                   params={{ productId: p.code }}
                   className="group cursor-pointer flex flex-col"
                 >
-                  <div className="relative overflow-hidden bg-secondary aspect-[4/5] border border-border/40">
+                  <div className="relative overflow-hidden bg-secondary aspect-[4/5] border border-border/40 rounded-2xl shadow-sm group-hover:shadow-md transition-all duration-300">
                     <img
                       src={p.img}
                       alt={p.name}
@@ -324,7 +324,7 @@ function ShopPage() {
                       loading="lazy"
                       className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
                     />
-                    <span className="absolute left-3 top-3 bg-[#3F673F] text-white border border-[#5B8550] text-[10px] uppercase tracking-[0.25em] px-2 py-1 font-semibold rounded shadow-sm">
+                    <span className="absolute left-3 top-3 bg-[#3F673F] text-white border border-[#5B8550] text-[10px] uppercase tracking-[0.25em] px-2.5 py-1 font-bold rounded shadow-sm">
                       {(p as any).isSoldOut ? "Sold Out" : `${off}% OFF`}
                     </span>
                     {/* View Product Banner (Desktop hover) */}
