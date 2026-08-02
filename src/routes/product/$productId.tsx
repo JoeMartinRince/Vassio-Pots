@@ -2,9 +2,11 @@ import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { getProductByCode } from "@/data/products";
 import Layout from "@/components/Layout";
 import { useState, useEffect } from "react";
-import { Truck, RotateCcw, Phone, ShieldCheck, Heart } from "lucide-react";
+import { Truck, RotateCcw, Phone, ShieldCheck, Heart, Check } from "lucide-react";
 import { useStore } from "@/context/StoreContext";
 import { toast } from "sonner";
+import { getVariants } from "@/services/variantStore";
+import type { ProductSizeVariant, ProductColorVariant } from "@/types/variants";
 
 export const Route = createFileRoute("/product/$productId")({
   head: ({ params }) => {
@@ -131,7 +133,7 @@ function ProductImages({
           }`}
           aria-label={wishlisted ? "Remove from wishlist" : "Add to wishlist"}
         >
-          <Heart className={`h-4.5 w-4.5 ${wishlisted ? "fill-primary" : ""}`} />
+          <Heart className={`h-[18px] w-[18px] ${wishlisted ? "fill-primary" : ""}`} />
         </button>
       </div>
     </div>
@@ -147,11 +149,29 @@ function ProductDetails({
   const [selectedSize, setSelectedSize] = useState(product.sizes ? product.sizes[0] : null);
   const { addToCart } = useStore();
 
-  // Reset selected size when product changes
+  // ── Variant State ──────────────────────────────────────────────────────────
+  const variants = getVariants(product.code);
+  const sortedSizes = [...variants.sizes].sort((a, b) => a.displayOrder - b.displayOrder);
+  const sortedColors = [...variants.colors].sort((a, b) => a.displayOrder - b.displayOrder);
+
+  const [selectedVariantSize, setSelectedVariantSize] = useState<ProductSizeVariant | null>(
+    sortedSizes.find((s) => s.available) ?? null
+  );
+  const [selectedVariantColor, setSelectedVariantColor] = useState<ProductColorVariant | null>(
+    sortedColors.find((c) => c.available) ?? null
+  );
+
+  // Reset variant + legacy size selections when product changes
   useEffect(() => {
     setSelectedSize(product.sizes ? product.sizes[0] : null);
+    const freshVariants = getVariants(product.code);
+    const freshSizes = [...freshVariants.sizes].sort((a, b) => a.displayOrder - b.displayOrder);
+    const freshColors = [...freshVariants.colors].sort((a, b) => a.displayOrder - b.displayOrder);
+    setSelectedVariantSize(freshSizes.find((s) => s.available) ?? null);
+    setSelectedVariantColor(freshColors.find((c) => c.available) ?? null);
   }, [product.code, product.sizes]);
 
+  // Pricing: legacy size-based pricing still applies if product has those old `sizes`
   const displayPrice = selectedSize ? selectedSize.price : product.price;
   const displayMrp = selectedSize ? selectedSize.mrp : product.mrp;
   const off = Math.round(((displayMrp - displayPrice) / displayMrp) * 100);
@@ -165,7 +185,12 @@ function ProductDetails({
       price: displayPrice,
       mrp: displayMrp,
       quantity,
-      sizeName: selectedSize?.name,
+      sizeName: [
+        selectedVariantSize ? `Size ${selectedVariantSize.label}` : null,
+        selectedVariantColor ? selectedVariantColor.name : null,
+      ]
+        .filter(Boolean)
+        .join(" · ") || selectedSize?.name,
     });
     toast.success(`${product.name} added to cart!`);
   };
@@ -198,7 +223,7 @@ function ProductDetails({
           (Inclusive of all Taxes)
         </p>
 
-        {/* Size Selection */}
+        {/* ─── Legacy Size Selection (price-based sizes from old data) ──────── */}
         {product.sizes && (
           <div className="mt-6">
             <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-bold mb-3">
@@ -209,15 +234,129 @@ function ProductDetails({
                 <button
                   key={sz.name}
                   onClick={() => setSelectedSize(sz)}
-                  className={`px-4 py-2 text-xs font-semibold tracking-wide border transition-all duration-200 rounded cursor-pointer ${
+                  className={`px-4 py-2 text-xs font-semibold tracking-wide border transition-all duration-200 rounded-xl cursor-pointer ${
                     selectedSize?.name === sz.name
                       ? "border-primary bg-primary text-primary-foreground shadow-sm"
-                      : "border-border/60 bg-background text-foreground hover:border-muted-foreground"
+                      : "border-border/60 bg-background text-foreground hover:border-primary/40"
                   }`}
                 >
                   {sz.name.split(" (")[0]}
                 </button>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* ─── Variant: Size (A / B / C) ─────────────────────────────────────── */}
+        {sortedSizes.length > 0 && (
+          <div className="mt-6">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-bold">
+                Size
+              </p>
+              {selectedVariantSize && (
+                <p className="text-[10px] text-primary font-semibold">
+                  Selected: <span className="font-bold">{selectedVariantSize.label}</span>
+                  {selectedVariantSize.dimensions && (
+                    <span className="text-muted-foreground font-normal ml-1">
+                      — {selectedVariantSize.dimensions}
+                    </span>
+                  )}
+                </p>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-2.5">
+              {sortedSizes.map((sz) => {
+                const isSelected = selectedVariantSize?.id === sz.id;
+                return (
+                  <button
+                    key={sz.id}
+                    onClick={() => sz.available && setSelectedVariantSize(sz)}
+                    disabled={!sz.available}
+                    title={!sz.available ? "Unavailable" : sz.label}
+                    className={`
+                      relative h-11 min-w-[44px] px-4 text-sm font-bold tracking-wide border-2
+                      rounded-xl transition-all duration-200 select-none
+                      ${isSelected
+                        ? "border-primary bg-primary text-white shadow-md scale-105"
+                        : sz.available
+                          ? "border-border/50 bg-background text-foreground hover:border-primary/60 hover:bg-primary/5 cursor-pointer"
+                          : "border-border/20 bg-muted/30 text-muted-foreground/40 cursor-not-allowed opacity-50"
+                      }
+                    `}
+                    aria-label={`Size ${sz.label}${!sz.available ? " — Unavailable" : ""}`}
+                  >
+                    {sz.label}
+                    {isSelected && (
+                      <span className="absolute -top-1.5 -right-1.5 h-4 w-4 bg-white rounded-full flex items-center justify-center shadow-sm border border-primary/30">
+                        <Check className="h-2.5 w-2.5 text-primary" strokeWidth={3} />
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ─── Variant: Color swatches ────────────────────────────────────────── */}
+        {sortedColors.length > 0 && (
+          <div className="mt-6">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-bold">
+                Color
+              </p>
+              {selectedVariantColor && (
+                <p className="text-[10px] text-primary font-semibold">
+                  Selected: <span className="font-bold">{selectedVariantColor.name}</span>
+                </p>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-3">
+              {sortedColors.map((c) => {
+                const isSelected = selectedVariantColor?.id === c.id;
+                return (
+                  <button
+                    key={c.id}
+                    onClick={() => c.available && setSelectedVariantColor(c)}
+                    disabled={!c.available}
+                    title={c.available ? c.name : `${c.name} — Unavailable`}
+                    className={`
+                      relative group flex flex-col items-center gap-1.5
+                      ${c.available ? "cursor-pointer" : "cursor-not-allowed opacity-40"}
+                    `}
+                    aria-label={`Color: ${c.name}${!c.available ? " — Unavailable" : ""}`}
+                  >
+                    {/* Swatch circle */}
+                    <span
+                      className={`
+                        h-8 w-8 rounded-full border-2 transition-all duration-200 block shadow-sm
+                        ${isSelected
+                          ? "border-primary scale-110 shadow-md ring-2 ring-primary/30"
+                          : c.available
+                            ? "border-border/40 hover:border-primary/50 hover:scale-105"
+                            : "border-border/20"
+                        }
+                      `}
+                      style={{ backgroundColor: c.hex }}
+                    />
+                    {/* Color label */}
+                    <span
+                      className={`text-[9px] font-semibold uppercase tracking-wide leading-none text-center max-w-[48px] truncate ${
+                        isSelected ? "text-primary" : "text-muted-foreground"
+                      }`}
+                    >
+                      {c.name}
+                    </span>
+                    {/* Selected check */}
+                    {isSelected && (
+                      <span className="absolute -top-1 -right-1 h-4 w-4 bg-primary rounded-full flex items-center justify-center shadow">
+                        <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
@@ -237,7 +376,7 @@ function ProductDetails({
         {/* Specifications properties table */}
         <div className="mt-8 border-t border-border/30 text-xs">
           {[
-            ["Color", product.color],
+            ["Color", selectedVariantColor ? selectedVariantColor.name : product.color],
             ["Material", product.material],
             ["Dimensions", displayDimensions],
             ["Inside the Box", product.insideBox],
@@ -258,7 +397,7 @@ function ProductDetails({
         <div className="mt-6 p-3.5 rounded-lg bg-secondary/30 border border-border/25 text-[11px] text-muted-foreground flex items-start gap-2.5">
           <span className="text-accent text-sm leading-none font-bold">⚠</span>
           <span>
-            <strong>Non-returnable & Non-exchangeable</strong> — Hand-styled curated item. Learn
+            <strong>Non-returnable &amp; Non-exchangeable</strong> — Hand-styled curated item. Learn
             more about terms.
           </span>
         </div>
@@ -353,7 +492,7 @@ function ProductDetails({
           </div>
           <div className="flex flex-col items-center text-center">
             <Phone className="h-6 w-6 text-foreground/75 mb-1.5 shrink-0" />
-            <p className="text-[11px] font-semibold text-foreground/90 tracking-wide">24/7 Support (Chat & E-mail)</p>
+            <p className="text-[11px] font-semibold text-foreground/90 tracking-wide">24/7 Support (Chat &amp; E-mail)</p>
           </div>
           <div className="flex flex-col items-center text-center">
             <ShieldCheck className="h-6 w-6 text-foreground/75 mb-1.5 shrink-0" />

@@ -49,6 +49,15 @@ import {
   ChevronLeft,
   ChevronRight as RightIcon,
 } from "lucide-react";
+import {
+  getVariants,
+  toggleSizeAvailability,
+  toggleColorAvailability,
+  addSizeVariant,
+  addColorVariant,
+  removeSizeVariant,
+  removeColorVariant,
+} from "@/services/variantStore";
 
 export const Route = createFileRoute("/admin")({
   component: AdminDashboardWrapper,
@@ -330,6 +339,9 @@ function AdminDashboardMain() {
                 <div className="text-[10px] text-muted-foreground">staff@vassio.com</div>
               </div>
             </div>
+
+            {/* ─── Variant Management Panel ─────────────────────────────────────────── */}
+            <ProductVariantManager products={products} />
           </div>
         </div>
       </div>
@@ -939,6 +951,9 @@ function AdminDashboardMain() {
                   </div>
                 </div>
               </div>
+
+              {/* ─── Variant Management Panel ─────────────────────────────────────────── */}
+              <ProductVariantManager products={products} />
             </div>
           )}
 
@@ -1306,6 +1321,400 @@ function AdminDashboardMain() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PRODUCT VARIANT MANAGER COMPONENT
+// ─────────────────────────────────────────────────────────────────────────────
+
+function ProductVariantManager({ products }: { products: AdminProduct[] }) {
+  const [expandedProduct, setExpandedProduct] = React.useState<string | null>(null);
+  const [variantState, setVariantState] = React.useState<Record<string, ReturnType<typeof getVariants>>>({});
+  // New size form
+  const [newSizeId, setNewSizeId] = React.useState("");
+  const [newSizeLabel, setNewSizeLabel] = React.useState("");
+  const [newSizeDim, setNewSizeDim] = React.useState("");
+  // New color form
+  const [newColorId, setNewColorId] = React.useState("");
+  const [newColorName, setNewColorName] = React.useState("");
+  const [newColorHex, setNewColorHex] = React.useState("#739D30");
+
+  // Load variants for a product when it's expanded
+  const handleExpand = (code: string) => {
+    if (expandedProduct === code) {
+      setExpandedProduct(null);
+      return;
+    }
+    setExpandedProduct(code);
+    setVariantState((prev) => ({ ...prev, [code]: getVariants(code) }));
+    // Reset form fields
+    setNewSizeId(""); setNewSizeLabel(""); setNewSizeDim("");
+    setNewColorId(""); setNewColorName(""); setNewColorHex("#739D30");
+  };
+
+  const refreshVariants = (code: string) => {
+    setVariantState((prev) => ({ ...prev, [code]: getVariants(code) }));
+  };
+
+  const handleToggleSize = (code: string, sizeId: string, available: boolean) => {
+    toggleSizeAvailability(code, sizeId, available);
+    refreshVariants(code);
+    toast.success(`Size "${sizeId}" ${available ? "enabled" : "disabled"}`);
+  };
+
+  const handleToggleColor = (code: string, colorId: string, available: boolean) => {
+    toggleColorAvailability(code, colorId, available);
+    refreshVariants(code);
+    toast.success(`Color "${colorId}" ${available ? "enabled" : "disabled"}`);
+  };
+
+  const handleAddSize = (code: string) => {
+    if (!newSizeId.trim() || !newSizeLabel.trim()) {
+      toast.error("Size ID and Label are required");
+      return;
+    }
+    addSizeVariant(code, {
+      id: newSizeId.trim(),
+      label: newSizeLabel.trim(),
+      dimensions: newSizeDim.trim() || undefined,
+      available: true,
+    });
+    refreshVariants(code);
+    setNewSizeId(""); setNewSizeLabel(""); setNewSizeDim("");
+    toast.success("Size added");
+  };
+
+  const handleAddColor = (code: string) => {
+    if (!newColorId.trim() || !newColorName.trim()) {
+      toast.error("Color ID and Name are required");
+      return;
+    }
+    addColorVariant(code, {
+      id: newColorId.trim().toLowerCase(),
+      name: newColorName.trim(),
+      hex: newColorHex,
+      available: true,
+    });
+    refreshVariants(code);
+    setNewColorId(""); setNewColorName(""); setNewColorHex("#739D30");
+    toast.success("Color added");
+  };
+
+  const handleRemoveSize = (code: string, sizeId: string) => {
+    removeSizeVariant(code, sizeId);
+    refreshVariants(code);
+    toast.success("Size removed");
+  };
+
+  const handleRemoveColor = (code: string, colorId: string) => {
+    removeColorVariant(code, colorId);
+    refreshVariants(code);
+    toast.success("Color removed");
+  };
+
+  return (
+    <div className="bg-white border border-[#D9E3C5]/60 rounded-3xl p-6 shadow-sm">
+      {/* Section Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 className="serif text-xl font-extrabold text-[#2F4B2F]">Variant Management</h2>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Manage sizes and colors for each product. Click a product to expand.
+          </p>
+        </div>
+        <div className="px-3 py-1 bg-[#EEF5E3] rounded-full text-[10px] font-bold text-[#3F673F] uppercase tracking-wider">
+          {products.length} Products
+        </div>
+      </div>
+
+      {/* Product List */}
+      <div className="space-y-3">
+        {products.length === 0 && (
+          <p className="text-sm text-muted-foreground text-center py-8">
+            No products found. Add products first via Supabase or the Add Product form above.
+          </p>
+        )}
+
+        {products.map((p) => {
+          const isOpen = expandedProduct === p.product_id;
+          const vd = variantState[p.product_id];
+
+          return (
+            <div
+              key={p.product_id}
+              className="border border-[#D9E3C5]/50 rounded-2xl overflow-hidden transition-all duration-200"
+            >
+              {/* Product Row Header */}
+              <button
+                onClick={() => handleExpand(p.product_id)}
+                className="w-full flex items-center justify-between gap-4 px-5 py-4 hover:bg-[#EEF5E3]/40 transition-colors cursor-pointer text-left"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl overflow-hidden bg-card border border-border/40 shrink-0">
+                    <img src={p.img} alt={p.name} className="w-full h-full object-cover" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-[#2F4B2F] text-sm">{p.name}</p>
+                    <p className="text-[10px] text-muted-foreground font-medium">{p.product_id}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  {isOpen && vd && (
+                    <div className="hidden sm:flex items-center gap-2 text-[10px] text-muted-foreground font-semibold">
+                      <span className="px-2 py-0.5 bg-[#EEF5E3] rounded-full text-[#3F673F]">
+                        {vd.sizes.length} Sizes
+                      </span>
+                      <span className="px-2 py-0.5 bg-[#EEF5E3] rounded-full text-[#3F673F]">
+                        {vd.colors.length} Colors
+                      </span>
+                    </div>
+                  )}
+                  <ChevronRight
+                    className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${isOpen ? "rotate-90" : ""}`}
+                  />
+                </div>
+              </button>
+
+              {/* Expanded Variant Editor */}
+              {isOpen && vd && (
+                <div className="border-t border-[#D9E3C5]/40 px-5 pb-6 pt-5 bg-[#FCFCF8] space-y-8">
+                  {/* ── SIZES ── */}
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <p className="text-[11px] uppercase tracking-[0.3em] font-bold text-[#2F4B2F]">
+                        Sizes
+                      </p>
+                      <span className="text-[10px] text-muted-foreground">
+                        {vd.sizes.filter((s) => s.available).length} of {vd.sizes.length} available
+                      </span>
+                    </div>
+
+                    {/* Existing Sizes */}
+                    <div className="space-y-2 mb-4">
+                      {vd.sizes
+                        .sort((a, b) => a.displayOrder - b.displayOrder)
+                        .map((sz) => (
+                          <div
+                            key={sz.id}
+                            className="flex items-center justify-between gap-4 px-4 py-3 bg-white border border-[#D9E3C5]/40 rounded-xl"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div
+                                className={`h-8 w-8 rounded-lg flex items-center justify-center text-xs font-bold border-2 ${
+                                  sz.available
+                                    ? "border-[#739D30] bg-[#739D30] text-white"
+                                    : "border-border/40 bg-muted/30 text-muted-foreground/50"
+                                }`}
+                              >
+                                {sz.label}
+                              </div>
+                              <div>
+                                <p className="text-xs font-bold text-[#2F4B2F]">
+                                  Size {sz.label}
+                                </p>
+                                {sz.dimensions && (
+                                  <p className="text-[10px] text-muted-foreground">{sz.dimensions}</p>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3 shrink-0">
+                              {/* Availability Toggle */}
+                              <button
+                                onClick={() => handleToggleSize(p.product_id, sz.id, !sz.available)}
+                                className={`relative inline-flex h-5 w-9 cursor-pointer rounded-full border-2 transition-all duration-200 ${
+                                  sz.available
+                                    ? "border-[#739D30] bg-[#739D30]"
+                                    : "border-border bg-border/30"
+                                }`}
+                                title={sz.available ? "Mark unavailable" : "Mark available"}
+                              >
+                                <span
+                                  className={`absolute top-0 h-4 w-4 rounded-full bg-white shadow transition-all duration-200 ${
+                                    sz.available ? "translate-x-4" : "translate-x-0"
+                                  }`}
+                                />
+                              </button>
+                              <span
+                                className={`text-[10px] font-bold uppercase tracking-wide ${
+                                  sz.available ? "text-emerald-600" : "text-rose-500"
+                                }`}
+                              >
+                                {sz.available ? "Available" : "Unavailable"}
+                              </span>
+                              {/* Delete */}
+                              <button
+                                onClick={() => handleRemoveSize(p.product_id, sz.id)}
+                                className="p-1.5 text-muted-foreground hover:text-rose-500 hover:bg-rose-50 rounded-lg transition cursor-pointer"
+                                title="Remove size"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+
+                    {/* Add New Size */}
+                    <div className="flex flex-wrap gap-2 items-end p-4 bg-white border border-dashed border-[#D9E3C5] rounded-xl">
+                      <div>
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide block mb-1">ID *</label>
+                        <input
+                          type="text"
+                          placeholder="D"
+                          value={newSizeId}
+                          onChange={(e) => setNewSizeId(e.target.value)}
+                          className="w-16 px-2 py-1.5 border border-[#D9E3C5] rounded-lg text-xs focus:ring-1 focus:ring-[#739D30] outline-none font-bold"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide block mb-1">Label *</label>
+                        <input
+                          type="text"
+                          placeholder="D"
+                          value={newSizeLabel}
+                          onChange={(e) => setNewSizeLabel(e.target.value)}
+                          className="w-20 px-2 py-1.5 border border-[#D9E3C5] rounded-lg text-xs focus:ring-1 focus:ring-[#739D30] outline-none"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-[140px]">
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide block mb-1">Dimensions</label>
+                        <input
+                          type="text"
+                          placeholder='H: 40", Top: 16"'
+                          value={newSizeDim}
+                          onChange={(e) => setNewSizeDim(e.target.value)}
+                          className="w-full px-2 py-1.5 border border-[#D9E3C5] rounded-lg text-xs focus:ring-1 focus:ring-[#739D30] outline-none"
+                        />
+                      </div>
+                      <button
+                        onClick={() => handleAddSize(p.product_id)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#739D30] hover:bg-[#628828] text-white text-xs font-bold shadow-sm transition cursor-pointer shrink-0"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        Add Size
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* ── COLORS ── */}
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <p className="text-[11px] uppercase tracking-[0.3em] font-bold text-[#2F4B2F]">
+                        Colors
+                      </p>
+                      <span className="text-[10px] text-muted-foreground">
+                        {vd.colors.filter((c) => c.available).length} of {vd.colors.length} available
+                      </span>
+                    </div>
+
+                    {/* Existing Colors */}
+                    <div className="space-y-2 mb-4">
+                      {vd.colors
+                        .sort((a, b) => a.displayOrder - b.displayOrder)
+                        .map((c) => (
+                          <div
+                            key={c.id}
+                            className="flex items-center justify-between gap-4 px-4 py-3 bg-white border border-[#D9E3C5]/40 rounded-xl"
+                          >
+                            <div className="flex items-center gap-3">
+                              {/* Swatch */}
+                              <span
+                                className="h-8 w-8 rounded-lg border border-border/30 shadow-sm shrink-0 block"
+                                style={{ backgroundColor: c.hex }}
+                              />
+                              <div>
+                                <p className="text-xs font-bold text-[#2F4B2F]">{c.name}</p>
+                                <p className="text-[10px] text-muted-foreground font-mono">{c.hex}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3 shrink-0">
+                              {/* Availability Toggle */}
+                              <button
+                                onClick={() => handleToggleColor(p.product_id, c.id, !c.available)}
+                                className={`relative inline-flex h-5 w-9 cursor-pointer rounded-full border-2 transition-all duration-200 ${
+                                  c.available
+                                    ? "border-[#739D30] bg-[#739D30]"
+                                    : "border-border bg-border/30"
+                                }`}
+                                title={c.available ? "Mark unavailable" : "Mark available"}
+                              >
+                                <span
+                                  className={`absolute top-0 h-4 w-4 rounded-full bg-white shadow transition-all duration-200 ${
+                                    c.available ? "translate-x-4" : "translate-x-0"
+                                  }`}
+                                />
+                              </button>
+                              <span
+                                className={`text-[10px] font-bold uppercase tracking-wide ${
+                                  c.available ? "text-emerald-600" : "text-rose-500"
+                                }`}
+                              >
+                                {c.available ? "Available" : "Unavailable"}
+                              </span>
+                              {/* Delete */}
+                              <button
+                                onClick={() => handleRemoveColor(p.product_id, c.id)}
+                                className="p-1.5 text-muted-foreground hover:text-rose-500 hover:bg-rose-50 rounded-lg transition cursor-pointer"
+                                title="Remove color"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+
+                    {/* Add New Color */}
+                    <div className="flex flex-wrap gap-2 items-end p-4 bg-white border border-dashed border-[#D9E3C5] rounded-xl">
+                      <div>
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide block mb-1">ID *</label>
+                        <input
+                          type="text"
+                          placeholder="sage-green"
+                          value={newColorId}
+                          onChange={(e) => setNewColorId(e.target.value)}
+                          className="w-24 px-2 py-1.5 border border-[#D9E3C5] rounded-lg text-xs focus:ring-1 focus:ring-[#739D30] outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide block mb-1">Name *</label>
+                        <input
+                          type="text"
+                          placeholder="Sage Green"
+                          value={newColorName}
+                          onChange={(e) => setNewColorName(e.target.value)}
+                          className="w-28 px-2 py-1.5 border border-[#D9E3C5] rounded-lg text-xs focus:ring-1 focus:ring-[#739D30] outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide block mb-1">Hex Color</label>
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="color"
+                            value={newColorHex}
+                            onChange={(e) => setNewColorHex(e.target.value)}
+                            className="h-8 w-10 rounded border border-[#D9E3C5] cursor-pointer p-0.5"
+                          />
+                          <span className="text-[10px] font-mono text-muted-foreground">{newColorHex}</span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleAddColor(p.product_id)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#739D30] hover:bg-[#628828] text-white text-xs font-bold shadow-sm transition cursor-pointer shrink-0"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        Add Color
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
