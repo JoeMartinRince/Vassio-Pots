@@ -9,11 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WishlistRouteImport } from './routes/wishlist'
 import { Route as ShopRouteImport } from './routes/shop'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProductProductIdRouteImport } from './routes/product/$productId'
 
+const WishlistRoute = WishlistRouteImport.update({
+  id: '/wishlist',
+  path: '/wishlist',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ShopRoute = ShopRouteImport.update({
   id: '/shop',
   path: '/shop',
@@ -39,12 +45,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/shop': typeof ShopRoute
+  '/wishlist': typeof WishlistRoute
   '/product/$productId': typeof ProductProductIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/shop': typeof ShopRoute
+  '/wishlist': typeof WishlistRoute
   '/product/$productId': typeof ProductProductIdRoute
 }
 export interface FileRoutesById {
@@ -52,25 +60,40 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/shop': typeof ShopRoute
+  '/wishlist': typeof WishlistRoute
   '/product/$productId': typeof ProductProductIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/admin' | '/shop' | '/product/$productId'
+  fullPaths: '/' | '/admin' | '/shop' | '/wishlist' | '/product/$productId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin' | '/shop' | '/product/$productId'
-  id: '__root__' | '/' | '/admin' | '/shop' | '/product/$productId'
+  to: '/' | '/admin' | '/shop' | '/wishlist' | '/product/$productId'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/shop'
+    | '/wishlist'
+    | '/product/$productId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
   ShopRoute: typeof ShopRoute
+  WishlistRoute: typeof WishlistRoute
   ProductProductIdRoute: typeof ProductProductIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/wishlist': {
+      id: '/wishlist'
+      path: '/wishlist'
+      fullPath: '/wishlist'
+      preLoaderRoute: typeof WishlistRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/shop': {
       id: '/shop'
       path: '/shop'
@@ -106,6 +129,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   ShopRoute: ShopRoute,
+  WishlistRoute: WishlistRoute,
   ProductProductIdRoute: ProductProductIdRoute,
 }
 export const routeTree = rootRouteImport
