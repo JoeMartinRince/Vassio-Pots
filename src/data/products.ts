@@ -83,7 +83,7 @@ export const featuresImages = [
 ];
 
 export const announcements = [
-  "COD available on orders below ₹3998",
+  "100% Secure Online Payments & Pan India Delivery",
   "Last Chance — Up to 60% Off | Limited Pieces",
   "Use PREPAID5 for 5% OFF above ₹2000",
 ];
@@ -111,7 +111,7 @@ export const products = [
     dimensions: "D: H 21\" | C: H 28\" | B: H 33\" | A: H 40\"",
     insideBox: "1 Tapered Floor Vase",
     delivery: "5-7 Working Days",
-    cod: "Available on orders below ₹3998",
+    payment: "100% Secure Online Payment",
     description: "Sleek, minimalist floor vases boasting organic curves and a calming sea green matte finish. Available in four progressive sizes to create a striking architectural landscape in entryways or corners.",
     pairsWith: { code: "DSV2299", name: "Dune Stoneware Vase", price: 1499, mrp: 2299, img: potBg },
     sizes: [
@@ -133,7 +133,7 @@ export const products = [
     dimensions: "Small: H 16.5\", Top 10.5\" | Large: H 25.5\", Top 17\"",
     insideBox: "Set of 2 Leaf-Patterned Planters",
     delivery: "5-7 Working Days",
-    cod: "Available on orders below ₹3998",
+    payment: "100% Secure Online Payment",
     description: "A set of two elegant tapered planters featuring subtle leaf texture on a neutral light grey backdrop. Designed to complement tall foliage and architectural indoor plants.",
     pairsWith: { code: "DSV2299", name: "Dune Stoneware Vase", price: 1499, mrp: 2299, img: potBg },
     sizes: [
@@ -153,7 +153,7 @@ export const products = [
     dimensions: "Small: H 13.5\", Top 12.5\" | Medium: H 17.5\", Top 16\" | Large: H 21\", Top 19.5\"",
     insideBox: "Set of 3 Leaf-Patterned Planters",
     delivery: "5-7 Working Days",
-    cod: "Available on orders below ₹3998",
+    payment: "100% Secure Online Payment",
     description: "Embellished with detailed leaf engravings, these charcoal grey planters introduce depth and quiet texture to your plant arrangements. Perfect for modern, rustic, or minimal settings.",
     pairsWith: { code: "DSV2299", name: "Dune Stoneware Vase", price: 1499, mrp: 2299, img: potBg },
     sizes: [
@@ -174,7 +174,7 @@ export const products = [
     dimensions: "Small: H 8\", Top 9\" | Medium: H 12\", Top 13.5\" | Large: H 16\", Top 18\"",
     insideBox: "Set of 3 Planters (Sizes A, B, C)",
     delivery: "5-7 Working Days",
-    cod: "Available on orders below ₹3998",
+    payment: "100% Secure Online Payment",
     description: "Add a touch of contemporary refinement to your botanical displays with our Vanilla Planters. Featuring an intricate, textured basket-weave pattern in an elegant sage green hue, this set of three rounded planters brings organic charm and artistic craft to any setting.",
     pairsWith: { code: "DSV2299", name: "Dune Stoneware Vase", price: 1499, mrp: 2299, img: potBg },
     sizes: [
@@ -195,7 +195,7 @@ export const products = [
     dimensions: "Small: H 15\", Top 8\" | Medium: H 20\", Top 11\" | Large: H 26\", Top 15\"",
     insideBox: "Set of 3 Ribbed Planters",
     delivery: "5-7 Working Days",
-    cod: "Available on orders below ₹3998",
+    payment: "100% Secure Online Payment",
     description: "Add a touch of structural drama to your corners with these tall, charcoal black ribbed planters. Their heavy horizontal ribbing provides a beautiful backdrop for bright foliage.",
     pairsWith: { code: "DSV2299", name: "Dune Stoneware Vase", price: 1499, mrp: 2299, img: potBg },
     sizes: [
@@ -216,7 +216,7 @@ export const products = [
     dimensions: "Height: 180 cm Approx.",
     insideBox: "1 Ficus Tree in starter pot",
     delivery: "5-7 Working Days",
-    cod: "Available For Orders Under Rs.3998/- Only",
+    payment: "100% Secure Online Payment",
     description:
       "A favorite of designers everywhere, the Ficus tree softens hard corners and adds heights to blank walls. Hand-finished with lifelike green leaves and natural wood branches for a realistic look.",
     pairsWith: { code: "DSV2299", name: "Dune Stoneware Vase", price: 1499, mrp: 2299, img: potBg },
@@ -233,7 +233,7 @@ export const products = [
     dimensions: "Height: 30 cm, Width: 18 cm",
     insideBox: "1 Stoneware Vase",
     delivery: "3-5 Working Days",
-    cod: "Available For Orders Under Rs.3998/- Only",
+    payment: "100% Secure Online Payment",
     description:
       "Crafted in small batches, this textured stoneware vessel features a raw, organic finish that accentuates the beauty of dry branches or simple botanical stems.",
     pairsWith: {
@@ -256,7 +256,7 @@ export const products = [
     dimensions: "Height: 40 cm, Diameter: 35 cm",
     insideBox: "1 Woven Rattan Basket",
     delivery: "3-5 Working Days",
-    cod: "Available For Orders Under Rs.3998/- Only",
+    payment: "100% Secure Online Payment",
     description:
       "Woven by hand using traditional techniques, this rattan basket is the perfect outer cover for your plastic starter pots or as a stylish organic storage solution.",
     pairsWith: {
@@ -282,7 +282,7 @@ export const vases = [
     dimensions: "Height: 35 cm Approx.",
     insideBox: "1 Black Ceramic Vessel",
     delivery: "3-5 Working Days",
-    cod: "Available For Orders Under Rs.3998/- Only",
+    payment: "100% Secure Online Payment",
     description:
       "Add a bold sculptural touch to your shelves with the Aero Matte Black Ceramic Vessel. Its sleek, geometric silhouette is designed to contrast beautifully with soft organic branches.",
     pairsWith: { code: "DSV2299", name: "Dune Stoneware Vase", price: 1499, mrp: 2299, img: potBg },
@@ -299,7 +299,7 @@ export const vases = [
     dimensions: "Height: 30 cm, Width: 18 cm",
     insideBox: "1 Stoneware Vase",
     delivery: "3-5 Working Days",
-    cod: "Available For Orders Under Rs.3998/- Only",
+    payment: "100% Secure Online Payment",
     description:
       "Crafted in small batches, this textured stoneware vessel features a raw, organic finish that accentuates the beauty of dry branches or simple botanical stems.",
     pairsWith: {
@@ -322,7 +322,7 @@ export const vases = [
     dimensions: "Diameter: 25 cm Approx.",
     insideBox: "1 Marble Bowl",
     delivery: "3-5 Working Days",
-    cod: "Available For Orders Under Rs.3998/- Only",
+    payment: "100% Secure Online Payment",
     description:
       "Carved from solid white marble, this decorative bowl features beautiful grey veining. Perfect as a keys dish on your entryway console or a centerpiece on your dining table.",
     pairsWith: { code: "LRB2799", name: "Loom Rattan Basket", price: 1899, mrp: 2799, img: potBg },
@@ -339,7 +339,7 @@ export const vases = [
     dimensions: "Height: 40 cm, Diameter: 35 cm",
     insideBox: "1 Woven Rattan Basket",
     delivery: "3-5 Working Days",
-    cod: "Available For Orders Under Rs.3998/- Only",
+    payment: "100% Secure Online Payment",
     description:
       "Woven by hand using traditional techniques, this rattan basket is the perfect outer cover for your plastic starter pots or as a stylish organic storage solution.",
     pairsWith: { code: "HMB4999", name: "Halo Marble Bowl", price: 3499, mrp: 4999, img: potBg },
@@ -360,7 +360,7 @@ export const auxiliaryProducts = [
     dimensions: "Height: 120 cm (4 Feet) Approx.",
     insideBox: "1 Faux Bougainvillea Plant",
     delivery: "5-7 Working Days",
-    cod: "Available For Orders Under Rs.3998/- Only",
+    payment: "100% Secure Online Payment",
     description:
       "Bring a vibrant, maintenance-free pop of Mediterranean pink to your home. This Faux Bougainvillea is crafted with realistic silk blossoms and detailed green leaves.",
     pairsWith: { code: "DSV2299", name: "Dune Stoneware Vase", price: 1499, mrp: 2299, img: potBg },
@@ -377,7 +377,7 @@ export const auxiliaryProducts = [
     dimensions: "Length: 30 cm, Width: 12 cm",
     insideBox: "1 Magnetic Shelf & Mounting Hardware",
     delivery: "3-5 Working Days",
-    cod: "Available For Orders Under Rs.3998/- Only",
+    payment: "100% Secure Online Payment",
     description:
       "An elegant floating shelf with invisible magnetic mounts. Perfect for exhibiting small vases, keys, or accessories in modern entryways and hallways.",
     pairsWith: { code: "DSV2299", name: "Dune Stoneware Vase", price: 1499, mrp: 2299, img: potBg },
@@ -394,7 +394,7 @@ export const auxiliaryProducts = [
     dimensions: "Height: 150 cm (5 Feet) Approx.",
     insideBox: "1 Travellers Palm in Starter Pot",
     delivery: "5-7 Working Days",
-    cod: "Available For Orders Under Rs.3998/- Only",
+    payment: "100% Secure Online Payment",
     description:
       "The classic architectural plant for statement-making corners. Featuring large, fan-like split leaves that filter light beautifully and elevate any minimalist living room.",
     pairsWith: {
@@ -417,7 +417,7 @@ export const auxiliaryProducts = [
     dimensions: "Diameter: 60 cm, Height: 45 cm",
     insideBox: "1 Marble Top & 1 Metal Base",
     delivery: "7-10 Working Days",
-    cod: "Prepaid Orders Only",
+    payment: "100% Secure Online Payment",
     description:
       "A luxurious accent piece with a solid polished white Carrara marble top. Features natural grey veining and a sleek black powder-coated steel base.",
     pairsWith: {
@@ -440,7 +440,7 @@ export const auxiliaryProducts = [
     dimensions: "Height: 18 cm, Diameter: 8 cm",
     insideBox: "1 Soap Dispenser",
     delivery: "3-5 Working Days",
-    cod: "Available For Orders Under Rs.3998/- Only",
+    payment: "100% Secure Online Payment",
     description:
       "Elevate your bathroom styling with this hand-hammered metal soap dispenser. Antique bronze finish adds warmth and quiet texture to ceramic countertops.",
     pairsWith: {
@@ -463,7 +463,7 @@ export const auxiliaryProducts = [
     dimensions: "Height: 55 cm, Width: 40 cm, Depth: 30 cm",
     insideBox: "1 Laundry Basket",
     delivery: "3-5 Working Days",
-    cod: "Available For Orders Under Rs.3998/- Only",
+    payment: "100% Secure Online Payment",
     description:
       "A premium hand-styled laundry basket crafted from organic mocha fibers on a sturdy wooden skeleton. Blends beautifully with warm linen and wood textures.",
     pairsWith: {

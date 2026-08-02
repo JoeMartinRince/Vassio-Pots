@@ -371,7 +371,7 @@ function ProductDetails({
             ["Dimensions", displayDimensions],
             ["Inside the Box", product.insideBox],
             ["Delivery Time", product.delivery],
-            ["COD Support", product.cod],
+            ["Payment Method", "100% Secure Online Payment"],
           ].map(([prop, val]) => (
             <div
               key={prop}
