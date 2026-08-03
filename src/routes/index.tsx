@@ -4,7 +4,7 @@ import Layout from "@/components/Layout";
 import FiberplanterFeatures from "@/components/FiberplanterFeatures";
 import { Instagram, Heart, Share2, Volume2, VolumeX, X, ShoppingBag, Truck, RotateCcw, ShieldCheck, Phone, ExternalLink, ArrowRight, ShoppingCart, ArrowDownLeft, ArrowDownRight } from "lucide-react";
 import { toast, Toaster } from "sonner";
-import heroPlantersBeige from "@/assets/hero-planters-beige.jpg";
+import heroPlantersBeige from "@/assets/hero1vassio.jpg";
 import {
   products,
   vases,
