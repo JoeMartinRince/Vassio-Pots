@@ -2,7 +2,7 @@ import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { getProductByCode } from "@/data/products";
 import Layout from "@/components/Layout";
 import { useState, useEffect } from "react";
-import { Truck, RotateCcw, Phone, ShieldCheck, Heart, Check } from "lucide-react";
+import { Truck, RotateCcw, Phone, ShieldCheck, Heart, Check, Star, ArrowLeft, ShoppingBag } from "lucide-react";
 import { useStore } from "@/context/StoreContext";
 import { toast } from "sonner";
 import { getVariants } from "@/services/variantStore";
@@ -29,22 +29,31 @@ function ProductPage() {
   const { productId } = useParams({ from: "/product/$productId" });
   const product = getProductByCode(productId);
 
-  // If product is not found
+  // If product is not found, display defensive 404 page
   if (!product) {
     return (
       <Layout>
-        <div className="mx-auto max-w-lg px-6 py-32 text-center">
-          <h2 className="serif text-4xl text-foreground">Product Not Found</h2>
-          <p className="mt-4 text-sm text-muted-foreground">
-            We couldn't find the product with code "
-            <span className="font-semibold">{productId}</span>".
+        <div className="mx-auto max-w-xl px-6 py-28 md:py-36 text-center">
+          <div className="w-16 h-16 rounded-full bg-[#739D30]/10 border border-[#739D30]/20 flex items-center justify-center mx-auto mb-6 text-[#739D30]">
+            <ShoppingBag className="w-8 h-8" />
+          </div>
+          <h1 className="serif text-3xl md:text-5xl text-foreground font-bold">Product Not Found</h1>
+          <p className="mt-4 text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
+            This product may have been removed or is no longer available in our active catalog.
           </p>
-          <div className="mt-8">
+          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Link
+              to="/products"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#739D30] hover:bg-[#628828] text-white px-8 py-3.5 text-xs uppercase tracking-[0.2em] font-semibold transition duration-300 rounded-xl shadow-xs"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Products
+            </Link>
             <Link
               to="/"
-              className="inline-block bg-primary text-primary-foreground px-8 py-3 text-xs uppercase tracking-[0.2em] font-semibold hover:bg-primary/95 transition duration-300 rounded-lg"
+              className="w-full sm:w-auto inline-flex items-center justify-center bg-card hover:bg-secondary text-foreground border border-border/50 px-8 py-3.5 text-xs uppercase tracking-[0.2em] font-semibold transition duration-300 rounded-xl"
             >
-              Go Back Home
+              Continue Shopping
             </Link>
           </div>
         </div>
@@ -189,12 +198,12 @@ function ProductDetails({
     );
   });
 
-  const displayPrice = matchedLegacySize ? matchedLegacySize.price : product.price;
-  const displayMrp = matchedLegacySize ? matchedLegacySize.mrp : product.mrp;
-  const off = Math.round(((displayMrp - displayPrice) / displayMrp) * 100);
+  const displayPrice = matchedLegacySize ? matchedLegacySize.price : (product.price ?? 0);
+  const displayMrp = matchedLegacySize ? matchedLegacySize.mrp : (product.mrp ?? displayPrice);
+  const off = displayMrp > 0 ? Math.max(0, Math.round(((displayMrp - displayPrice) / displayMrp) * 100)) : 0;
   const displayDimensions = matchedLegacySize
     ? matchedLegacySize.dimensions
-    : selectedVariantSize?.dimensions || product.dimensions;
+    : selectedVariantSize?.dimensions || product.dimensions || "Dimensions available on request";
 
   const handleAddToCart = () => {
     addToCart({

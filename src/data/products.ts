@@ -575,20 +575,47 @@ export const blogs = [
   },
 ];
 
-export function getProductByCode(code: string) {
-  const cleanCode = code.trim().toUpperCase();
+export function getProductByCode(code: string | undefined | null) {
+  if (!code) return null;
+  const rawCode = String(code).trim();
+  const cleanCode = rawCode.toUpperCase();
+  const normalizedCode = cleanCode.replace(/[^A-Z0-9]/g, "");
+  const codeSlug = rawCode.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 
-  // Search products
-  let found = products.find((p) => p.code.toUpperCase() === cleanCode);
+  const allItems = [...products, ...vases, ...auxiliaryProducts];
+
+  // 1. Exact code match
+  let found = allItems.find((p) => p.code && p.code.toUpperCase() === cleanCode);
   if (found) return found;
 
-  // Search vases
-  found = vases.find((v) => v.code.toUpperCase() === cleanCode);
+  // 2. Normalized code match (ignoring hyphens/spaces)
+  found = allItems.find((p) => p.code && p.code.toUpperCase().replace(/[^A-Z0-9]/g, "") === normalizedCode);
   if (found) return found;
 
-  // Search auxiliaryProducts
-  found = auxiliaryProducts.find((ap) => ap.code.toUpperCase() === cleanCode);
+  // 3. Exact slug match against product name
+  found = allItems.find((p) => {
+    if (!p.name) return false;
+    const nameSlug = p.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    return nameSlug === codeSlug;
+  });
   if (found) return found;
+
+  // 4. Partial slug/keyword match against product name or code
+  found = allItems.find((p) => {
+    if (!p.name) return false;
+    const nameLower = p.name.toLowerCase();
+    const cleanLower = rawCode.toLowerCase().replace(/[-_]/g, " ");
+    const words = cleanLower.split(/\s+/).filter((w) => w.length > 2);
+    return words.length > 0 && words.every((w) => nameLower.includes(w) || p.code.toLowerCase().includes(w));
+  });
+  if (found) return found;
+
+  // 5. Fallback: match first word of slug against product name
+  const firstWord = codeSlug.split("-")[0];
+  if (firstWord && firstWord.length > 2) {
+    found = allItems.find((p) => p.name && p.name.toLowerCase().includes(firstWord));
+    if (found) return found;
+  }
 
   return null;
 }
