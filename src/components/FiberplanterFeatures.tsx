@@ -1,10 +1,8 @@
 import React from "react";
 import { Award } from "lucide-react";
 
-import uvProtectedImg from "@/assets/features/uv-protected.jpg";
 import durableImg from "@/assets/features/durable.jpg";
 import lightweightImg from "@/assets/features/lightweight.jpg";
-import frostResistantImg from "@/assets/features/frost-resistant.jpg";
 import indoorOutdoorImg from "@/assets/features/indoor-outdoor.jpg";
 import handmadeImg from "@/assets/features/handmade.jpg";
 import makeInIndiaImg from "@/assets/features/make-in-india.jpg";
@@ -23,12 +21,6 @@ interface Feature {
 
 const features: Feature[] = [
   {
-    id: "uv-protected",
-    title: "UV Protected",
-    image: uvProtectedImg,
-    category: "durability",
-  },
-  {
     id: "durable",
     title: "Durable",
     image: durableImg,
@@ -39,12 +31,6 @@ const features: Feature[] = [
     title: "Light Weight",
     image: lightweightImg,
     category: "convenience",
-  },
-  {
-    id: "frost-resistant",
-    title: "Frost Resistant",
-    image: frostResistantImg,
-    category: "durability",
   },
   {
     id: "indoor-outdoor",
@@ -84,7 +70,7 @@ const features: Feature[] = [
   },
   {
     id: "color-options",
-    title: "Color options",
+    title: "Color Options",
     image: colorOptionsImg,
     category: "craft",
   },
@@ -117,7 +103,7 @@ export function FiberplanterFeatures() {
           </div>
 
           <h2 className="serif text-3xl sm:text-4xl md:text-5xl text-foreground tracking-wide font-extrabold text-center">
-            The Vassio Difference
+            What Makes Vassio Different
           </h2>
 
           <p className="mt-4 text-muted-foreground text-xs sm:text-sm md:text-base leading-relaxed max-w-2xl mx-auto font-sans font-medium text-center">
@@ -127,7 +113,7 @@ export function FiberplanterFeatures() {
           {/* Category Filter Pills */}
           <div className="mt-8 flex flex-wrap items-center justify-center gap-2 sm:gap-3">
             {[
-              { id: "all", label: "All Benefits (12)" },
+              { id: "all", label: `All Benefits (${features.length})` },
               { id: "durability", label: "Durability & Weather" },
               { id: "craft", label: "Artisan Craftsmanship" },
               { id: "convenience", label: "Care & Convenience" },
@@ -147,8 +133,8 @@ export function FiberplanterFeatures() {
           </div>
         </div>
 
-        {/* Feature Grid: 2-column on mobile, 3-column on tablet, 4-column on desktop */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 sm:gap-8 max-w-5xl mx-auto">
+        {/* Feature Grid: 2-column on mobile, 3-column on tablet, 5-column on desktop for perfectly balanced 2x5 grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6 sm:gap-8 max-w-6xl mx-auto">
           {filteredFeatures.map((item) => (
             <div
               key={item.id}
