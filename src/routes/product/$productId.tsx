@@ -8,6 +8,9 @@ import { toast } from "sonner";
 import { getVariants } from "@/services/variantStore";
 import type { ProductSizeVariant, ProductColorVariant } from "@/types/variants";
 
+import ProductReviews from "@/components/ProductReviews";
+import { reviewStore } from "@/services/reviewStore";
+
 export const Route = createFileRoute("/product/$productId")({
   head: ({ params }) => {
     const product = getProductByCode(params.productId);
@@ -73,6 +76,9 @@ function ProductPage() {
           {/* Details Section */}
           <ProductDetails product={product} />
         </div>
+
+        {/* Verified Customer Reviews Section */}
+        <ProductReviews productId={product.code} productName={product.name} />
       </div>
     </Layout>
   );
@@ -208,16 +214,37 @@ function ProductDetails({
     toast.success(`${product.name} added to cart!`);
   };
 
+  const stats = reviewStore.getProductStats(product.code);
+
   return (
     <div className="w-full lg:w-1/2 flex flex-col justify-between">
       <div>
         {/* Title */}
         <h1 className="product-name font-sans font-extrabold text-3xl md:text-5xl text-foreground leading-tight">{product.name}</h1>
 
-        {/* Product Code */}
-        <p className="text-[11px] text-muted-foreground uppercase tracking-widest mt-2">
-          SKU: {product.code}
-        </p>
+        {/* Product Code & Rating */}
+        <div className="flex items-center gap-4 mt-2 flex-wrap">
+          <p className="text-[11px] text-muted-foreground uppercase tracking-widest">
+            SKU: {product.code}
+          </p>
+          <span className="text-muted-foreground/40">|</span>
+          <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-0.5">
+              {[1, 2, 3, 4, 5].map((s) => (
+                <Star
+                  key={s}
+                  className={`h-3.5 w-3.5 ${
+                    s <= Math.round(stats.averageRating)
+                      ? "fill-[#739D30] text-[#739D30]"
+                      : "text-muted-foreground/30"
+                  }`}
+                />
+              ))}
+            </div>
+            <span className="text-xs font-bold text-foreground">{stats.averageRating.toFixed(1)}</span>
+            <span className="text-xs text-muted-foreground font-medium">({stats.totalReviews} Reviews)</span>
+          </div>
+        </div>
 
         {/* Price Tag */}
         <div className="mt-5 flex items-center gap-3.5">

@@ -58,6 +58,8 @@ import {
   removeSizeVariant,
   removeColorVariant,
 } from "@/services/variantStore";
+import { reviewStore } from "@/services/reviewStore";
+import { Review } from "@/types/reviews";
 
 export const Route = createFileRoute("/admin")({
   component: AdminDashboardWrapper,
@@ -76,7 +78,7 @@ function AdminDashboardMain() {
   
   // Navigation State
   const [activeTab, setActiveTab] = useState<
-    "overview" | "products" | "orders" | "customers" | "revenue" | "settings"
+    "overview" | "products" | "orders" | "customers" | "reviews" | "revenue" | "settings"
   >("overview");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -388,6 +390,7 @@ function AdminDashboardMain() {
     { id: "products", label: "Products", icon: Package, badge: products.length },
     { id: "orders", label: "Orders", icon: ShoppingCart, badge: orders.filter((o) => o.order_status === "pending").length },
     { id: "customers", label: "Customers", icon: Users, badge: customers.length },
+    { id: "reviews", label: "Reviews", icon: Star, badge: reviewStore.getAllReviews().length },
     { id: "revenue", label: "Revenue / Analytics", icon: TrendingUp },
     { id: "settings", label: "Settings", icon: Settings },
   ];
@@ -396,7 +399,6 @@ function AdminDashboardMain() {
   const placeholderNavItems = [
     { label: "Categories", icon: Layers },
     { label: "Coupons", icon: Tag },
-    { label: "Reviews", icon: Star },
     { label: "Notifications", icon: Bell },
   ];
 
@@ -1141,6 +1143,11 @@ function AdminDashboardMain() {
           )}
 
           {/* ========================================================================= */}
+          {/* TAB: REVIEWS MODERATION */}
+          {/* ========================================================================= */}
+          {activeTab === "reviews" && <AdminReviewsView products={products} />}
+
+          {/* ========================================================================= */}
           {/* TAB 6: SETTINGS PAGE */}
           {/* ========================================================================= */}
           {activeTab === "settings" && (
@@ -1714,6 +1721,276 @@ function ProductVariantManager({ products }: { products: AdminProduct[] }) {
             </div>
           );
         })}
+      </div>
+    </div>
+  );
+}
+
+function AdminReviewsView({ products }: { products: AdminProduct[] }) {
+  const [reviews, setReviews] = useState<Review[]>(() => reviewStore.getAllReviews());
+  const [search, setSearch] = useState("");
+  const [productFilter, setProductFilter] = useState("all");
+  const [ratingFilter, setRatingFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+
+  const [replyingId, setReplyingId] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState("");
+
+  const refresh = () => {
+    setReviews(reviewStore.getAllReviews());
+  };
+
+  const handleStatus = (id: string, status: "approved" | "rejected" | "pending") => {
+    reviewStore.updateReviewStatus(id, status);
+    toast.success(`Review status updated to ${status}`);
+    refresh();
+  };
+
+  const handleDelete = (id: string) => {
+    reviewStore.deleteReview(id);
+    toast.success("Review deleted");
+    refresh();
+  };
+
+  const handleSaveReply = (id: string) => {
+    if (!replyText.trim()) return;
+    reviewStore.addAdminReply(id, replyText.trim());
+    toast.success("Official response published");
+    setReplyingId(null);
+    setReplyText("");
+    refresh();
+  };
+
+  const filteredReviews = reviews.filter((r) => {
+    const matchesSearch =
+      r.customerName.toLowerCase().includes(search.toLowerCase()) ||
+      r.title.toLowerCase().includes(search.toLowerCase()) ||
+      r.description.toLowerCase().includes(search.toLowerCase()) ||
+      r.productId.toLowerCase().includes(search.toLowerCase());
+    const matchesProduct = productFilter === "all" || r.productId === productFilter;
+    const matchesRating = ratingFilter === "all" || r.rating === Number(ratingFilter);
+    const matchesStatus = statusFilter === "all" || r.status === statusFilter;
+    return matchesSearch && matchesProduct && matchesRating && matchesStatus;
+  });
+
+  return (
+    <div className="space-y-6">
+      {/* Header & Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <div className="bg-white border border-[#D9E3C5]/60 rounded-2xl p-4 shadow-sm">
+          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Total Reviews</span>
+          <p className="text-2xl font-extrabold text-[#2F4B2F] mt-1">{reviews.length}</p>
+        </div>
+        <div className="bg-white border border-[#D9E3C5]/60 rounded-2xl p-4 shadow-sm">
+          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Approved</span>
+          <p className="text-2xl font-extrabold text-emerald-600 mt-1">
+            {reviews.filter((r) => r.status === "approved").length}
+          </p>
+        </div>
+        <div className="bg-white border border-[#D9E3C5]/60 rounded-2xl p-4 shadow-sm">
+          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Pending Review</span>
+          <p className="text-2xl font-extrabold text-amber-600 mt-1">
+            {reviews.filter((r) => r.status === "pending").length}
+          </p>
+        </div>
+        <div className="bg-white border border-[#D9E3C5]/60 rounded-2xl p-4 shadow-sm">
+          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider block">Average Rating</span>
+          <p className="text-2xl font-extrabold text-[#739D30] mt-1">
+            {(reviews.reduce((acc, r) => acc + r.rating, 0) / (reviews.length || 1)).toFixed(1)} / 5.0
+          </p>
+        </div>
+      </div>
+
+      {/* Filters Bar */}
+      <div className="bg-white border border-[#D9E3C5]/60 rounded-2xl p-4 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="relative w-full md:w-64">
+          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Search reviews..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-9 pr-3 py-2 rounded-xl border border-[#D9E3C5] text-xs focus:outline-none focus:ring-1 focus:ring-[#739D30]"
+          />
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+          {/* Product Filter */}
+          <select
+            value={productFilter}
+            onChange={(e) => setProductFilter(e.target.value)}
+            className="bg-white border border-[#D9E3C5] rounded-xl px-3 py-2 text-xs font-semibold text-foreground focus:outline-none"
+          >
+            <option value="all">All Products</option>
+            {products.map((p) => (
+              <option key={p.product_id} value={p.product_id}>
+                {p.product_id} — {p.name}
+              </option>
+            ))}
+          </select>
+
+          {/* Rating Filter */}
+          <select
+            value={ratingFilter}
+            onChange={(e) => setRatingFilter(e.target.value)}
+            className="bg-white border border-[#D9E3C5] rounded-xl px-3 py-2 text-xs font-semibold text-foreground focus:outline-none"
+          >
+            <option value="all">All Ratings</option>
+            <option value="5">⭐⭐⭐⭐⭐ 5 Stars</option>
+            <option value="4">⭐⭐⭐⭐ 4 Stars</option>
+            <option value="3">⭐⭐⭐ 3 Stars</option>
+            <option value="2">⭐⭐ 2 Stars</option>
+            <option value="1">⭐ 1 Star</option>
+          </select>
+
+          {/* Status Filter */}
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="bg-white border border-[#D9E3C5] rounded-xl px-3 py-2 text-xs font-semibold text-foreground focus:outline-none"
+          >
+            <option value="all">All Statuses</option>
+            <option value="approved">Approved</option>
+            <option value="pending">Pending</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Reviews List */}
+      <div className="space-y-4">
+        {filteredReviews.length === 0 ? (
+          <div className="bg-white border border-[#D9E3C5]/60 rounded-2xl p-8 text-center text-xs text-muted-foreground">
+            No reviews matching your filters.
+          </div>
+        ) : (
+          filteredReviews.map((rev) => (
+            <div
+              key={rev.id}
+              className="bg-white border border-[#D9E3C5]/60 rounded-2xl p-5 shadow-xs space-y-3"
+            >
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="px-2 py-0.5 rounded bg-[#EEF5E3] text-[#3F673F] text-[10px] font-bold uppercase tracking-wider font-mono">
+                      {rev.productId}
+                    </span>
+                    <div className="flex items-center gap-0.5">
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <Star
+                          key={s}
+                          className={`w-3.5 h-3.5 ${
+                            s <= rev.rating ? "fill-[#739D30] text-[#739D30]" : "text-muted-foreground/30"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <h4 className="font-bold text-sm text-[#2F4B2F]">{rev.title}</h4>
+                  </div>
+
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <span className="font-bold text-foreground">{rev.customerName}</span>
+                    {rev.isVerified && (
+                      <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-bold">
+                        Verified Buyer
+                      </span>
+                    )}
+                    {rev.orderId && <span>• Order: {rev.orderId}</span>}
+                    <span>• {new Date(rev.createdAt).toLocaleDateString()}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                      rev.status === "approved"
+                        ? "bg-emerald-100 text-emerald-800"
+                        : rev.status === "pending"
+                        ? "bg-amber-100 text-amber-800"
+                        : "bg-rose-100 text-rose-800"
+                    }`}
+                  >
+                    {rev.status}
+                  </span>
+
+                  {/* Actions */}
+                  {rev.status !== "approved" && (
+                    <button
+                      onClick={() => handleStatus(rev.id, "approved")}
+                      className="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition cursor-pointer"
+                    >
+                      Approve
+                    </button>
+                  )}
+                  {rev.status !== "rejected" && (
+                    <button
+                      onClick={() => handleStatus(rev.id, "rejected")}
+                      className="px-3 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition cursor-pointer"
+                    >
+                      Hide
+                    </button>
+                  )}
+                  <button
+                    onClick={() => {
+                      setReplyingId(replyingId === rev.id ? null : rev.id);
+                      setReplyText(rev.adminReply || "");
+                    }}
+                    className="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold transition cursor-pointer"
+                  >
+                    Reply
+                  </button>
+                  <button
+                    onClick={() => handleDelete(rev.id)}
+                    className="p-1.5 text-muted-foreground hover:text-rose-600 hover:bg-rose-50 rounded-lg transition cursor-pointer"
+                    title="Delete Review"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              <p className="text-xs text-muted-foreground leading-relaxed">"{rev.description}"</p>
+
+              {/* Admin reply present */}
+              {rev.adminReply && replyingId !== rev.id && (
+                <div className="bg-[#EEF5E3]/60 border-l-2 border-[#739D30] rounded-r-xl p-3 text-xs">
+                  <span className="font-bold text-[#2F4B2F] block mb-0.5">Vassio Studio Reply:</span>
+                  <p className="text-muted-foreground">{rev.adminReply}</p>
+                </div>
+              )}
+
+              {/* Reply Form */}
+              {replyingId === rev.id && (
+                <div className="pt-3 border-t border-[#D9E3C5]/40 space-y-2">
+                  <label className="text-[10px] font-bold text-[#2F4B2F] uppercase tracking-wider block">
+                    Official Studio Response
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={replyText}
+                    onChange={(e) => setReplyText(e.target.value)}
+                    placeholder="Thank you for your feedback..."
+                    className="w-full p-3 rounded-xl border border-[#D9E3C5] text-xs focus:outline-none focus:ring-1 focus:ring-[#739D30]"
+                  />
+                  <div className="flex gap-2 justify-end">
+                    <button
+                      onClick={() => setReplyingId(null)}
+                      className="px-3 py-1.5 rounded-lg border border-[#D9E3C5] text-xs font-semibold text-muted-foreground"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={() => handleSaveReply(rev.id)}
+                      className="px-4 py-1.5 rounded-lg bg-[#739D30] hover:bg-[#628828] text-white text-xs font-bold shadow-xs"
+                    >
+                      Publish Response
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
