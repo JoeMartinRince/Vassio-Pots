@@ -13,6 +13,7 @@ import { Route as WishlistRouteImport } from './routes/wishlist'
 import { Route as TrackOrderRouteImport } from './routes/track-order'
 import { Route as TerracottaPotsRouteImport } from './routes/terracotta-pots'
 import { Route as ShopRouteImport } from './routes/shop'
+import { Route as ProductsRouteImport } from './routes/products'
 import { Route as PebblesRouteImport } from './routes/pebbles'
 import { Route as NewArrivalsRouteImport } from './routes/new-arrivals'
 import { Route as LocationsRouteImport } from './routes/locations'
@@ -42,6 +43,11 @@ const TerracottaPotsRoute = TerracottaPotsRouteImport.update({
 const ShopRoute = ShopRouteImport.update({
   id: '/shop',
   path: '/shop',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProductsRoute = ProductsRouteImport.update({
+  id: '/products',
+  path: '/products',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PebblesRoute = PebblesRouteImport.update({
@@ -105,6 +111,7 @@ export interface FileRoutesByFullPath {
   '/locations': typeof LocationsRoute
   '/new-arrivals': typeof NewArrivalsRoute
   '/pebbles': typeof PebblesRoute
+  '/products': typeof ProductsRoute
   '/shop': typeof ShopRoute
   '/terracotta-pots': typeof TerracottaPotsRoute
   '/track-order': typeof TrackOrderRoute
@@ -121,6 +128,7 @@ export interface FileRoutesByTo {
   '/locations': typeof LocationsRoute
   '/new-arrivals': typeof NewArrivalsRoute
   '/pebbles': typeof PebblesRoute
+  '/products': typeof ProductsRoute
   '/shop': typeof ShopRoute
   '/terracotta-pots': typeof TerracottaPotsRoute
   '/track-order': typeof TrackOrderRoute
@@ -138,6 +146,7 @@ export interface FileRoutesById {
   '/locations': typeof LocationsRoute
   '/new-arrivals': typeof NewArrivalsRoute
   '/pebbles': typeof PebblesRoute
+  '/products': typeof ProductsRoute
   '/shop': typeof ShopRoute
   '/terracotta-pots': typeof TerracottaPotsRoute
   '/track-order': typeof TrackOrderRoute
@@ -156,6 +165,7 @@ export interface FileRouteTypes {
     | '/locations'
     | '/new-arrivals'
     | '/pebbles'
+    | '/products'
     | '/shop'
     | '/terracotta-pots'
     | '/track-order'
@@ -172,6 +182,7 @@ export interface FileRouteTypes {
     | '/locations'
     | '/new-arrivals'
     | '/pebbles'
+    | '/products'
     | '/shop'
     | '/terracotta-pots'
     | '/track-order'
@@ -188,6 +199,7 @@ export interface FileRouteTypes {
     | '/locations'
     | '/new-arrivals'
     | '/pebbles'
+    | '/products'
     | '/shop'
     | '/terracotta-pots'
     | '/track-order'
@@ -205,6 +217,7 @@ export interface RootRouteChildren {
   LocationsRoute: typeof LocationsRoute
   NewArrivalsRoute: typeof NewArrivalsRoute
   PebblesRoute: typeof PebblesRoute
+  ProductsRoute: typeof ProductsRoute
   ShopRoute: typeof ShopRoute
   TerracottaPotsRoute: typeof TerracottaPotsRoute
   TrackOrderRoute: typeof TrackOrderRoute
@@ -240,6 +253,13 @@ declare module '@tanstack/react-router' {
       path: '/shop'
       fullPath: '/shop'
       preLoaderRoute: typeof ShopRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/products': {
+      id: '/products'
+      path: '/products'
+      fullPath: '/products'
+      preLoaderRoute: typeof ProductsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pebbles': {
@@ -325,6 +345,7 @@ const rootRouteChildren: RootRouteChildren = {
   LocationsRoute: LocationsRoute,
   NewArrivalsRoute: NewArrivalsRoute,
   PebblesRoute: PebblesRoute,
+  ProductsRoute: ProductsRoute,
   ShopRoute: ShopRoute,
   TerracottaPotsRoute: TerracottaPotsRoute,
   TrackOrderRoute: TrackOrderRoute,
