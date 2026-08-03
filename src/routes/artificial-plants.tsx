@@ -1,8 +1,8 @@
 import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
 import Layout from "@/components/Layout";
 import { products, auxiliaryProducts } from "@/data/products";
-import { ShoppingBag, SlidersHorizontal, Check, X, Filter } from "lucide-react";
-import { useState, useMemo } from "react";
+import { ShoppingBag, SlidersHorizontal } from "lucide-react";
+import { useMemo } from "react";
 import { useStore } from "@/context/StoreContext";
 import { toast } from "sonner";
 
@@ -37,7 +37,7 @@ interface HeightOption {
 }
 
 const HEIGHT_OPTIONS: HeightOption[] = [
-  { id: "all", label: "All" },
+  { id: "all", label: "ALL" },
   { id: "1ft", label: "1 FT" },
   { id: "2ft", label: "2 FT" },
   { id: "3ft", label: "3 FT" },
@@ -53,7 +53,6 @@ function ArtificialPlantsPage() {
 
   const selectedHeight = search.height || "all";
   const sortBy = search.sort || "featured";
-  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
   // Helper to update search params in URL
   const updateSearch = (newParams: Partial<PlantSearch>) => {
@@ -89,7 +88,7 @@ function ArtificialPlantsPage() {
         item.code.startsWith("TPT");
 
       if (isPlant && !uniqueMap.has(item.code)) {
-        // Height classification
+        // Height classification using product height metadata or title keywords
         let heightId = "3ft";
         if (lname.includes("6 feet") || lname.includes("6 ft") || lname.includes("180 cm")) {
           heightId = "6ft+";
@@ -155,7 +154,7 @@ function ArtificialPlantsPage() {
         </nav>
 
         {/* Hero Header */}
-        <div className="mb-12 border-b border-border/30 pb-8">
+        <div className="mb-10 border-b border-border/30 pb-8">
           <p className="text-xs uppercase tracking-[0.4em] text-primary font-bold mb-2">
             Maintenance-Free Greenery
           </p>
@@ -165,24 +164,31 @@ function ArtificialPlantsPage() {
           </p>
         </div>
 
-        {/* Top Control Bar */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-card border border-border/30 rounded-2xl p-4 mb-10 shadow-xs">
-          <div className="flex items-center gap-3">
-            {/* Mobile Filter Drawer Trigger */}
-            <button
-              onClick={() => setIsMobileFilterOpen(true)}
-              className="lg:hidden flex items-center gap-2 bg-primary/10 border border-primary/20 text-primary px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer"
-            >
-              <Filter className="h-3.5 w-3.5" />
-              <span>Plant Height: {HEIGHT_OPTIONS.find((h) => h.id === selectedHeight)?.label}</span>
-            </button>
-
-            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground hidden sm:inline">
-              Showing {filteredProducts.length} Premium Faux Botanicals
+        {/* ─── HORIZONTAL FILTER PILLS BAR ABOVE PRODUCT GRID ───────────────── */}
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-card border border-border/30 rounded-2xl p-4 md:p-5 mb-10 shadow-xs">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5 mr-2 font-sans">
+              <SlidersHorizontal className="h-3.5 w-3.5" /> FILTER:
             </span>
+            {HEIGHT_OPTIONS.map((ht) => {
+              const isSelected = selectedHeight === ht.id;
+              return (
+                <button
+                  key={ht.id}
+                  onClick={() => updateSearch({ height: ht.id })}
+                  className={`px-4 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all duration-200 cursor-pointer ${
+                    isSelected
+                      ? "bg-[#739D30] text-white shadow-xs font-bold scale-102"
+                      : "bg-[#EEF5E3] text-[#2F4B2F] hover:bg-[#E2EDCE] hover:scale-102 font-semibold"
+                  }`}
+                >
+                  {ht.label}
+                </button>
+              );
+            })}
           </div>
 
-          <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+          <div className="flex items-center gap-3 shrink-0 self-end md:self-auto">
             <span className="text-xs text-muted-foreground font-medium">Sort by:</span>
             <select
               value={sortBy}
@@ -196,194 +202,95 @@ function ArtificialPlantsPage() {
           </div>
         </div>
 
-        {/* Main Section Grid with Desktop Sidebar */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* ─── DESKTOP SIDEBAR FILTER (3 cols) ───────────────────────── */}
-          <aside className="hidden lg:block lg:col-span-3">
-            <div className="bg-card border border-border/40 rounded-3xl p-6 shadow-xs sticky top-28 space-y-6">
-              <div className="flex items-center justify-between border-b border-border/30 pb-4">
-                <h3 className="serif text-xl font-bold text-foreground">Plant Height</h3>
-                {selectedHeight !== "all" && (
-                  <button
-                    onClick={() => updateSearch({ height: "all" })}
-                    className="text-[10px] uppercase font-bold text-primary hover:underline cursor-pointer"
-                  >
-                    Reset
-                  </button>
-                )}
-              </div>
-
-              <ul className="space-y-2">
-                {HEIGHT_OPTIONS.map((ht) => {
-                  const isSelected = selectedHeight === ht.id;
-                  return (
-                    <li key={ht.id}>
-                      <button
-                        onClick={() => updateSearch({ height: ht.id })}
-                        className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer ${
-                          isSelected
-                            ? "bg-primary text-white shadow-xs border-l-4 border-l-white"
-                            : "bg-background/60 hover:bg-secondary text-muted-foreground hover:text-foreground border border-border/30"
-                        }`}
-                      >
-                        <span className="flex items-center gap-2">
-                          <span
-                            className={`w-2 h-2 rounded-full ${
-                              isSelected ? "bg-white" : "bg-muted-foreground/30"
-                            }`}
-                          />
-                          {ht.label}
-                        </span>
-                        {isSelected && <Check className="h-4 w-4 stroke-[3]" />}
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          </aside>
-
-          {/* ─── MAIN PRODUCT CATALOG GRID (9 cols on Desktop) ─────────── */}
-          <main className="lg:col-span-9">
-            {filteredProducts.length === 0 ? (
-              <div className="text-center py-20 border border-dashed border-border/40 rounded-3xl bg-card">
-                <p className="serif text-2xl text-foreground mb-2">No plants found for height {HEIGHT_OPTIONS.find(h => h.id === selectedHeight)?.label}</p>
-                <p className="text-xs text-muted-foreground mb-6">
-                  Try selecting a different height or resetting your filter.
-                </p>
-                <button
-                  onClick={() => updateSearch({ height: "all" })}
-                  className="px-6 py-2.5 bg-primary text-white text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-primary/90 transition-colors cursor-pointer"
-                >
-                  Show All Heights
-                </button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-                {filteredProducts.map((p) => {
-                  const off = Math.round(((p.mrp - p.price) / p.mrp) * 100);
-                  return (
-                    <div
-                      key={p.code}
-                      className="group flex flex-col bg-background border border-border/40 rounded-2xl overflow-hidden shadow-xs hover:shadow-md transition-all duration-300"
-                    >
-                      <Link
-                        to="/product/$productId"
-                        params={{ productId: p.code }}
-                        className="block overflow-hidden relative aspect-[4/5] bg-secondary"
-                      >
-                        <img
-                          src={p.img}
-                          alt={p.name}
-                          className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-700"
-                        />
-                        <span className="absolute top-3 left-3 bg-[#3F673F] text-white border border-[#5B8550] text-[10px] uppercase tracking-widest px-2.5 py-1 font-bold rounded">
-                          {off}% OFF
-                        </span>
-                        <span className="absolute top-3 right-3 bg-card/90 backdrop-blur-sm text-foreground border border-border/40 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full shadow-xs">
-                          {HEIGHT_OPTIONS.find((h) => h.id === p.height)?.label}
-                        </span>
-                      </Link>
-                      <div className="p-4 flex flex-col flex-1 justify-between">
-                        <div>
-                          <span className="text-[10px] text-muted-foreground uppercase tracking-widest block mb-1">
-                            {p.color || "Botanical Green"}
-                          </span>
-                          <Link
-                            to="/product/$productId"
-                            params={{ productId: p.code }}
-                            className="font-bold text-sm text-foreground hover:text-primary transition-colors line-clamp-1"
-                          >
-                            {p.name}
-                          </Link>
-                        </div>
-                        <div className="mt-4 flex items-center justify-between">
-                          <div>
-                            <span className="text-sm font-bold text-primary">₹{p.price.toLocaleString("en-IN")}</span>
-                            <span className="text-xs text-muted-foreground line-through ml-2">
-                              ₹{p.mrp.toLocaleString("en-IN")}
-                            </span>
-                          </div>
-                          <button
-                            onClick={() => {
-                              addToCart({
-                                code: p.code,
-                                name: p.name,
-                                img: p.img,
-                                price: p.price,
-                                mrp: p.mrp,
-                                quantity: 1,
-                              });
-                              toast.success(`${p.name} added to cart!`);
-                            }}
-                            className="p-2 rounded-xl bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors cursor-pointer"
-                            title="Add to Cart"
-                          >
-                            <ShoppingBag className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </main>
-        </div>
-      </div>
-
-      {/* ─── MOBILE FILTER DRAWER ─────────────────────────────────────── */}
-      {isMobileFilterOpen && (
-        <div className="fixed inset-0 z-50 flex lg:hidden animate-in fade-in duration-200">
-          <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-xs"
-            onClick={() => setIsMobileFilterOpen(false)}
-          />
-          <div className="relative ml-auto flex flex-col w-full max-w-xs h-full bg-background p-6 shadow-2xl animate-in slide-in-from-right duration-250">
-            <div className="flex items-center justify-between pb-4 border-b border-border/30">
-              <h3 className="serif text-xl font-bold text-foreground">Filter by Height</h3>
+        {/* ─── MAIN PRODUCT CATALOG GRID ───────────────────────────────────── */}
+        <main>
+          {filteredProducts.length === 0 ? (
+            <div className="text-center py-20 border border-dashed border-border/40 rounded-3xl bg-card">
+              <p className="serif text-2xl text-foreground mb-2">
+                No plants found for height {HEIGHT_OPTIONS.find((h) => h.id === selectedHeight)?.label}
+              </p>
+              <p className="text-xs text-muted-foreground mb-6">
+                Try selecting a different height or resetting your filter.
+              </p>
               <button
-                onClick={() => setIsMobileFilterOpen(false)}
-                className="p-1 text-muted-foreground hover:text-foreground"
+                onClick={() => updateSearch({ height: "all" })}
+                className="px-6 py-2.5 bg-[#739D30] text-white text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-[#628828] transition-colors cursor-pointer"
               >
-                <X className="h-5 w-5" />
+                Show All Heights
               </button>
             </div>
-
-            <div className="mt-6 flex-1 overflow-y-auto space-y-2">
-              {HEIGHT_OPTIONS.map((ht) => {
-                const isSelected = selectedHeight === ht.id;
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+              {filteredProducts.map((p) => {
+                const off = Math.round(((p.mrp - p.price) / p.mrp) * 100);
                 return (
-                  <button
-                    key={ht.id}
-                    onClick={() => {
-                      updateSearch({ height: ht.id });
-                      setIsMobileFilterOpen(false);
-                    }}
-                    className={`w-full flex items-center justify-between px-4 py-3.5 rounded-2xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
-                      isSelected
-                        ? "bg-primary text-white shadow-xs border-l-4 border-l-white"
-                        : "bg-secondary/40 text-muted-foreground hover:bg-secondary"
-                    }`}
+                  <div
+                    key={p.code}
+                    className="group flex flex-col bg-background border border-border/40 rounded-2xl overflow-hidden shadow-xs hover:shadow-md transition-all duration-300"
                   >
-                    <span>{ht.label}</span>
-                    {isSelected && <Check className="h-4 w-4 stroke-[3]" />}
-                  </button>
+                    <Link
+                      to="/product/$productId"
+                      params={{ productId: p.code }}
+                      className="block overflow-hidden relative aspect-[4/5] bg-secondary"
+                    >
+                      <img
+                        src={p.img}
+                        alt={p.name}
+                        className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-700"
+                      />
+                      <span className="absolute top-3 left-3 bg-[#3F673F] text-white border border-[#5B8550] text-[10px] uppercase tracking-widest px-2.5 py-1 font-bold rounded">
+                        {off}% OFF
+                      </span>
+                      <span className="absolute top-3 right-3 bg-card/90 backdrop-blur-sm text-foreground border border-border/40 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full shadow-xs">
+                        {HEIGHT_OPTIONS.find((h) => h.id === p.height)?.label}
+                      </span>
+                    </Link>
+                    <div className="p-4 flex flex-col flex-1 justify-between">
+                      <div>
+                        <span className="text-[10px] text-muted-foreground uppercase tracking-widest block mb-1">
+                          {p.color || "Botanical Green"}
+                        </span>
+                        <Link
+                          to="/product/$productId"
+                          params={{ productId: p.code }}
+                          className="font-bold text-sm text-foreground hover:text-primary transition-colors line-clamp-1"
+                        >
+                          {p.name}
+                        </Link>
+                      </div>
+                      <div className="mt-4 flex items-center justify-between">
+                        <div>
+                          <span className="text-sm font-bold text-primary">₹{p.price.toLocaleString("en-IN")}</span>
+                          <span className="text-xs text-muted-foreground line-through ml-2">
+                            ₹{p.mrp.toLocaleString("en-IN")}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => {
+                            addToCart({
+                              code: p.code,
+                              name: p.name,
+                              img: p.img,
+                              price: p.price,
+                              mrp: p.mrp,
+                              quantity: 1,
+                            });
+                            toast.success(`${p.name} added to cart!`);
+                          }}
+                          className="p-2 rounded-xl bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors cursor-pointer"
+                          title="Add to Cart"
+                        >
+                          <ShoppingBag className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 );
               })}
             </div>
-
-            <div className="pt-4 border-t border-border/30">
-              <button
-                onClick={() => setIsMobileFilterOpen(false)}
-                className="w-full bg-primary text-white py-3 rounded-xl text-xs font-bold uppercase tracking-wider shadow-xs"
-              >
-                Apply Filters
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          )}
+        </main>
+      </div>
     </Layout>
   );
 }
