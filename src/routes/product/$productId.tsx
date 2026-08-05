@@ -127,8 +127,8 @@ function ProductImages({
 }: {
   product: Product;
 }) {
-  const { wishlist, toggleWishlist } = useStore();
-  const wishlisted = wishlist.some((item) => item.code === product.code);
+  const { wishlistIds, toggleWishlist } = useStore();
+  const wishlisted = wishlistIds?.has(product.code) ?? false;
 
   const thumbnails =
     product.thumbnails && product.thumbnails.length > 0
