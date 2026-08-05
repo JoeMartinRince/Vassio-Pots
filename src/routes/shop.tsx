@@ -85,7 +85,7 @@ function ShopPage() {
     }
 
     return result;
-  }, [allProducts, selectedCategory, priceRange, inStockOnly, sortBy]);
+  }, [allProductsList, selectedCategory, priceRange, inStockOnly, sortBy]);
 
   // Page content text based on category
   const headerContent = useMemo(() => {
@@ -315,7 +315,9 @@ function ShopPage() {
             }`}
           >
             {filteredProducts.map((p) => {
-              const off = Math.round(((p.mrp - p.price) / p.mrp) * 100);
+              const price = p.price ?? 0;
+              const mrp = p.mrp ?? 0;
+              const off = mrp > price ? Math.round(((mrp - price) / mrp) * 100) : 0;
               return (
                 <Link
                   key={p.code}
@@ -333,7 +335,7 @@ function ShopPage() {
                       className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
                     />
                     <span className="absolute left-3 top-3 bg-[#3F673F] text-white border border-[#5B8550] text-[10px] uppercase tracking-[0.25em] px-2.5 py-1 font-bold rounded shadow-sm">
-                      {(p as any).isSoldOut ? "Sold Out" : `${off}% OFF`}
+                      {(p as any).isSoldOut ? "Sold Out" : off > 0 ? `${off}% OFF` : "FEATURED"}
                     </span>
                     {/* View Product Banner (Desktop hover) */}
                     <div className="hidden lg:block absolute bottom-0 left-0 right-0 bg-primary py-3.5 text-center transition-all duration-300 ease-out translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 shadow-md">
@@ -359,11 +361,13 @@ function ShopPage() {
                   </p>
                   <p className="mt-1.5 text-sm">
                     <span className="product-price font-sans font-bold text-primary">
-                      ₹{p.price.toLocaleString("en-IN")}
+                      {price > 0 ? `₹${price.toLocaleString("en-IN")}` : "Price on request"}
                     </span>
-                    <span className="ml-2 text-muted-foreground line-through text-xs font-sans">
-                      ₹{p.mrp.toLocaleString("en-IN")}
-                    </span>
+                    {mrp > price && (
+                      <span className="ml-2 text-muted-foreground line-through text-xs font-sans">
+                        ₹{mrp.toLocaleString("en-IN")}
+                      </span>
+                    )}
                   </p>
                 </Link>
               );

@@ -5,6 +5,7 @@ import { ShoppingBag, SlidersHorizontal, Check } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useStore } from "@/context/StoreContext";
 import { toast } from "sonner";
+import { useProducts } from "@/hooks/useProducts";
 
 export const Route = createFileRoute("/frp-pots")({
   head: () => ({
@@ -20,8 +21,6 @@ export const Route = createFileRoute("/frp-pots")({
   component: FrpPotsPage,
 });
 
-import { useProducts } from "@/hooks/useProducts";
-
 function FrpPotsPage() {
   const { products: frpProductsList } = useProducts("frp-pots");
   const { addToCart } = useStore();
@@ -32,21 +31,17 @@ function FrpPotsPage() {
     let result = [...frpProductsList];
 
     if (selectedColor !== "all") {
-      result = result.filter((p) => p.color.toLowerCase().includes(selectedColor.toLowerCase()));
+      result = result.filter((p) => (p.color || "").toLowerCase().includes(selectedColor.toLowerCase()));
     }
 
     if (sortBy === "price-asc") {
-      result.sort((a, b) => a.price - b.price);
+      result.sort((a, b) => (a.price || 0) - (b.price || 0));
     } else if (sortBy === "price-desc") {
-      result.sort((a, b) => b.price - a.price);
+      result.sort((a, b) => (b.price || 0) - (a.price || 0));
     }
 
     return result;
-  }, [selectedColor, sortBy]);
-
-  function frpProductsLength(arr: any[]) {
-    return arr.length;
-  }
+  }, [frpProductsList, selectedColor, sortBy]);
 
   return (
     <Layout>
@@ -109,60 +104,41 @@ function FrpPotsPage() {
         {/* Product Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
           {frpProducts.map((p) => {
-            const off = Math.round(((p.mrp - p.price) / p.mrp) * 100);
+            const price = p.price ?? 0;
+            const mrp = p.mrp ?? 0;
+            const off = mrp > price ? Math.round(((mrp - price) / mrp) * 100) : 0;
             return (
-              <div
+              <Link
                 key={p.code}
-                className="group flex flex-col bg-background border border-border/40 rounded-2xl overflow-hidden shadow-xs hover:shadow-md transition-all duration-300"
+                to="/product/$productId"
+                params={{ productId: p.code }}
+                className="group flex flex-col cursor-pointer"
               >
-                <Link to="/product/$productId" params={{ productId: p.code }} className="block overflow-hidden relative aspect-[4/5] bg-secondary">
+                <div className="relative overflow-hidden bg-secondary aspect-[4/5] border border-border/40 rounded-2xl shadow-xs group-hover:shadow-md transition-all duration-300">
                   <img
                     src={p.img}
                     alt={p.name}
+                    loading="lazy"
                     className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-700"
                   />
-                  <span className="absolute top-3 left-3 bg-[#3F673F] text-white border border-[#5B8550] text-[10px] uppercase tracking-widest px-2.5 py-1 font-bold rounded">
-                    {off}% OFF
+                  <span className="absolute top-3 left-3 bg-[#3F673F] text-white border border-[#5B8550] text-[10px] uppercase tracking-widest px-2.5 py-1 font-bold rounded shadow-xs">
+                    {(p as any).isSoldOut ? "Sold Out" : off > 0 ? `${off}% OFF` : "FEATURED"}
                   </span>
-                </Link>
-                <div className="p-4 flex flex-col flex-1 justify-between">
-                  <div>
-                    <span className="text-[10px] text-muted-foreground uppercase tracking-widest block mb-1">
-                      {p.color}
-                    </span>
-                    <Link
-                      to="/product/$productId"
-                      params={{ productId: p.code }}
-                      className="font-bold text-sm text-foreground hover:text-primary transition-colors line-clamp-1"
-                    >
-                      {p.name}
-                    </Link>
-                  </div>
-                  <div className="mt-4 flex items-center justify-between">
-                    <div>
-                      <span className="text-sm font-bold text-primary">₹{p.price.toLocaleString("en-IN")}</span>
-                      <span className="text-xs text-muted-foreground line-through ml-2">₹{p.mrp.toLocaleString("en-IN")}</span>
-                    </div>
-                    <button
-                      onClick={() => {
-                        addToCart({
-                          code: p.code,
-                          name: p.name,
-                          img: p.img,
-                          price: p.price,
-                          mrp: p.mrp,
-                          quantity: 1,
-                        });
-                        toast.success(`${p.name} added to cart!`);
-                      }}
-                      className="p-2 rounded-xl bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors cursor-pointer"
-                      title="Add to Cart"
-                    >
-                      <ShoppingBag className="h-4 w-4" />
-                    </button>
-                  </div>
                 </div>
-              </div>
+                <p className="product-name font-sans font-bold mt-4 text-base tracking-wide text-foreground/90 leading-tight group-hover:text-primary transition-colors">
+                  {p.name}
+                </p>
+                <p className="mt-1.5 text-sm">
+                  <span className="product-price font-sans font-semibold text-primary">
+                    {price > 0 ? `₹${price.toLocaleString("en-IN")}` : "Price on request"}
+                  </span>
+                  {mrp > price && (
+                    <span className="ml-2 text-muted-foreground line-through text-xs font-sans">
+                      ₹{mrp.toLocaleString("en-IN")}
+                    </span>
+                  )}
+                </p>
+              </Link>
             );
           })}
         </div>

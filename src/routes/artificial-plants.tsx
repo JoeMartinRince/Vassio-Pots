@@ -115,7 +115,7 @@ function ArtificialPlantsPage() {
     });
 
     return Array.from(uniqueMap.values());
-  }, []);
+  }, [livePlantsList]);
 
   // Filtered & Sorted List
   const filteredProducts = useMemo(() => {
@@ -128,9 +128,9 @@ function ArtificialPlantsPage() {
 
     // Sort
     if (sortBy === "price-asc") {
-      result.sort((a, b) => a.price - b.price);
+      result.sort((a, b) => (a.price || 0) - (b.price || 0));
     } else if (sortBy === "price-desc") {
-      result.sort((a, b) => b.price - a.price);
+      result.sort((a, b) => (b.price || 0) - (a.price || 0));
     }
 
     return result;

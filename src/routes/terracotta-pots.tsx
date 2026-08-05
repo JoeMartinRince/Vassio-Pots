@@ -37,7 +37,7 @@ function TerracottaPotsPage() {
     }
 
     return result;
-  }, [sortBy]);
+  }, [terracottaList, sortBy]);
 
   return (
     <Layout>

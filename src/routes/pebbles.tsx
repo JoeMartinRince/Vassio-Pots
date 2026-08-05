@@ -37,7 +37,7 @@ function PebblesPage() {
     }
 
     return result;
-  }, [sortBy]);
+  }, [pebblesList, sortBy]);
 
   return (
     <Layout>

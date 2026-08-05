@@ -123,7 +123,9 @@ function Index() {
         </div>
         <div className="flex overflow-x-auto gap-x-4 pb-6 snap-x snap-mandatory scrollbar-none lg:grid lg:grid-cols-4 lg:gap-x-5 lg:gap-y-12 lg:overflow-visible lg:pb-0 scroll-smooth">
           {visibleProducts.map((p) => {
-            const off = Math.round(((p.mrp - p.price) / p.mrp) * 100);
+            const price = p.price ?? 0;
+            const mrp = p.mrp ?? 0;
+            const off = mrp > price ? Math.round(((mrp - price) / mrp) * 100) : 0;
             return (
               <Link
                 key={p.code}
@@ -141,7 +143,7 @@ function Index() {
                     className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
                   />
                   <span className="absolute left-3 top-3 bg-[#3F673F] text-white border border-[#5B8550] text-[10px] uppercase tracking-[0.2em] px-2.5 py-1 font-bold rounded shadow-sm">
-                    {(p as any).isSoldOut ? "Sold Out" : `${off}% OFF`}
+                    {(p as any).isSoldOut ? "Sold Out" : off > 0 ? `${off}% OFF` : "FEATURED"}
                   </span>
                   {/* View Product Banner (aligned to the bottom of the image container, appearing on hover - Desktop only) */}
                   <div className="hidden lg:block absolute bottom-0 left-0 right-0 bg-primary py-3.5 text-center transition-all duration-300 ease-out translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 shadow-md">
@@ -167,11 +169,13 @@ function Index() {
                 </p>
                 <p className="mt-1.5 text-sm">
                   <span className="product-price font-sans font-semibold text-primary">
-                    ₹{p.price.toLocaleString("en-IN")}
+                    {price > 0 ? `₹${price.toLocaleString("en-IN")}` : "Price on request"}
                   </span>
-                  <span className="ml-2 text-muted-foreground line-through text-xs font-sans font-medium">
-                    ₹{p.mrp.toLocaleString("en-IN")}
-                  </span>
+                  {mrp > price && (
+                    <span className="ml-2 text-muted-foreground line-through text-xs font-sans font-medium">
+                      ₹{mrp.toLocaleString("en-IN")}
+                    </span>
+                  )}
                 </p>
               </Link>
             );
@@ -203,7 +207,9 @@ function Index() {
           </div>
           <div className="flex overflow-x-auto gap-x-4 pb-6 snap-x snap-mandatory scrollbar-none lg:grid lg:grid-cols-4 lg:gap-x-5 lg:gap-y-12 lg:overflow-visible lg:pb-0 scroll-smooth">
             {visibleVases.map((p) => {
-              const off = Math.round(((p.mrp - p.price) / p.mrp) * 100);
+              const price = p.price ?? 0;
+              const mrp = p.mrp ?? 0;
+              const off = mrp > price ? Math.round(((mrp - price) / mrp) * 100) : 0;
               return (
                 <Link
                   key={p.code}
@@ -221,7 +227,7 @@ function Index() {
                       className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
                     />
                     <span className="absolute left-3 top-3 bg-[#3F673F] text-white border border-[#5B8550] text-[10px] uppercase tracking-[0.2em] px-2.5 py-1 font-bold rounded shadow-sm">
-                      {(p as any).isSoldOut ? "Sold Out" : `${off}% OFF`}
+                      {(p as any).isSoldOut ? "Sold Out" : off > 0 ? `${off}% OFF` : "FEATURED"}
                     </span>
                     {/* View Product Banner (aligned to the bottom of the image container, appearing on hover - Desktop only) */}
                     <div className="hidden lg:block absolute bottom-0 left-0 right-0 bg-[#FCFCF8] py-3.5 text-center transition-all duration-300 ease-out translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 shadow-md">
@@ -247,11 +253,13 @@ function Index() {
                   </p>
                   <p className="mt-1.5 text-sm">
                     <span className="product-price font-sans font-semibold text-secondary">
-                      ₹{p.price.toLocaleString("en-IN")}
+                      {price > 0 ? `₹${price.toLocaleString("en-IN")}` : "Price on request"}
                     </span>
-                    <span className="ml-2 text-primary-foreground/60 line-through text-xs font-sans font-medium">
-                      ₹{p.mrp.toLocaleString("en-IN")}
-                    </span>
+                    {mrp > price && (
+                      <span className="ml-2 text-primary-foreground/60 line-through text-xs font-sans font-medium">
+                        ₹{mrp.toLocaleString("en-IN")}
+                      </span>
+                    )}
                   </p>
                 </Link>
               );

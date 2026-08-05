@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from "react";
 import productService from "@/services/product.service";
+import { useProducts } from "@/hooks/useProducts";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -202,19 +203,21 @@ export function useCartCount() {
 /** Cart subtotal */
 export function useCartSubtotal() {
   const { cartItems } = useStore();
-  return cartItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  return cartItems.reduce((sum, i) => sum + (i.price || 0) * i.quantity, 0);
 }
 
 /** All products that are in the wishlist (with live merged Supabase pricing) */
 export function useWishlistProducts() {
   const { wishlistIds } = useStore();
-  return productService.getAllProducts().filter((p) => wishlistIds.has(p.code));
+  const { products: allProds } = useProducts();
+  return allProds.filter((p) => wishlistIds.has(p.code));
 }
 
 /**
  * Search result: fuzzy filter over merged products.
  */
 export function useSearchResults(query: string) {
+  const { products: allProds } = useProducts();
   if (!query.trim()) return [];
-  return productService.searchProducts(query);
+  return productService.searchInProducts(allProds, query);
 }

@@ -149,7 +149,7 @@ function ProductsPage() {
     });
 
     return Array.from(uniqueMap.values());
-  }, []);
+  }, [liveProducts]);
 
   // Update URL helper
   const updateFilters = (newParams: Partial<ProductsSearch>) => {
@@ -422,7 +422,9 @@ function ProductsPage() {
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {filteredProducts.map((p) => {
-              const off = Math.round(((p.mrp - p.price) / p.mrp) * 100);
+              const price = p.price ?? 0;
+              const mrp = p.mrp ?? 0;
+              const off = mrp > price ? Math.round(((mrp - price) / mrp) * 100) : 0;
               return (
                 <div
                   key={p.code}
@@ -439,16 +441,17 @@ function ProductsPage() {
                       loading="lazy"
                       className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-700"
                     />
-                    <span className="absolute top-3 left-3 bg-[#3F673F] text-white border border-[#5B8550] text-[10px] uppercase tracking-widest px-2.5 py-1 font-bold rounded shadow-xs">
-                      {off}% OFF
-                    </span>
+                    {off > 0 && (
+                      <span className="absolute top-3 left-3 bg-[#3F673F] text-white border border-[#5B8550] text-[10px] uppercase tracking-widest px-2.5 py-1 font-bold rounded shadow-xs">
+                        {off}% OFF
+                      </span>
+                    )}
                     {p.isNewArrival && (
                       <span className="absolute top-3 right-3 bg-primary text-white text-[9px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-full shadow-xs">
                         NEW
                       </span>
                     )}
                   </Link>
-
                   <div className="p-4 flex flex-col flex-1 justify-between">
                     <div>
                       <span className="text-[10px] text-muted-foreground uppercase tracking-widest block mb-1">
@@ -462,13 +465,16 @@ function ProductsPage() {
                         {p.name}
                       </Link>
                     </div>
-
                     <div className="mt-4 flex items-center justify-between">
                       <div>
-                        <span className="text-sm font-bold text-primary">₹{p.price.toLocaleString("en-IN")}</span>
-                        <span className="text-xs text-muted-foreground line-through ml-2">
-                          ₹{p.mrp.toLocaleString("en-IN")}
+                        <span className="text-sm font-bold text-primary">
+                          {price > 0 ? `₹${price.toLocaleString("en-IN")}` : "Price on request"}
                         </span>
+                        {mrp > price && (
+                          <span className="text-xs text-muted-foreground line-through ml-2">
+                            ₹{mrp.toLocaleString("en-IN")}
+                          </span>
+                        )}
                       </div>
                       <button
                         onClick={() => {
@@ -476,14 +482,13 @@ function ProductsPage() {
                             code: p.code,
                             name: p.name,
                             img: p.img,
-                            price: p.price,
-                            mrp: p.mrp,
-                            quantity: 1,
+                            price,
+                            mrp,
                           });
-                          toast.success(`${p.name} added to cart!`);
+                          toast.success(`Added ${p.name} to cart!`);
                         }}
-                        className="p-2 rounded-xl bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors cursor-pointer"
-                        title="Add to Cart"
+                        className="p-2 rounded-xl bg-primary/10 hover:bg-primary text-primary hover:text-white transition-colors cursor-pointer"
+                        aria-label="Add to cart"
                       >
                         <ShoppingBag className="h-4 w-4" />
                       </button>
@@ -491,8 +496,7 @@ function ProductsPage() {
                   </div>
                 </div>
               );
-            })}
-          </div>
+            })}          </div>
         )}
       </div>
     </Layout>

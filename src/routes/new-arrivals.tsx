@@ -38,7 +38,7 @@ function NewArrivalsPage() {
     }
 
     return result;
-  }, [sortBy]);
+  }, [liveProducts, sortBy]);
 
   return (
     <Layout>
