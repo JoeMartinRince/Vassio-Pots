@@ -167,10 +167,10 @@ function Index() {
                 </p>
                 <p className="mt-1.5 text-sm">
                   <span className="product-price font-sans font-semibold text-primary">
-                    ₹{(p.price || 0).toLocaleString("en-IN")}
+                    ₹{p.price.toLocaleString("en-IN")}
                   </span>
                   <span className="ml-2 text-muted-foreground line-through text-xs font-sans font-medium">
-                    ₹{(p.mrp || p.price || 0).toLocaleString("en-IN")}
+                    ₹{p.mrp.toLocaleString("en-IN")}
                   </span>
                 </p>
               </Link>
@@ -247,10 +247,10 @@ function Index() {
                   </p>
                   <p className="mt-1.5 text-sm">
                     <span className="product-price font-sans font-semibold text-secondary">
-                      ₹{(p.price || 0).toLocaleString("en-IN")}
+                      ₹{p.price.toLocaleString("en-IN")}
                     </span>
                     <span className="ml-2 text-primary-foreground/60 line-through text-xs font-sans font-medium">
-                      ₹{(p.mrp || p.price || 0).toLocaleString("en-IN")}
+                      ₹{p.mrp.toLocaleString("en-IN")}
                     </span>
                   </p>
                 </Link>
@@ -824,10 +824,10 @@ function ReelItem({
                       </p>
                       <div className="mt-1 flex items-baseline gap-1 lg:gap-0.5 flex-wrap">
                         <span className="product-price font-sans font-bold text-xs lg:text-[10px] text-primary">
-                          ₹{(p.price || 0).toLocaleString("en-IN")}
+                          ₹{p.price.toLocaleString("en-IN")}
                         </span>
                         <span className="text-[9px] lg:text-[7.5px] text-muted-foreground line-through ml-1.5 lg:ml-1 font-sans">
-                          ₹{(p.mrp || p.price || 0).toLocaleString("en-IN")}
+                          ₹{p.mrp.toLocaleString("en-IN")}
                         </span>
                         <span className="text-[8px] lg:text-[6.5px] bg-[#3F673F] text-white border border-[#5B8550]/40 px-1 py-0.5 font-bold uppercase rounded ml-1.5 lg:ml-1">
                           {off}% OFF
@@ -936,10 +936,10 @@ function WatchAndBuy({ onReelClick }: { onReelClick: (index: number) => void }) 
                     </p>
                     <div className="mt-1 flex items-baseline gap-1.5 flex-wrap">
                       <span className="product-price font-sans font-bold text-xs md:text-sm text-secondary">
-                        ₹{(mainProduct?.price || 0).toLocaleString("en-IN")}
+                        ₹{mainProduct.price.toLocaleString("en-IN")}
                       </span>
                       <span className="text-[10px] md:text-xs text-primary-foreground/60 line-through font-sans">
-                        ₹{(mainProduct?.mrp || mainProduct?.price || 0).toLocaleString("en-IN")}
+                        ₹{mainProduct.mrp.toLocaleString("en-IN")}
                       </span>
                     </div>
                     <div className="mt-1.5">
@@ -1035,13 +1035,13 @@ function QuickViewModal({
 
         {/* Price Row */}
         <div className="flex items-center gap-3 px-1">
-          {product?.mrp && (
+          {product.mrp && (
             <span className="text-[11px] text-gray-400 line-through font-sans">
-              ₹{(product.mrp || 0).toLocaleString("en-IN")}
+              ₹{product.mrp.toLocaleString("en-IN")}
             </span>
           )}
           <span className="product-price font-sans font-bold text-sm text-gray-900">
-            ₹{(product?.price || 0).toLocaleString("en-IN")}
+            ₹{product.price.toLocaleString("en-IN")}
           </span>
           {off > 0 && (
             <span className="text-[9px] bg-[#3F673F] text-white border border-[#5B8550]/40 px-2 py-0.5 font-bold uppercase rounded serif tracking-wider">

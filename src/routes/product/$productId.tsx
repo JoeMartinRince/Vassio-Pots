@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import productService from "@/services/product.service";
+import { useProduct } from "@/hooks/useProducts";
 import Layout from "@/components/Layout";
 import { useState, useEffect } from "react";
 import { Truck, RotateCcw, Phone, ShieldCheck, Heart, Check, Star, ArrowLeft, ShoppingBag } from "lucide-react";
@@ -9,17 +10,17 @@ import { getVariants } from "@/services/variantStore";
 import type { ProductSizeVariant, ProductColorVariant } from "@/types/variants";
 import ProductReviews from "@/components/ProductReviews";
 import { reviewStore } from "@/services/reviewStore";
-import type { Product } from "@/types/product";
+import type { Product, ProductVariant } from "@/types/product";
 
 export const Route = createFileRoute("/product/$productId")({
   head: ({ params }) => {
     try {
-      const product = productService.getProductByCode(params?.productId);
-      const title = product ? `${product.name} — Vassio` : "Product Details — Vassio";
+      const meta = productService.getStaticProductMetadata(params?.productId);
+      const title = meta ? `${meta.name} — Vassio` : "Product Details — Vassio";
       return {
         meta: [
           { title },
-          { name: "description", content: product?.description || "Product Details" },
+          { name: "description", content: meta?.description || "Product Details" },
         ],
       };
     } catch {
@@ -31,26 +32,20 @@ export const Route = createFileRoute("/product/$productId")({
 
 function ProductPage() {
   const { productId } = useParams({ from: "/product/$productId" });
-  // Start with static data so SSR renders immediately, then hydrate with live Supabase dynamic fields
-  const [product, setProduct] = useState<Product | null>(() => productService.getProductByCode(productId));
-  const [loading, setLoading] = useState(false);
+  const { product, loading } = useProduct(productId);
 
-  useEffect(() => {
-    let isMounted = true;
-    setLoading(true);
-    productService.getProductByCodeAsync(productId).then((merged) => {
-      if (isMounted) {
-        setProduct(merged || productService.getProductByCode(productId));
-        setLoading(false);
-      }
-    }).catch(() => {
-      if (isMounted) {
-        setProduct(productService.getProductByCode(productId));
-        setLoading(false);
-      }
-    });
-    return () => { isMounted = false; };
-  }, [productId]);
+  if (loading) {
+    return (
+      <Layout>
+        <div className="mx-auto max-w-[1400px] px-6 py-28 flex items-center justify-center">
+          <div className="flex flex-col items-center gap-4 text-muted-foreground">
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            <p className="text-sm">Loading product…</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   if (!product) {
     return (
@@ -172,10 +167,10 @@ function ProductDetails({ product }: { product: Product }) {
   const [quantity, setQuantity] = useState(1);
   const { addToCart } = useStore();
 
-  // ── Variant State ───────────────────────────────────────────────────────────
-  const variants = getVariants(product.code);
-  const sortedSizes = [...(variants?.sizes || [])].sort((a, b) => a.displayOrder - b.displayOrder);
-  const sortedColors = [...(variants?.colors || [])].sort((a, b) => a.displayOrder - b.displayOrder);
+  // ── Variant State (color / size UI from variantStore — not prices) ──────────
+  const uiVariants = getVariants(product.code);
+  const sortedSizes = [...(uiVariants?.sizes || [])].sort((a, b) => a.displayOrder - b.displayOrder);
+  const sortedColors = [...(uiVariants?.colors || [])].sort((a, b) => a.displayOrder - b.displayOrder);
 
   const [selectedVariantSize, setSelectedVariantSize] = useState<ProductSizeVariant | null>(
     sortedSizes.find((s) => s.available) ?? null
@@ -184,52 +179,52 @@ function ProductDetails({ product }: { product: Product }) {
     sortedColors.find((c) => c.available) ?? null
   );
 
-  // Reset variant selections when product changes
+  // Reset selections when product changes
   useEffect(() => {
-    const freshVariants = getVariants(product.code);
-    const freshSizes = [...(freshVariants?.sizes || [])].sort((a, b) => a.displayOrder - b.displayOrder);
-    const freshColors = [...(freshVariants?.colors || [])].sort((a, b) => a.displayOrder - b.displayOrder);
+    const fresh = getVariants(product.code);
+    const freshSizes = [...(fresh?.sizes || [])].sort((a, b) => a.displayOrder - b.displayOrder);
+    const freshColors = [...(fresh?.colors || [])].sort((a, b) => a.displayOrder - b.displayOrder);
     setSelectedVariantSize(freshSizes.find((s) => s.available) ?? null);
     setSelectedVariantColor(freshColors.find((c) => c.available) ?? null);
   }, [product.code]);
 
-  // ── Multi-Variant Pricing & Stock ───────────────────────────────────────────
-  // Match dynamic Supabase variant for selected size (e.g. Variant A, B, C)
-  const matchedDynamicVariant = product.variants?.find((v) => {
-    if (!selectedVariantSize) return false;
-    const vName = v.variant_name.toUpperCase();
-    const sLabel = selectedVariantSize.label.toUpperCase();
-    return (
-      vName === sLabel ||
-      vName.startsWith(`${sLabel} `) ||
-      vName.includes(` (${sLabel})`) ||
-      vName.includes(`-${sLabel}`) ||
-      vName.startsWith(`SIZE ${sLabel}`)
-    );
-  }) || product.variants?.[0];
+  // ── Supabase Variant Pricing ────────────────────────────────────────────────
+  // Match the product.variants[] (from Supabase) to the selected UI size.
+  // Matching logic: variant_name must match the selected size label.
+  const matchedDbVariant: ProductVariant | undefined = selectedVariantSize
+    ? product.variants?.find((v) => {
+        const vName = v.variant_name.toUpperCase();
+        const sLabel = selectedVariantSize.label.toUpperCase();
+        return (
+          vName === sLabel ||
+          vName.startsWith(`${sLabel} `) ||
+          vName.startsWith(`${sLabel}(`) ||
+          vName.includes(`(${sLabel})`) ||
+          vName.includes(`-${sLabel}`) ||
+          vName.startsWith(`SIZE ${sLabel}`) ||
+          vName.startsWith(`FLAX-${sLabel}`) ||
+          vName.startsWith(`${sLabel} (`)
+        );
+      })
+    : undefined;
 
-  // Dynamic price, MRP, discount & stock derived from selected size variant
-  const displayPrice = matchedDynamicVariant
-    ? Number(matchedDynamicVariant.selling_price)
-    : Number(product.price ?? 0);
+  // Fall back to first available variant if none matched
+  const activeDbVariant = matchedDbVariant
+    ?? product.variants?.find((v) => v.available)
+    ?? product.variants?.[0];
 
-  const displayMrp = matchedDynamicVariant
-    ? Number(matchedDynamicVariant.original_price)
-    : Number(product.mrp ?? displayPrice);
-
+  // Prices exclusively from Supabase variant. Never from static data.
+  const displayPrice = activeDbVariant ? Number(activeDbVariant.selling_price) : 0;
+  const displayMrp = activeDbVariant ? Number(activeDbVariant.original_price) : 0;
   const off = displayMrp > displayPrice
     ? Math.round(((displayMrp - displayPrice) / displayMrp) * 100)
     : 0;
+  const displayStock = activeDbVariant ? activeDbVariant.stock_quantity : 0;
+  const isAvailable = activeDbVariant
+    ? (activeDbVariant.available && activeDbVariant.stock_quantity > 0)
+    : false;
 
-  const displayStock = matchedDynamicVariant
-    ? matchedDynamicVariant.stock_quantity
-    : (product.stockQuantity ?? 10);
-
-  const isAvailable = matchedDynamicVariant
-    ? (matchedDynamicVariant.available && matchedDynamicVariant.stock_quantity > 0)
-    : !product.isSoldOut;
-
-  const displayDimensions = matchedDynamicVariant?.dimensions
+  const displayDimensions = activeDbVariant?.dimensions
     || selectedVariantSize?.dimensions
     || product.dimensions
     || "Dimensions available on request";
@@ -284,20 +279,26 @@ function ProductDetails({ product }: { product: Product }) {
           </div>
         </div>
 
-        {/* Price Tag — powered by Supabase products_dynamic */}
+        {/* Price Tag — powered by Supabase product_variants */}
         <div className="mt-5 flex items-center gap-3.5">
-          <span className="product-price font-sans font-bold text-2xl md:text-3xl text-primary">
-            ₹{displayPrice.toLocaleString("en-IN")}
-          </span>
-          {displayMrp > displayPrice && (
+          {displayPrice > 0 ? (
             <>
-              <span className="text-base text-muted-foreground line-through font-sans">
-                ₹{displayMrp.toLocaleString("en-IN")}
+              <span className="product-price font-sans font-bold text-2xl md:text-3xl text-primary">
+                ₹{displayPrice.toLocaleString("en-IN")}
               </span>
-              <span className="text-[10px] bg-[#3F673F] text-white border border-[#5B8550]/60 px-2 py-0.5 font-bold uppercase tracking-wider rounded">
-                {off}% OFF
-              </span>
+              {displayMrp > displayPrice && (
+                <>
+                  <span className="text-base text-muted-foreground line-through font-sans">
+                    ₹{displayMrp.toLocaleString("en-IN")}
+                  </span>
+                  <span className="text-[10px] bg-[#3F673F] text-white border border-[#5B8550]/60 px-2 py-0.5 font-bold uppercase tracking-wider rounded">
+                    {off}% OFF
+                  </span>
+                </>
+              )}
             </>
+          ) : (
+            <span className="text-sm text-muted-foreground italic">Price on request</span>
           )}
         </div>
         <p className="text-[10px] text-muted-foreground/80 mt-1.5 italic">(Inclusive of all Taxes)</p>
@@ -376,7 +377,6 @@ function ProductDetails({ product }: { product: Product }) {
                     className={`relative group flex flex-col items-center gap-1.5 ${c.available ? "cursor-pointer" : "cursor-not-allowed opacity-40"}`}
                     aria-label={`Color: ${c.name}${!c.available ? " — Unavailable" : ""}`}
                   >
-                    {/* Swatch circle */}
                     <span
                       className={`
                         h-8 w-8 rounded-full border-2 transition-all duration-200 block shadow-sm
@@ -389,11 +389,9 @@ function ProductDetails({ product }: { product: Product }) {
                       `}
                       style={{ backgroundColor: c.hex }}
                     />
-                    {/* Color label */}
                     <span className={`text-[9px] font-semibold uppercase tracking-wide leading-none text-center max-w-[48px] truncate ${isSelected ? "text-primary" : "text-muted-foreground"}`}>
                       {c.name}
                     </span>
-                    {/* Selected check */}
                     {isSelected && (
                       <span className="absolute -top-1 -right-1 h-4 w-4 bg-primary rounded-full flex items-center justify-center shadow">
                         <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />
@@ -409,10 +407,10 @@ function ProductDetails({ product }: { product: Product }) {
         {/* Stock Level Warning */}
         <div className="mt-6">
           <p className="text-[10px] font-bold text-accent tracking-[0.1em] uppercase">
-            {product.isSoldOut ? "Temporarily Out of Stock" : "Hurry, Only 1 Item Left in Stock!"}
+            {!isAvailable ? "Temporarily Out of Stock" : displayStock <= 3 ? `Hurry, Only ${displayStock} Left in Stock!` : "In Stock — Ready to Ship"}
           </p>
           <div className="h-1 bg-border/40 mt-2 overflow-hidden rounded-full">
-            <div className={`h-full ${product.isSoldOut ? "w-0" : "w-1/12 bg-accent animate-pulse"}`} />
+            <div className={`h-full ${!isAvailable ? "w-0" : displayStock <= 3 ? "w-1/12 bg-accent animate-pulse" : "w-2/12 bg-primary/60"}`} />
           </div>
         </div>
 
@@ -446,7 +444,7 @@ function ProductDetails({ product }: { product: Product }) {
 
       {/* Action Panel */}
       <div className="mt-8 pt-6 border-t border-border/30">
-        {!product.isSoldOut && (
+        {isAvailable ? (
           <div className="flex gap-4 items-center mb-6">
             {/* Quantity adjust */}
             <div className="flex items-center border border-border/70 rounded-md overflow-hidden bg-background">
@@ -474,9 +472,7 @@ function ProductDetails({ product }: { product: Product }) {
               Add to Cart
             </button>
           </div>
-        )}
-
-        {product.isSoldOut && (
+        ) : (
           <button
             className="w-full bg-muted text-muted-foreground py-4 text-xs uppercase tracking-[0.2em] font-semibold cursor-not-allowed mb-6 rounded-md"
             disabled
@@ -485,34 +481,27 @@ function ProductDetails({ product }: { product: Product }) {
           </button>
         )}
 
-        {/* Pairs Well With */}
-        {(product as any).pairsWith && (
+        {/* Pairs Well With — no prices (they come from Supabase) */}
+        {product.pairsWith && (
           <div className="mt-6">
             <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-bold mb-3">Pairs Well With</p>
             <Link
               to="/product/$productId"
-              params={{ productId: (product as any).pairsWith.code }}
+              params={{ productId: product.pairsWith.code }}
               className="flex gap-4 p-3.5 border border-border/30 bg-secondary/15 hover:bg-secondary/35 rounded-xl transition-colors duration-200 group"
             >
               <div className="h-14 w-12 overflow-hidden bg-secondary border border-border/20 shrink-0 rounded-md">
                 <img
-                  src={(product as any).pairsWith.img}
-                  alt={(product as any).pairsWith.name}
+                  src={product.pairsWith.img}
+                  alt={product.pairsWith.name}
                   className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
               </div>
               <div className="flex-1 flex flex-col justify-center">
                 <p className="text-xs font-semibold tracking-wide text-foreground/90 leading-tight group-hover:text-primary transition-colors">
-                  {(product as any).pairsWith.name}
+                  {product.pairsWith.name}
                 </p>
-                <p className="mt-1 text-xs">
-                  <span className="font-semibold text-primary serif">
-                    ₹{(product as any).pairsWith.price.toLocaleString("en-IN")}
-                  </span>
-                  <span className="ml-2 text-muted-foreground line-through text-[10px] serif">
-                    ₹{(product as any).pairsWith.mrp.toLocaleString("en-IN")}
-                  </span>
-                </p>
+                <p className="mt-1 text-[10px] text-muted-foreground">View product →</p>
               </div>
             </Link>
           </div>

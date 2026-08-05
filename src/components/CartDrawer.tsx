@@ -115,7 +115,7 @@ export default function CartDrawer() {
                       <p className="text-[10px] text-muted-foreground mt-0.5">{item.sizeName}</p>
                     )}
                     <p className="text-sm font-semibold text-primary mt-1">
-                      ₹{(item.price || 0).toLocaleString("en-IN")}
+                      ₹{item.price.toLocaleString("en-IN")}
                     </p>
                   </div>
 

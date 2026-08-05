@@ -1,58 +1,126 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import productService from "@/services/product.service";
 import type { Product } from "@/types/product";
 
+interface UseProductsReturn {
+  products: Product[];
+  loading: boolean;
+  error: string | null;
+  refetch: () => void;
+  filterByCategory: (cat: string) => Product[];
+  search: (query: string) => Product[];
+}
+
 /**
- * useProducts hook — provides merged product list (static + Supabase dynamic).
- * 
- * Initial render: returns static data immediately (fast SSR-friendly).
- * After mount: fetches Supabase dynamic data, updates state with merged results.
+ * useProducts — fetches the full merged product catalog (static + Supabase).
+ *
+ * - No synchronous pre-render from stale module cache.
+ * - Single async fetch on mount (and on explicit refetch()).
+ * - Optional category filter: re-runs locally on the fetched list.
  */
-export function useProducts(category?: string) {
-  // Start with static products so the page renders immediately
-  const [productList, setProductList] = useState<Product[]>(() => {
-    const all = productService.getAllProducts();
-    return category ? productService.getProductsByCategory(category) : all;
-  });
+export function useProducts(category?: string): UseProductsReturn {
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [fetchTick, setFetchTick] = useState(0);
 
   useEffect(() => {
-    let isMounted = true;
+    let cancelled = false;
     setLoading(true);
     setError(null);
 
     productService
       .getAllProductsAsync()
-      .then(() => {
-        if (!isMounted) return;
-        // After cache is populated from Supabase, re-read merged data
-        const fresh = category
-          ? productService.getProductsByCategory(category)
-          : productService.getAllProducts();
-        setProductList(fresh);
-        setLoading(false);
+      .then((list) => {
+        if (!cancelled) {
+          setAllProducts(list);
+          setLoading(false);
+        }
       })
       .catch((err) => {
-        if (!isMounted) return;
-        console.warn("[useProducts] Failed to load dynamic data:", err);
-        setError("Could not load live pricing. Displaying catalog prices.");
-        setLoading(false);
+        if (!cancelled) {
+          console.error("[useProducts] fetch failed:", err);
+          setError("Failed to load product catalog. Please refresh.");
+          setLoading(false);
+        }
       });
 
-    return () => {
-      isMounted = false;
-    };
-  }, [category]);
+    return () => { cancelled = true; };
+  }, [fetchTick]);
+
+  const refetch = useCallback(() => {
+    setFetchTick((t) => t + 1);
+  }, []);
+
+  const filteredProducts = category
+    ? productService.filterByCategory(allProducts, category)
+    : allProducts;
+
+  const filterByCategory = useCallback(
+    (cat: string) => productService.filterByCategory(allProducts, cat),
+    [allProducts]
+  );
+
+  const search = useCallback(
+    (query: string) => productService.searchInProducts(allProducts, query),
+    [allProducts]
+  );
 
   return {
-    products: productList,
-    totalCount: productList.length,
+    products: filteredProducts,
     loading,
     error,
-    getProductByCode: (code: string) => productService.getProductByCode(code),
-    searchProducts: (q: string) => productService.searchProducts(q),
+    refetch,
+    filterByCategory,
+    search,
   };
+}
+
+/**
+ * useProduct — fetches a single product by code.
+ * Always fresh from Supabase.
+ */
+export function useProduct(code: string | undefined | null) {
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [fetchTick, setFetchTick] = useState(0);
+
+  useEffect(() => {
+    if (!code) {
+      setProduct(null);
+      setLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+
+    productService
+      .getProductByCodeAsync(code)
+      .then((p) => {
+        if (!cancelled) {
+          setProduct(p);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          console.error(`[useProduct] fetch failed for ${code}:`, err);
+          setError("Failed to load product.");
+          setLoading(false);
+        }
+      });
+
+    return () => { cancelled = true; };
+  }, [code, fetchTick]);
+
+  const refetch = useCallback(() => {
+    setFetchTick((t) => t + 1);
+  }, []);
+
+  return { product, loading, error, refetch };
 }
 
 export default useProducts;
