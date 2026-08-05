@@ -1,5 +1,6 @@
 import { products as staticProducts, vases as staticVases, auxiliaryProducts as staticAuxiliary, getProductByCode as findStaticProduct } from "@/data/products";
 import { getAdminProducts } from "@/services/adminService";
+import { fetchDynamicProductsFromSupabase, isSupabaseConfigured } from "@/lib/supabase";
 import type { Product } from "@/types/product";
 
 export interface DynamicProductData {
@@ -18,7 +19,7 @@ export interface DynamicProductData {
 
 /**
  * Hybrid Product Service:
- * Merges Static Product Data (src/data/products.ts) with Dynamic Business Data (Supabase / Admin Store).
+ * Merges Static Product Data (src/data/products.ts) with Dynamic Business Data (Supabase `products_dynamic` table / Admin Store).
  */
 export const productService = {
   /**
@@ -62,6 +63,30 @@ export const productService = {
         return dyn?.active !== false;
       })
       .map((p) => this.mergeProduct(p, dynamicMap));
+  },
+
+  /**
+   * Async Supabase integration for loading dynamic records from `products_dynamic`.
+   */
+  async getAllProductsAsync(): Promise<Product[]> {
+    const allStatic = [...staticProducts, ...staticVases, ...staticAuxiliary];
+
+    if (isSupabaseConfigured) {
+      const dbProducts = await fetchDynamicProductsFromSupabase();
+      if (dbProducts && dbProducts.length > 0) {
+        const dynamicMap = new Map<string, any>();
+        dbProducts.forEach((dp) => dynamicMap.set(dp.product_id.toUpperCase(), dp));
+
+        return allStatic
+          .filter((p) => {
+            const dyn = dynamicMap.get(p.code.toUpperCase());
+            return dyn ? dyn.active !== false : true;
+          })
+          .map((p) => this.mergeProduct(p, dynamicMap));
+      }
+    }
+
+    return this.getAllProducts();
   },
 
   /**
