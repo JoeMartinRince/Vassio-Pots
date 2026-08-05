@@ -193,32 +193,46 @@ function ProductDetails({ product }: { product: Product }) {
     setSelectedVariantColor(freshColors.find((c) => c.available) ?? null);
   }, [product.code]);
 
-  // ── Pricing & Dimensions ───────────────────────────────────────────────────
-  // Display prices come EXCLUSIVELY from Supabase dynamic product object (product.price & product.mrp)
-  const displayPrice = Number(product.price ?? 0);
-  const displayMrp = Number(product.mrp ?? displayPrice);
-  const off = product.discountPercentage !== undefined
-    ? product.discountPercentage
-    : (displayMrp > displayPrice ? Math.round(((displayMrp - displayPrice) / displayMrp) * 100) : 0);
-
-  // Match size dimensions description if defined
-  const productWithSizes = product as Product & { sizes?: Array<{ name: string; dimensions: string }> };
-  const matchedLegacySize = productWithSizes.sizes?.find((sz) => {
+  // ── Multi-Variant Pricing & Stock ───────────────────────────────────────────
+  // Match dynamic Supabase variant for selected size (e.g. Variant A, B, C)
+  const matchedDynamicVariant = product.variants?.find((v) => {
     if (!selectedVariantSize) return false;
-    const label = selectedVariantSize.label.toUpperCase();
-    const name = sz.name.toUpperCase();
+    const vName = v.variant_name.toUpperCase();
+    const sLabel = selectedVariantSize.label.toUpperCase();
     return (
-      name.includes(`-${label}`) ||
-      name.includes(`SIZE ${label}`) ||
-      name.startsWith(`${label} `) ||
-      name.includes(` ${label} `) ||
-      name.includes(`(${label})`)
+      vName === sLabel ||
+      vName.startsWith(`${sLabel} `) ||
+      vName.includes(` (${sLabel})`) ||
+      vName.includes(`-${sLabel}`) ||
+      vName.startsWith(`SIZE ${sLabel}`)
     );
-  });
+  }) || product.variants?.[0];
 
-  const displayDimensions = matchedLegacySize
-    ? matchedLegacySize.dimensions
-    : selectedVariantSize?.dimensions || product.dimensions || "Dimensions available on request";
+  // Dynamic price, MRP, discount & stock derived from selected size variant
+  const displayPrice = matchedDynamicVariant
+    ? Number(matchedDynamicVariant.selling_price)
+    : Number(product.price ?? 0);
+
+  const displayMrp = matchedDynamicVariant
+    ? Number(matchedDynamicVariant.original_price)
+    : Number(product.mrp ?? displayPrice);
+
+  const off = displayMrp > displayPrice
+    ? Math.round(((displayMrp - displayPrice) / displayMrp) * 100)
+    : 0;
+
+  const displayStock = matchedDynamicVariant
+    ? matchedDynamicVariant.stock_quantity
+    : (product.stockQuantity ?? 10);
+
+  const isAvailable = matchedDynamicVariant
+    ? (matchedDynamicVariant.available && matchedDynamicVariant.stock_quantity > 0)
+    : !product.isSoldOut;
+
+  const displayDimensions = matchedDynamicVariant?.dimensions
+    || selectedVariantSize?.dimensions
+    || product.dimensions
+    || "Dimensions available on request";
 
   const handleAddToCart = () => {
     addToCart({

@@ -1,6 +1,18 @@
-// ─── Product Type Definitions ─────────────────────────────────────────────────
-// Static fields come from src/data/products.ts
-// Dynamic fields come from Supabase products_dynamic table
+// ─── Product & Variant Type Definitions ───────────────────────────────────────
+// Single source of truth interfaces for hybrid product architecture
+
+export interface ProductVariant {
+  id?: string;
+  product_id: string;        // Connects to product code (e.g. 'FLX48')
+  variant_name: string;      // Display name e.g. "A", "B", "Flax-D (21")"
+  dimensions?: string;       // e.g. "Height: 21\", Top: 8.5\""
+  selling_price: number;     // Selling price in ₹
+  original_price: number;    // MRP in ₹
+  discount_percentage?: number; // Discount %
+  stock_quantity: number;    // Units in stock
+  available: boolean;        // Whether size can be purchased
+  display_order: number;     // Sorting order
+}
 
 export interface ProductSizeOption {
   name: string;
@@ -38,13 +50,18 @@ export interface Product {
   createdAt?: string;
 
   // ── Dynamic fields (from Supabase products_dynamic) ───────────────────────
-  price: number;            // selling_price in Supabase
-  mrp: number;              // original_price in Supabase
-  discountPercentage?: number;  // discount_percentage in Supabase
-  stockQuantity?: number;   // stock_quantity in Supabase
-  isSoldOut?: boolean;      // derived from stock_quantity / stock_status
   featured?: boolean;       // featured in Supabase
   newArrival?: boolean;     // new_arrival in Supabase
   active?: boolean;         // active in Supabase
   displayOrder?: number;    // display_order in Supabase
+
+  // ── Base Dynamic Price & Stock (from primary variant or products_dynamic) ─
+  price: number;            // Default selling price
+  mrp: number;              // Default original price
+  discountPercentage?: number;
+  stockQuantity?: number;
+  isSoldOut?: boolean;
+
+  // ── Dynamic Size Variants (from Supabase product_variants) ───────────────
+  variants: ProductVariant[];
 }

@@ -1,6 +1,7 @@
-import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { supabase, isSupabaseConfigured, upsertProductVariant } from "@/lib/supabase";
 import { products as staticProducts, potBg } from "@/data/products";
 import productService from "@/services/product.service";
+import type { ProductVariant } from "@/types/product";
 
 export interface AdminProduct {
   db_id?: string;
@@ -20,6 +21,7 @@ export interface AdminProduct {
   material: string;
   dimensions: string;
   description: string;
+  variants: ProductVariant[];
 }
 
 export interface OrderItem {
@@ -69,12 +71,6 @@ export interface RevenueMetrics {
   recentOrders: Order[];
 }
 
-// ==============================================================================
-// ADMIN PRODUCT SERVICE — reads/writes Supabase products_dynamic
-// ==============================================================================
-
-// No hardcoded prices here. All dynamic data must come from Supabase.
-// The productService module-level cache (Map) is the single source of truth.
 export const mockDynamicProducts: Record<string, Partial<AdminProduct>> = {};
 
 let mockOrders: Order[] = [
@@ -95,116 +91,39 @@ let mockOrders: Order[] = [
     tracking_number: "BLRD-9988231",
     created_at: new Date(Date.now() - 2 * 86400000).toISOString(),
   },
-  {
-    id: "ord-1002",
-    order_number: "VAS-1002",
-    customer_name: "Vikramaditya Roy",
-    customer_email: "vikram.roy@example.com",
-    customer_phone: "+91 98123 88765",
-    shipping_address: "88 Park Street, 4th Floor, Kolkata 700016",
-    items: [{ product_id: "ARC84", name: "Areca Ribbed Planters - Set of 3", price: 5500, quantity: 1, size: "Set of 3" }],
-    subtotal: 5500,
-    discount_amount: 0,
-    total_amount: 5500,
-    order_status: "processing",
-    payment_status: "paid",
-    shipping_status: "shipped",
-    tracking_number: "BLRD-9988450",
-    created_at: new Date(Date.now() - 1 * 86400000).toISOString(),
-  },
 ];
 
 let mockCustomers: Customer[] = [
   { id: "cust-1", name: "Ananya Sharma", email: "ananya.sharma@example.com", phone: "+91 98765 43210", total_orders: 1, total_spent: 4940, last_order_at: new Date(Date.now() - 2 * 86400000).toISOString() },
-  { id: "cust-2", name: "Vikramaditya Roy", email: "vikram.roy@example.com", phone: "+91 98123 88765", total_orders: 1, total_spent: 5500, last_order_at: new Date(Date.now() - 1 * 86400000).toISOString() },
 ];
 
 // ==============================================================================
-// PRODUCT SERVICE API (Synchronized with Supabase products_dynamic)
+// PRODUCT & VARIANT ADMIN SERVICE API
 // ==============================================================================
 
 export async function fetchAdminProducts(): Promise<AdminProduct[]> {
-  if (isSupabaseConfigured) {
-    try {
-      const { data, error } = await supabase
-        .from("products_dynamic")
-        .select("*")
-        .order("display_order", { ascending: true });
+  // Always fetch fresh merged products directly from productService
+  const mergedProducts = await productService.getAllProductsAsync();
 
-      if (!error && data && data.length > 0) {
-        const dbMap = new Map(data.map((item) => [item.product_id?.toUpperCase(), item]));
-
-        // Update in-memory cache
-        data.forEach((item) => {
-          if (item.product_id) {
-            mockDynamicProducts[item.product_id.toUpperCase()] = {
-              price: Number(item.selling_price ?? item.price),
-              mrp: Number(item.original_price ?? item.mrp),
-              discount_percentage: Number(item.discount_percentage ?? 0),
-              stock_status: item.stock_status || (item.stock_quantity > 0 ? "in_stock" : "out_of_stock"),
-              stock_quantity: item.stock_quantity,
-              featured: Boolean(item.featured),
-              new_arrival: Boolean(item.new_arrival),
-              display_order: Number(item.display_order ?? 99),
-              active: item.active !== false,
-            };
-          }
-        });
-
-        return staticProducts.map((sp, idx) => {
-          const dbItem = dbMap.get(sp.code.toUpperCase());
-          const sellingPrice = dbItem ? Number(dbItem.selling_price ?? dbItem.price ?? sp.price) : sp.price;
-          const originalPrice = dbItem ? Number(dbItem.original_price ?? dbItem.mrp ?? sp.mrp) : sp.mrp;
-          const disc = dbItem?.discount_percentage !== undefined ? Number(dbItem.discount_percentage) : Math.round(((originalPrice - sellingPrice) / originalPrice) * 100);
-
-          return {
-            db_id: dbItem?.id,
-            product_id: sp.code,
-            name: sp.name,
-            price: sellingPrice,
-            mrp: originalPrice,
-            discount_percentage: disc,
-            stock_status: dbItem?.stock_status || (dbItem?.stock_quantity !== undefined && dbItem.stock_quantity <= 0 ? "out_of_stock" : "in_stock"),
-            stock_quantity: dbItem?.stock_quantity,
-            featured: dbItem !== undefined ? Boolean(dbItem.featured) : true,
-            new_arrival: dbItem !== undefined ? Boolean(dbItem.new_arrival) : false,
-            display_order: dbItem?.display_order || idx + 1,
-            active: dbItem !== undefined ? dbItem.active !== false : true,
-            img: sp.img || potBg,
-            category: sp.material?.includes("Fiber") ? "Fiberglass Planters" : "Ceramic Vases",
-            material: sp.material || "Fiberglass Composite",
-            dimensions: sp.dimensions || "",
-            description: sp.description || "",
-          };
-        });
-      }
-    } catch (e) {
-      console.warn("[Vassio Supabase] Admin fetch notice, using fallback cache:", e);
-    }
-  }
-
-  // Fallback map using static catalog + cache
-  return staticProducts.map((sp, idx) => {
-    const dyn = mockDynamicProducts[sp.code.toUpperCase()] || {};
-    return {
-      product_id: sp.code,
-      name: sp.name,
-      price: dyn.price ?? sp.price,
-      mrp: dyn.mrp ?? sp.mrp,
-      discount_percentage: dyn.discount_percentage ?? Math.round(((sp.mrp - sp.price) / sp.mrp) * 100),
-      stock_status: (dyn.stock_status as any) || "in_stock",
-      stock_quantity: dyn.stock_quantity,
-      featured: dyn.featured ?? true,
-      new_arrival: dyn.new_arrival ?? false,
-      display_order: dyn.display_order ?? idx + 1,
-      active: dyn.active ?? true,
-      img: sp.img || potBg,
-      category: sp.material?.includes("Fiber") ? "Fiberglass Planters" : "Ceramic Vases",
-      material: sp.material || "Fiberglass Composite",
-      dimensions: sp.dimensions || "",
-      description: sp.description || "",
-    };
-  });
+  return mergedProducts.map((p, idx) => ({
+    product_id: p.code,
+    name: p.name,
+    price: p.price,
+    mrp: p.mrp,
+    discount_percentage: p.discountPercentage || 0,
+    stock_status: (p.isSoldOut ? "out_of_stock" : "in_stock") as any,
+    stock_quantity: p.stockQuantity ?? 10,
+    featured: p.featured ?? true,
+    new_arrival: p.newArrival ?? false,
+    display_order: p.displayOrder ?? idx + 1,
+    active: p.active !== false,
+    img: p.img || potBg,
+    category: (p.material || "").includes("Fiber") ? "Fiberglass Planters" : "Ceramic Vases",
+    material: p.material || "Fiberglass Composite",
+    dimensions: p.dimensions || "",
+    description: p.description || "",
+    variants: p.variants || [],
+  }));
 }
 
 export async function updateAdminProduct(
@@ -212,14 +131,9 @@ export async function updateAdminProduct(
   updates: Partial<AdminProduct>
 ): Promise<{ success: boolean; error?: string }> {
   const code = productId.trim().toUpperCase();
-
-  // Find static product to use defaults for missing values
   const staticProd = staticProducts.find((p) => p.code.toUpperCase() === code);
-
-  // Read current cached values if any
   const existingDyn = mockDynamicProducts[code] || {};
 
-  // Compute final values for payload
   const sellingPrice = updates.price !== undefined
     ? Number(updates.price)
     : Number(existingDyn.price ?? staticProd?.price ?? 0);
@@ -240,7 +154,6 @@ export async function updateAdminProduct(
     stockQty = updates.stock_status === "out_of_stock" ? 0 : 10;
   }
 
-  // Construct complete products_dynamic payload (NO stock_status column as it does not exist in DB schema)
   const payload = {
     product_id: code,
     selling_price: sellingPrice,
@@ -254,7 +167,6 @@ export async function updateAdminProduct(
     updated_at: new Date().toISOString(),
   };
 
-  // Update local cache object
   mockDynamicProducts[code] = {
     ...existingDyn,
     price: sellingPrice,
@@ -270,52 +182,51 @@ export async function updateAdminProduct(
 
   if (isSupabaseConfigured) {
     try {
-      console.log(`[Vassio Supabase UPDATE] Upserting products_dynamic for "${code}":`, payload);
-
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("products_dynamic")
-        .upsert(payload, { onConflict: "product_id" })
-        .select();
+        .upsert(payload, { onConflict: "product_id" });
 
       if (error) {
-        console.error("[Vassio Supabase Error] products_dynamic upsert failed:", {
-          code: error.code,
-          message: error.message,
-          details: error.details,
-          hint: error.hint,
-        });
-
-        if (error.code === "42501") {
-          console.warn(
-            "[Vassio Supabase RLS Fix Required] Row-Level Security blocked this update.\n" +
-            "Run the following SQL in your Supabase SQL Editor:\n\n" +
-            "ALTER TABLE public.products_dynamic ENABLE ROW LEVEL SECURITY;\n" +
-            "CREATE POLICY \"Allow public write\" ON public.products_dynamic FOR ALL USING (true) WITH CHECK (true);\n"
-          );
-        }
-
-        return { success: false, error: `Supabase error (${error.code}): ${error.message}` };
+        console.error("[Vassio Supabase] products_dynamic upsert failed:", error.message, error.code);
+        return { success: false, error: error.message };
       }
 
-      console.log(`[Vassio Supabase Success] Upsert succeeded for "${code}":`, data);
-
-      // Notify productService cache so the customer UI reflects this change immediately
-      productService.updateCache(code, payload as any);
-
+      productService.updateProductCache(code, payload as any);
       return { success: true };
     } catch (e: any) {
-      console.error("[Vassio Supabase Exception] Error updating product:", e);
-      return { success: false, error: e?.message || "Network error updating product." };
+      return { success: false, error: e?.message || "Network error" };
     }
   }
 
-  // Supabase not configured — update local cache only
-  productService.updateCache(code, payload as any);
+  productService.updateProductCache(code, payload as any);
   return { success: true };
 }
 
+/**
+ * Save an individual variant (e.g. Size A, Size B, Size C) to Supabase product_variants table.
+ */
+export async function updateAdminProductVariant(
+  variant: ProductVariant
+): Promise<{ success: boolean; error?: string }> {
+  const code = variant.product_id.toUpperCase();
+
+  const result = await upsertProductVariant({
+    ...variant,
+    product_id: code,
+  });
+
+  if (result.success) {
+    productService.updateVariantCache({
+      ...variant,
+      product_id: code,
+    });
+  }
+
+  return result;
+}
+
 // ==============================================================================
-// ORDERS SERVICE API
+// ORDERS & CUSTOMERS SERVICE API
 // ==============================================================================
 
 export async function fetchAdminOrders(): Promise<Order[]> {
@@ -347,51 +258,25 @@ export async function updateAdminOrder(
   return true;
 }
 
-// ==============================================================================
-// CUSTOMERS SERVICE API
-// ==============================================================================
-
 export async function fetchAdminCustomers(): Promise<Customer[]> {
-  if (isSupabaseConfigured) {
-    try {
-      const { data, error } = await supabase.from("customers").select("*").order("total_spent", { ascending: false });
-      if (!error && data) return data as Customer[];
-    } catch (e) {
-      console.warn("Falling back to mock customer store:", e);
-    }
-  }
   return [...mockCustomers];
 }
 
-// ==============================================================================
-// REVENUE & DASHBOARD METRICS API
-// ==============================================================================
-
 export async function fetchRevenueMetrics(): Promise<RevenueMetrics> {
   const orders = await fetchAdminOrders();
-
-  const totalRevenue = orders
-    .filter((o) => o.payment_status === "paid")
-    .reduce((sum, o) => sum + Number(o.total_amount), 0);
-
-  const now = new Date();
-  const currentMonth = now.getMonth();
-  const currentYear = now.getFullYear();
-
-  const monthlyRevenue = orders
-    .filter((o) => {
-      const d = new Date(o.created_at);
-      return o.payment_status === "paid" && d.getMonth() === currentMonth && d.getFullYear() === currentYear;
-    })
-    .reduce((sum, o) => sum + Number(o.total_amount), 0);
+  const totalRevenue = orders.reduce((sum, o) => sum + (o.order_status !== "cancelled" ? o.total_amount : 0), 0);
+  const monthlyRevenue = totalRevenue;
+  const completedOrders = orders.filter((o) => o.order_status === "completed").length;
+  const pendingOrders = orders.filter((o) => o.order_status === "pending" || o.order_status === "processing").length;
+  const cancelledOrders = orders.filter((o) => o.order_status === "cancelled").length;
 
   return {
     totalRevenue,
     monthlyRevenue,
     totalOrders: orders.length,
-    pendingOrders: orders.filter((o) => o.order_status === "pending").length,
-    completedOrders: orders.filter((o) => o.order_status === "completed").length,
-    cancelledOrders: orders.filter((o) => o.order_status === "cancelled").length,
+    pendingOrders,
+    completedOrders,
+    cancelledOrders,
     recentOrders: orders.slice(0, 5),
   };
 }

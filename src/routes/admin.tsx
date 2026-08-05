@@ -934,8 +934,11 @@ function AdminDashboardMain() {
                 </div>
               </div>
 
-              {/* ─── Variant Management Panel ─────────────────────────────────────────── */}
-              <ProductVariantManager products={products} />
+              {/* ─── Multi-Variant Management Panel ─────────────────────────────────── */}
+              <ProductVariantManager
+                products={products}
+                onRefresh={() => fetchAdminProducts().then((refreshed) => setProducts(refreshed))}
+              />
             </div>
           )}
 
@@ -1316,7 +1319,7 @@ function AdminDashboardMain() {
 // PRODUCT VARIANT MANAGER COMPONENT
 // ─────────────────────────────────────────────────────────────────────────────
 
-function ProductVariantManager({ products }: { products: AdminProduct[] }) {
+function LegacyVariantStoreManager({ products }: { products: AdminProduct[] }) {
   const [expandedProduct, setExpandedProduct] = React.useState<string | null>(null);
   const [variantState, setVariantState] = React.useState<Record<string, ReturnType<typeof getVariants>>>({});
   // New size form
@@ -1971,6 +1974,175 @@ function AdminReviewsView({ products }: { products: AdminProduct[] }) {
             </div>
           ))
         )}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Multi-Variant Manager Component:
+ * Displays per-variant pricing (Size A, Size B, Size C), MRP, stock quantity, and availability
+ * for each product, allowing admins to edit and save variants independently to Supabase product_variants table.
+ */
+function ProductVariantManager({ products, onRefresh }: { products: AdminProduct[]; onRefresh: () => void }) {
+  const [selectedProductId, setSelectedProductId] = useState<string>(products[0]?.product_id || "FLX48");
+  const [savingVariant, setSavingVariant] = useState<string | null>(null);
+
+  const currentProduct = products.find((p) => p.product_id === selectedProductId) || products[0];
+  const variants = currentProduct?.variants || [];
+
+  const [localVariants, setLocalVariants] = useState<ProductVariant[]>(variants);
+
+  useEffect(() => {
+    if (currentProduct) {
+      setLocalVariants(currentProduct.variants || []);
+    }
+  }, [currentProduct]);
+
+  const handleFieldChange = (index: number, field: keyof ProductVariant, value: any) => {
+    setLocalVariants((prev) => {
+      const next = [...prev];
+      next[index] = { ...next[index], [field]: value };
+      return next;
+    });
+  };
+
+  const handleSaveVariant = async (variant: ProductVariant) => {
+    setSavingVariant(variant.variant_name);
+    const res = await updateAdminProductVariant(variant);
+    setSavingVariant(null);
+
+    if (res.success) {
+      toast.success(`Saved Variant "${variant.variant_name}" for ${variant.product_id} to Supabase!`);
+      onRefresh();
+    } else {
+      toast.error(`Error saving variant: ${res.error || "Check RLS policies"}`);
+    }
+  };
+
+  if (!currentProduct) return null;
+
+  return (
+    <div className="bg-white border border-[#D9E3C5]/60 rounded-3xl p-6 shadow-sm space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#D9E3C5]/40">
+        <div>
+          <h3 className="serif text-xl font-extrabold text-[#2F4B2F]">Multi-Variant Price & Inventory Manager</h3>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Manage independent prices, MRPs, and stock quantities for Size A, B, C variants stored in Supabase <code className="font-mono text-[#739D30]">product_variants</code>.
+          </p>
+        </div>
+
+        {/* Product Selector */}
+        <select
+          value={selectedProductId}
+          onChange={(e) => setSelectedProductId(e.target.value)}
+          className="px-3.5 py-2 rounded-xl border border-[#D9E3C5] text-xs font-bold bg-[#FCFCF8] text-[#2F4B2F] focus:ring-2 focus:ring-[#739D30]"
+        >
+          {products.map((p) => (
+            <option key={p.product_id} value={p.product_id}>
+              {p.product_id} — {p.name} ({p.variants.length} Variants)
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Variants Table */}
+      <div className="overflow-x-auto rounded-2xl border border-[#D9E3C5]/40">
+        <table className="w-full text-left text-xs">
+          <thead className="bg-[#FCFCF8] border-b border-[#D9E3C5]/50 text-muted-foreground font-semibold uppercase text-[10px] tracking-wider">
+            <tr>
+              <th className="py-3 px-4">Variant / Size</th>
+              <th className="py-3 px-4">Dimensions</th>
+              <th className="py-3 px-4">Selling Price (₹)</th>
+              <th className="py-3 px-4">Original MRP (₹)</th>
+              <th className="py-3 px-4">Stock Units</th>
+              <th className="py-3 px-4 text-center">Available</th>
+              <th className="py-3 px-4 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-[#D9E3C5]/30">
+            {localVariants.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="py-6 text-center text-xs text-muted-foreground">
+                  No variants registered for this product yet.
+                </td>
+              </tr>
+            ) : (
+              localVariants.map((v, idx) => (
+                <tr key={v.variant_name} className="hover:bg-[#EEF5E3]/40 transition-colors">
+                  <td className="py-3.5 px-4 font-bold text-[#2F4B2F]">
+                    <div className="flex items-center gap-2">
+                      <span className="w-6 h-6 rounded-lg bg-[#739D30]/10 text-[#739D30] font-mono text-xs flex items-center justify-center font-bold">
+                        {v.variant_name.substring(0, 1)}
+                      </span>
+                      <span>{v.variant_name}</span>
+                    </div>
+                  </td>
+
+                  <td className="py-3.5 px-4 text-muted-foreground font-medium text-[11px]">
+                    <input
+                      type="text"
+                      value={v.dimensions || ""}
+                      onChange={(e) => handleFieldChange(idx, "dimensions", e.target.value)}
+                      className="w-48 px-2 py-1 border border-[#D9E3C5] rounded-lg text-xs bg-white focus:ring-1 focus:ring-[#739D30]"
+                    />
+                  </td>
+
+                  {/* Selling Price */}
+                  <td className="py-3.5 px-4">
+                    <input
+                      type="number"
+                      value={v.selling_price}
+                      onChange={(e) => handleFieldChange(idx, "selling_price", Number(e.target.value))}
+                      className="w-24 px-2 py-1 border border-[#D9E3C5] rounded-lg text-xs font-bold text-[#2F4B2F] bg-white focus:ring-1 focus:ring-[#739D30]"
+                    />
+                  </td>
+
+                  {/* Original MRP */}
+                  <td className="py-3.5 px-4">
+                    <input
+                      type="number"
+                      value={v.original_price}
+                      onChange={(e) => handleFieldChange(idx, "original_price", Number(e.target.value))}
+                      className="w-24 px-2 py-1 border border-[#D9E3C5] rounded-lg text-xs text-muted-foreground bg-white focus:ring-1 focus:ring-[#739D30]"
+                    />
+                  </td>
+
+                  {/* Stock Quantity */}
+                  <td className="py-3.5 px-4">
+                    <input
+                      type="number"
+                      value={v.stock_quantity}
+                      onChange={(e) => handleFieldChange(idx, "stock_quantity", Number(e.target.value))}
+                      className="w-20 px-2 py-1 border border-[#D9E3C5] rounded-lg text-xs font-bold bg-white focus:ring-1 focus:ring-[#739D30]"
+                    />
+                  </td>
+
+                  {/* Availability Checkbox */}
+                  <td className="py-3.5 px-4 text-center">
+                    <input
+                      type="checkbox"
+                      checked={v.available}
+                      onChange={(e) => handleFieldChange(idx, "available", e.target.checked)}
+                      className="w-4 h-4 accent-[#739D30] cursor-pointer"
+                    />
+                  </td>
+
+                  {/* Save Button */}
+                  <td className="py-3.5 px-4 text-right">
+                    <button
+                      onClick={() => handleSaveVariant(v)}
+                      disabled={savingVariant === v.variant_name}
+                      className="px-3 py-1.5 rounded-xl bg-[#739D30] hover:bg-[#628828] text-white text-xs font-bold shadow-xs transition cursor-pointer disabled:opacity-50"
+                    >
+                      {savingVariant === v.variant_name ? "Saving..." : "Save Variant"}
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );
