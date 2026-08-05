@@ -1,6 +1,6 @@
-import { products as staticProducts, vases as staticVases, auxiliaryProducts as staticAuxiliary, getProductByCode as findStaticProduct } from "@/data/products";
-import { mockDynamicProducts, fetchAdminProducts } from "@/services/adminService";
-import { fetchDynamicProductsFromSupabase, isSupabaseConfigured } from "@/lib/supabase";
+import { products as staticProducts, vases as staticVases, auxiliaryProducts as staticAuxiliary, getProductByCode as findStaticProduct, potBg } from "@/data/products";
+import { mockDynamicProducts } from "@/services/adminService";
+import { fetchDynamicProductsFromSupabase, isSupabaseConfigured, supabase } from "@/lib/supabase";
 import type { Product } from "@/types/product";
 
 export interface DynamicProductData {
@@ -23,19 +23,32 @@ export interface DynamicProductData {
  */
 export const productService = {
   /**
-   * Helper to merge static content with dynamic business state.
+   * Helper to merge static content with dynamic business state safely.
    */
-  mergeProduct(staticProd: any, dynamicMap: Map<string, any>): Product {
-    const code = staticProd.code.toUpperCase();
-    const dyn = dynamicMap.get(code);
+  mergeProduct(staticProd: any, dynamicMap?: Map<string, any>): Product {
+    if (!staticProd) {
+      return {
+        code: "UNKNOWN",
+        name: "Unknown Product",
+        price: 0,
+        mrp: 0,
+        img: potBg,
+      };
+    }
 
-    const price = Number(dyn?.selling_price ?? dyn?.price ?? staticProd.price);
-    const mrp = Number(dyn?.original_price ?? dyn?.mrp ?? staticProd.mrp);
+    const code = (staticProd.code || "").toUpperCase();
+    const dyn = dynamicMap ? dynamicMap.get(code) : mockDynamicProducts[code];
+
+    const price = Number(dyn?.selling_price ?? dyn?.price ?? staticProd.price ?? 0);
+    const mrp = Number(dyn?.original_price ?? dyn?.mrp ?? staticProd.mrp ?? price);
     const discount = dyn?.discount_percentage !== undefined ? Number(dyn.discount_percentage) : (mrp > price ? Math.round(((mrp - price) / mrp) * 100) : 0);
     const isSoldOut = dyn?.stock_status === "out_of_stock" || (dyn?.stock_quantity !== undefined && Number(dyn.stock_quantity) <= 0);
 
     return {
       ...staticProd,
+      code: staticProd.code || "UNKNOWN",
+      name: staticProd.name || "Planter",
+      img: staticProd.img || potBg,
       price,
       mrp,
       discountPercentage: discount,
@@ -61,7 +74,7 @@ export const productService = {
 
     return allStatic
       .filter((p) => {
-        const dyn = dynamicMap.get(p.code.toUpperCase());
+        const dyn = dynamicMap.get((p.code || "").toUpperCase());
         return dyn?.active !== false;
       })
       .map((p) => this.mergeProduct(p, dynamicMap));
@@ -74,32 +87,36 @@ export const productService = {
     const allStatic = [...staticProducts, ...staticVases, ...staticAuxiliary];
 
     if (isSupabaseConfigured) {
-      const dbProducts = await fetchDynamicProductsFromSupabase();
-      if (dbProducts && dbProducts.length > 0) {
-        const dynamicMap = new Map<string, any>();
-        dbProducts.forEach((dp) => dynamicMap.set(dp.product_id.toUpperCase(), dp));
+      try {
+        const dbProducts = await fetchDynamicProductsFromSupabase();
+        if (dbProducts && dbProducts.length > 0) {
+          const dynamicMap = new Map<string, any>();
+          dbProducts.forEach((dp) => {
+            if (dp.product_id) {
+              dynamicMap.set(dp.product_id.toUpperCase(), dp);
+              mockDynamicProducts[dp.product_id.toUpperCase()] = {
+                price: Number(dp.selling_price),
+                mrp: Number(dp.original_price),
+                discount_percentage: Number(dp.discount_percentage),
+                stock_status: dp.stock_quantity > 0 ? "in_stock" : "out_of_stock",
+                stock_quantity: dp.stock_quantity,
+                featured: dp.featured,
+                new_arrival: dp.new_arrival,
+                display_order: dp.display_order,
+                active: dp.active,
+              };
+            }
+          });
 
-        // Update in-memory cache
-        dbProducts.forEach((dp) => {
-          mockDynamicProducts[dp.product_id.toUpperCase()] = {
-            price: Number(dp.selling_price),
-            mrp: Number(dp.original_price),
-            discount_percentage: Number(dp.discount_percentage),
-            stock_status: dp.stock_quantity > 0 ? "in_stock" : "out_of_stock",
-            stock_quantity: dp.stock_quantity,
-            featured: dp.featured,
-            new_arrival: dp.new_arrival,
-            display_order: dp.display_order,
-            active: dp.active,
-          };
-        });
-
-        return allStatic
-          .filter((p) => {
-            const dyn = dynamicMap.get(p.code.toUpperCase());
-            return dyn ? dyn.active !== false : true;
-          })
-          .map((p) => this.mergeProduct(p, dynamicMap));
+          return allStatic
+            .filter((p) => {
+              const dyn = dynamicMap.get((p.code || "").toUpperCase());
+              return dyn ? dyn.active !== false : true;
+            })
+            .map((p) => this.mergeProduct(p, dynamicMap));
+        }
+      } catch (err) {
+        console.warn("[Vassio Supabase] Error fetching products_dynamic:", err);
       }
     }
 
@@ -109,7 +126,8 @@ export const productService = {
   /**
    * Fetch a single merged product by code or slug.
    */
-  getProductByCode(code: string): Product | null {
+  getProductByCode(code: string | undefined | null): Product | null {
+    if (!code) return null;
     const staticProd = findStaticProduct(code);
     if (!staticProd) return null;
 
@@ -119,6 +137,47 @@ export const productService = {
     });
 
     return this.mergeProduct(staticProd, dynamicMap);
+  },
+
+  /**
+   * Async single product lookup from Supabase products_dynamic table by code/slug.
+   */
+  async getProductByCodeAsync(code: string | undefined | null): Promise<Product | null> {
+    if (!code) return null;
+    const staticProd = findStaticProduct(code);
+    if (!staticProd) return null;
+
+    if (isSupabaseConfigured) {
+      try {
+        const productCode = staticProd.code.toUpperCase();
+        const { data, error } = await supabase
+          .from("products_dynamic")
+          .select("*")
+          .eq("product_id", productCode)
+          .maybeSingle();
+
+        if (!error && data) {
+          const dynamicMap = new Map<string, any>();
+          dynamicMap.set(productCode, data);
+          mockDynamicProducts[productCode] = {
+            price: Number(data.selling_price),
+            mrp: Number(data.original_price),
+            discount_percentage: Number(data.discount_percentage),
+            stock_status: data.stock_quantity > 0 ? "in_stock" : "out_of_stock",
+            stock_quantity: data.stock_quantity,
+            featured: data.featured,
+            new_arrival: data.new_arrival,
+            display_order: data.display_order,
+            active: data.active,
+          };
+          return this.mergeProduct(staticProd, dynamicMap);
+        }
+      } catch (e) {
+        console.warn("[Vassio Supabase] Exception fetching single product:", e);
+      }
+    }
+
+    return this.getProductByCode(code);
   },
 
   /**

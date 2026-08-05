@@ -12,14 +12,20 @@ import type { Product } from "@/types/product";
 
 export const Route = createFileRoute("/product/$productId")({
   head: ({ params }) => {
-    const product = productService.getProductByCode(params.productId);
-    const title = product ? `${product.name} — Vassio` : "Product Not Found — Vassio";
-    return {
-      meta: [
-        { title },
-        { name: "description", content: product?.description || "Product Details" },
-      ],
-    };
+    try {
+      const product = productService.getProductByCode(params?.productId);
+      const title = product ? `${product.name} — Vassio` : "Product Details — Vassio";
+      return {
+        meta: [
+          { title },
+          { name: "description", content: product?.description || "Product Details" },
+        ],
+      };
+    } catch (e) {
+      return {
+        meta: [{ title: "Vassio Pots" }],
+      };
+    }
   },
   component: ProductPage,
 });
@@ -29,15 +35,20 @@ function ProductPage() {
   const [product, setProduct] = useState<Product | null>(() => productService.getProductByCode(productId));
   const [loading, setLoading] = useState(false);
 
-  // Fetch dynamic product from Supabase products_dynamic table on mount / route param change
+  // Fetch live dynamic product from Supabase products_dynamic table on mount / route param change
   useEffect(() => {
     let isMounted = true;
     setLoading(true);
 
-    productService.getAllProductsAsync().then(() => {
+    productService.getProductByCodeAsync(productId).then((merged) => {
       if (isMounted) {
-        const merged = productService.getProductByCode(productId);
-        setProduct(merged);
+        setProduct(merged || productService.getProductByCode(productId));
+        setLoading(false);
+      }
+    }).catch((err) => {
+      console.warn("[Vassio Product Page] Supabase fetch fallback:", err);
+      if (isMounted) {
+        setProduct(productService.getProductByCode(productId));
         setLoading(false);
       }
     });
@@ -89,7 +100,7 @@ function ProductPage() {
             Home
           </Link>
           <span>/</span>
-          <Link to="/" className="hover:text-foreground transition-colors">
+          <Link to="/products" className="hover:text-foreground transition-colors">
             Shop
           </Link>
           <span>/</span>
@@ -189,9 +200,9 @@ function ProductDetails({
   const { addToCart } = useStore();
 
   // ── Variant State ──────────────────────────────────────────────────────────
-  const variants = getVariants(product.code);
-  const sortedSizes = [...variants.sizes].sort((a, b) => a.displayOrder - b.displayOrder);
-  const sortedColors = [...variants.colors].sort((a, b) => a.displayOrder - b.displayOrder);
+  const variants = getVariants(product.code || "FLX48");
+  const sortedSizes = [...(variants?.sizes || [])].sort((a, b) => a.displayOrder - b.displayOrder);
+  const sortedColors = [...(variants?.colors || [])].sort((a, b) => a.displayOrder - b.displayOrder);
 
   const [selectedVariantSize, setSelectedVariantSize] = useState<ProductSizeVariant | null>(
     sortedSizes.find((s) => s.available) ?? null
@@ -202,9 +213,9 @@ function ProductDetails({
 
   // Reset variant selections when product changes
   useEffect(() => {
-    const freshVariants = getVariants(product.code);
-    const freshSizes = [...freshVariants.sizes].sort((a, b) => a.displayOrder - b.displayOrder);
-    const freshColors = [...freshVariants.colors].sort((a, b) => a.displayOrder - b.displayOrder);
+    const freshVariants = getVariants(product.code || "FLX48");
+    const freshSizes = [...(freshVariants?.sizes || [])].sort((a, b) => a.displayOrder - b.displayOrder);
+    const freshColors = [...(freshVariants?.colors || [])].sort((a, b) => a.displayOrder - b.displayOrder);
     setSelectedVariantSize(freshSizes.find((s) => s.available) ?? null);
     setSelectedVariantColor(freshColors.find((c) => c.available) ?? null);
   }, [product.code]);
