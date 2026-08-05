@@ -1,14 +1,10 @@
 import { createClient } from "@supabase/supabase-js";
 
-// Retrieve environment variables
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://vassiostudioproject.supabase.co";
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
+// Retrieve environment variables with project credentials fallback
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://rhxwvsjxoqkjqeinypvd.supabase.co";
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "sb_publishable_vzi1t4s1L9iVbBimA_m58w_dCR19JBb";
 
-export const isSupabaseConfigured = Boolean(
-  import.meta.env.VITE_SUPABASE_URL &&
-    import.meta.env.VITE_SUPABASE_ANON_KEY &&
-    !import.meta.env.VITE_SUPABASE_ANON_KEY.includes("sample_vassio_anon_key")
-);
+export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
 
 // Single reusable Supabase client instance
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
@@ -33,7 +29,7 @@ export interface SupabaseDynamicProduct {
 
 /**
  * Safely fetches dynamic product data from Supabase `products_dynamic` table.
- * Falls back cleanly to local state/mock if database is offline or not yet configured.
+ * Falls back cleanly to local static data if table does not exist or database is offline.
  */
 export async function fetchDynamicProductsFromSupabase(): Promise<SupabaseDynamicProduct[] | null> {
   if (!isSupabaseConfigured) {
@@ -47,7 +43,7 @@ export async function fetchDynamicProductsFromSupabase(): Promise<SupabaseDynami
       .order("display_order", { ascending: true });
 
     if (error) {
-      console.warn("[Vassio Supabase] Failed to fetch products_dynamic:", error.message);
+      console.warn("[Vassio Supabase] products_dynamic table query notice:", error.message);
       return null;
     }
 
@@ -57,3 +53,23 @@ export async function fetchDynamicProductsFromSupabase(): Promise<SupabaseDynami
     return null;
   }
 }
+
+/**
+ * SQL Schema script helper for creating the products_dynamic table in Supabase SQL Editor:
+ * 
+ * CREATE TABLE public.products_dynamic (
+ *   product_id TEXT PRIMARY KEY,
+ *   selling_price NUMERIC NOT NULL,
+ *   original_price NUMERIC NOT NULL,
+ *   discount_percentage NUMERIC DEFAULT 0,
+ *   stock_quantity INT DEFAULT 10,
+ *   featured BOOLEAN DEFAULT false,
+ *   new_arrival BOOLEAN DEFAULT false,
+ *   active BOOLEAN DEFAULT true,
+ *   display_order INT DEFAULT 99,
+ *   updated_at TIMESTAMPTZ DEFAULT NOW()
+ * );
+ * 
+ * INSERT INTO public.products_dynamic (product_id, selling_price, original_price, discount_percentage, stock_quantity, featured, new_arrival, active, display_order)
+ * VALUES ('FLX48', 5200, 7500, 30, 15, true, true, true, 1);
+ */
