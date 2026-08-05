@@ -166,8 +166,10 @@ function AdminDashboardMain() {
       setProducts((prev) =>
         prev.map((p) => (p.product_id === productId ? { ...p, ...updates } : p))
       );
+      // Re-sync with Supabase for real-time consistency
+      fetchAdminProducts().then((refreshed) => setProducts(refreshed));
     } else {
-      toast.error("Failed to update product");
+      toast.error("Failed to update product in Supabase");
     }
   };
 

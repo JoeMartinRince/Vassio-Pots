@@ -1,5 +1,5 @@
 import { products as staticProducts, vases as staticVases, auxiliaryProducts as staticAuxiliary, getProductByCode as findStaticProduct } from "@/data/products";
-import { getAdminProducts } from "@/services/adminService";
+import { mockDynamicProducts, fetchAdminProducts } from "@/services/adminService";
 import { fetchDynamicProductsFromSupabase, isSupabaseConfigured } from "@/lib/supabase";
 import type { Product } from "@/types/product";
 
@@ -26,12 +26,13 @@ export const productService = {
    * Helper to merge static content with dynamic business state.
    */
   mergeProduct(staticProd: any, dynamicMap: Map<string, any>): Product {
-    const dyn = dynamicMap.get(staticProd.code.toUpperCase());
+    const code = staticProd.code.toUpperCase();
+    const dyn = dynamicMap.get(code);
 
-    const price = dyn?.price ?? dyn?.selling_price ?? staticProd.price;
-    const mrp = dyn?.mrp ?? dyn?.original_price ?? staticProd.mrp;
-    const discount = dyn?.discount_percentage ?? (mrp > price ? Math.round(((mrp - price) / mrp) * 100) : 0);
-    const isSoldOut = dyn?.stock_status === "out_of_stock" || (dyn?.stock_quantity !== undefined && dyn.stock_quantity <= 0);
+    const price = Number(dyn?.selling_price ?? dyn?.price ?? staticProd.price);
+    const mrp = Number(dyn?.original_price ?? dyn?.mrp ?? staticProd.mrp);
+    const discount = dyn?.discount_percentage !== undefined ? Number(dyn.discount_percentage) : (mrp > price ? Math.round(((mrp - price) / mrp) * 100) : 0);
+    const isSoldOut = dyn?.stock_status === "out_of_stock" || (dyn?.stock_quantity !== undefined && Number(dyn.stock_quantity) <= 0);
 
     return {
       ...staticProd,
@@ -39,10 +40,10 @@ export const productService = {
       mrp,
       discountPercentage: discount,
       isSoldOut,
-      featured: dyn?.featured ?? staticProd.featured ?? false,
-      newArrival: dyn?.new_arrival ?? staticProd.newArrival ?? false,
-      displayOrder: dyn?.display_order ?? 99,
-      active: dyn?.active ?? true,
+      featured: dyn?.featured !== undefined ? Boolean(dyn.featured) : (staticProd.featured ?? false),
+      newArrival: dyn?.new_arrival !== undefined ? Boolean(dyn.new_arrival) : (staticProd.newArrival ?? false),
+      displayOrder: dyn?.display_order !== undefined ? Number(dyn.display_order) : 99,
+      active: dyn?.active !== undefined ? dyn.active !== false : true,
     };
   },
 
@@ -52,10 +53,11 @@ export const productService = {
   getAllProducts(): Product[] {
     const allStatic = [...staticProducts, ...staticVases, ...staticAuxiliary];
     
-    // Fetch dynamic store map
-    const adminProducts = getAdminProducts();
+    // Fetch cached dynamic map
     const dynamicMap = new Map<string, any>();
-    adminProducts.forEach((ap) => dynamicMap.set(ap.product_id.toUpperCase(), ap));
+    Object.entries(mockDynamicProducts).forEach(([code, item]) => {
+      dynamicMap.set(code.toUpperCase(), item);
+    });
 
     return allStatic
       .filter((p) => {
@@ -77,6 +79,21 @@ export const productService = {
         const dynamicMap = new Map<string, any>();
         dbProducts.forEach((dp) => dynamicMap.set(dp.product_id.toUpperCase(), dp));
 
+        // Update in-memory cache
+        dbProducts.forEach((dp) => {
+          mockDynamicProducts[dp.product_id.toUpperCase()] = {
+            price: Number(dp.selling_price),
+            mrp: Number(dp.original_price),
+            discount_percentage: Number(dp.discount_percentage),
+            stock_status: dp.stock_quantity > 0 ? "in_stock" : "out_of_stock",
+            stock_quantity: dp.stock_quantity,
+            featured: dp.featured,
+            new_arrival: dp.new_arrival,
+            display_order: dp.display_order,
+            active: dp.active,
+          };
+        });
+
         return allStatic
           .filter((p) => {
             const dyn = dynamicMap.get(p.code.toUpperCase());
@@ -96,9 +113,10 @@ export const productService = {
     const staticProd = findStaticProduct(code);
     if (!staticProd) return null;
 
-    const adminProducts = getAdminProducts();
     const dynamicMap = new Map<string, any>();
-    adminProducts.forEach((ap) => dynamicMap.set(ap.product_id.toUpperCase(), ap));
+    Object.entries(mockDynamicProducts).forEach(([c, item]) => {
+      dynamicMap.set(c.toUpperCase(), item);
+    });
 
     return this.mergeProduct(staticProd, dynamicMap);
   },
