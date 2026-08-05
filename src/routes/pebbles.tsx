@@ -116,8 +116,8 @@ function PebblesPage() {
                   </div>
                   <div className="mt-4 flex items-center justify-between">
                     <div>
-                      <span className="text-sm font-bold text-primary">₹{p.price.toLocaleString("en-IN")}</span>
-                      <span className="text-xs text-muted-foreground line-through ml-2">₹{p.mrp.toLocaleString("en-IN")}</span>
+                      <span className="text-sm font-bold text-primary">₹{(p.price || 0).toLocaleString("en-IN")}</span>
+                      <span className="text-xs text-muted-foreground line-through ml-2">₹{(p.mrp || p.price || 0).toLocaleString("en-IN")}</span>
                     </div>
                     <button
                       onClick={() => {

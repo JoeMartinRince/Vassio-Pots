@@ -127,10 +127,10 @@ export default function SearchOverlay() {
                           </p>
                           <div className="flex items-center gap-2 mt-1">
                             <span className="text-sm font-semibold text-primary">
-                              ₹{p.price.toLocaleString("en-IN")}
+                              ₹{(p.price || 0).toLocaleString("en-IN")}
                             </span>
                             <span className="text-xs text-muted-foreground line-through">
-                              ₹{p.mrp.toLocaleString("en-IN")}
+                              ₹{(p.mrp || p.price || 0).toLocaleString("en-IN")}
                             </span>
                             <span className="text-[10px] bg-[#3F673F] text-white px-1.5 py-0.5 rounded font-bold">
                               {off}% OFF

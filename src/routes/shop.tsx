@@ -359,10 +359,10 @@ function ShopPage() {
                   </p>
                   <p className="mt-1.5 text-sm">
                     <span className="product-price font-sans font-bold text-primary">
-                      ₹{p.price.toLocaleString("en-IN")}
+                      ₹{(p.price || 0).toLocaleString("en-IN")}
                     </span>
                     <span className="ml-2 text-muted-foreground line-through text-xs font-sans">
-                      ₹{p.mrp.toLocaleString("en-IN")}
+                      ₹{(p.mrp || p.price || 0).toLocaleString("en-IN")}
                     </span>
                   </p>
                 </Link>

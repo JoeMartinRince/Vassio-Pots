@@ -1115,7 +1115,7 @@ function AdminDashboardMain() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="font-bold text-xs text-[#2F4B2F]">₹{p.price.toLocaleString()}</div>
+                        <div className="font-bold text-xs text-[#2F4B2F]">₹{(p.price || 0).toLocaleString()}</div>
                         <div className="text-[10px] text-emerald-600 font-bold">{p.discount_percentage}% OFF</div>
                       </div>
                     </div>
