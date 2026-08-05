@@ -722,8 +722,10 @@ function ReelItem({
   };
 
   const mainProduct = reel.products[0];
-  const off = mainProduct
-    ? Math.round(((mainProduct.mrp - mainProduct.price) / mainProduct.mrp) * 100)
+  const mainPrice = mainProduct?.price ?? 0;
+  const mainMrp = mainProduct?.mrp ?? 0;
+  const off = mainMrp > mainPrice
+    ? Math.round(((mainMrp - mainPrice) / mainMrp) * 100)
     : 0;
 
   return (
@@ -807,7 +809,9 @@ function ReelItem({
         {reel.products && reel.products.length > 0 && (
           <div className="flex gap-2.5 overflow-x-auto pb-2 px-2 snap-x snap-mandatory scrollbar-none [&::-webkit-scrollbar]:hidden w-full scroll-smooth">
             {reel.products.map((p) => {
-              const off = Math.round(((p.mrp - p.price) / p.mrp) * 100);
+              const price = p.price ?? 0;
+              const mrp = p.mrp ?? 0;
+              const off = mrp > price ? Math.round(((mrp - price) / mrp) * 100) : 0;
               return (
                 <div
                   key={p.code}
@@ -832,14 +836,18 @@ function ReelItem({
                       </p>
                       <div className="mt-1 flex items-baseline gap-1 lg:gap-0.5 flex-wrap">
                         <span className="product-price font-sans font-bold text-xs lg:text-[10px] text-primary">
-                          ₹{p.price.toLocaleString("en-IN")}
+                          {price > 0 ? `₹${price.toLocaleString("en-IN")}` : "View product"}
                         </span>
-                        <span className="text-[9px] lg:text-[7.5px] text-muted-foreground line-through ml-1.5 lg:ml-1 font-sans">
-                          ₹{p.mrp.toLocaleString("en-IN")}
-                        </span>
-                        <span className="text-[8px] lg:text-[6.5px] bg-[#3F673F] text-white border border-[#5B8550]/40 px-1 py-0.5 font-bold uppercase rounded ml-1.5 lg:ml-1">
-                          {off}% OFF
-                        </span>
+                        {mrp > price && (
+                          <span className="text-[9px] lg:text-[7.5px] text-muted-foreground line-through ml-1.5 lg:ml-1 font-sans">
+                            ₹{mrp.toLocaleString("en-IN")}
+                          </span>
+                        )}
+                        {off > 0 && (
+                          <span className="text-[8px] lg:text-[6.5px] bg-[#3F673F] text-white border border-[#5B8550]/40 px-1 py-0.5 font-bold uppercase rounded ml-1.5 lg:ml-1">
+                            {off}% OFF
+                          </span>
+                        )}
                       </div>
                     </div>
                   </Link>
@@ -898,8 +906,10 @@ function WatchAndBuy({ onReelClick }: { onReelClick: (index: number) => void }) 
         >
           {reels.map((r, index) => {
             const mainProduct = r.products[0];
-            const off = mainProduct
-              ? Math.round(((mainProduct.mrp - mainProduct.price) / mainProduct.mrp) * 100)
+            const mPrice = mainProduct?.price ?? 0;
+            const mMrp = mainProduct?.mrp ?? 0;
+            const off = mMrp > mPrice
+              ? Math.round(((mMrp - mPrice) / mMrp) * 100)
               : 0;
             return (
               <div
@@ -944,11 +954,13 @@ function WatchAndBuy({ onReelClick }: { onReelClick: (index: number) => void }) 
                     </p>
                     <div className="mt-1 flex items-baseline gap-1.5 flex-wrap">
                       <span className="product-price font-sans font-bold text-xs md:text-sm text-secondary">
-                        ₹{mainProduct.price.toLocaleString("en-IN")}
+                        {(mainProduct.price ?? 0) > 0 ? `₹${(mainProduct.price ?? 0).toLocaleString("en-IN")}` : "View product"}
                       </span>
-                      <span className="text-[10px] md:text-xs text-primary-foreground/60 line-through font-sans">
-                        ₹{mainProduct.mrp.toLocaleString("en-IN")}
-                      </span>
+                      {mainProduct.mrp && mainProduct.mrp > (mainProduct.price ?? 0) && (
+                        <span className="text-[10px] md:text-xs text-primary-foreground/60 line-through font-sans">
+                          ₹{mainProduct.mrp.toLocaleString("en-IN")}
+                        </span>
+                      )}
                     </div>
                     <div className="mt-1.5">
                       <span className="inline-block text-[9px] font-bold bg-[#3F673F] text-white border border-[#5B8550]/40 px-2 py-0.5 rounded tracking-wide">
@@ -1043,13 +1055,13 @@ function QuickViewModal({
 
         {/* Price Row */}
         <div className="flex items-center gap-3 px-1">
-          {product.mrp && (
+          {product.mrp && product.mrp > (product.price ?? 0) && (
             <span className="text-[11px] text-gray-400 line-through font-sans">
               ₹{product.mrp.toLocaleString("en-IN")}
             </span>
           )}
           <span className="product-price font-sans font-bold text-sm text-gray-900">
-            ₹{product.price.toLocaleString("en-IN")}
+            {(product.price ?? 0) > 0 ? `₹${(product.price ?? 0).toLocaleString("en-IN")}` : "View product"}
           </span>
           {off > 0 && (
             <span className="text-[9px] bg-[#3F673F] text-white border border-[#5B8550]/40 px-2 py-0.5 font-bold uppercase rounded serif tracking-wider">
