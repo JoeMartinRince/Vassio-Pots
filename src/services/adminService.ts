@@ -1,4 +1,9 @@
-import { supabase, isSupabaseConfigured, upsertProductVariant } from "@/lib/supabase";
+import {
+  supabase,
+  isSupabaseConfigured,
+  upsertProductVariantRow,
+  upsertDynamicProductRow,
+} from "@/lib/supabase";
 import { products as staticProducts, potBg } from "@/data/products";
 import productService from "@/services/product.service";
 import type { ProductVariant } from "@/types/product";
@@ -71,8 +76,6 @@ export interface RevenueMetrics {
   recentOrders: Order[];
 }
 
-export const mockDynamicProducts: Record<string, Partial<AdminProduct>> = {};
-
 let mockOrders: Order[] = [
   {
     id: "ord-1001",
@@ -98,11 +101,14 @@ let mockCustomers: Customer[] = [
 ];
 
 // ==============================================================================
-// PRODUCT & VARIANT ADMIN SERVICE API
+// ENTERPRISE PRODUCT & VARIANT ADMIN SERVICE API
 // ==============================================================================
 
+/**
+ * Fetch fresh products and size variants directly from Supabase.
+ * Bypasses all local in-memory caches to guarantee latest database state.
+ */
 export async function fetchAdminProducts(): Promise<AdminProduct[]> {
-  // Always fetch fresh merged products directly from productService
   const mergedProducts = await productService.getAllProductsAsync();
 
   return mergedProducts.map((p, idx) => ({
@@ -111,7 +117,7 @@ export async function fetchAdminProducts(): Promise<AdminProduct[]> {
     price: p.price,
     mrp: p.mrp,
     discount_percentage: p.discountPercentage || 0,
-    stock_status: (p.isSoldOut ? "out_of_stock" : "in_stock") as any,
+    stock_status: p.isSoldOut ? "out_of_stock" : "in_stock",
     stock_quantity: p.stockQuantity ?? 10,
     featured: p.featured ?? true,
     new_arrival: p.newArrival ?? false,
@@ -126,103 +132,34 @@ export async function fetchAdminProducts(): Promise<AdminProduct[]> {
   }));
 }
 
+/**
+ * Update dynamic product flags (featured, new_arrival, active, display_order) in Supabase products_dynamic.
+ */
 export async function updateAdminProduct(
   productId: string,
   updates: Partial<AdminProduct>
 ): Promise<{ success: boolean; error?: string }> {
   const code = productId.trim().toUpperCase();
-  const staticProd = staticProducts.find((p) => p.code.toUpperCase() === code);
-  const existingDyn = mockDynamicProducts[code] || {};
 
-  const sellingPrice = updates.price !== undefined
-    ? Number(updates.price)
-    : Number(existingDyn.price ?? staticProd?.price ?? 0);
-
-  const originalPrice = updates.mrp !== undefined
-    ? Number(updates.mrp)
-    : Number(existingDyn.mrp ?? staticProd?.mrp ?? sellingPrice);
-
-  const discountPercentage = updates.discount_percentage !== undefined
-    ? Number(updates.discount_percentage)
-    : (originalPrice > 0 ? Math.round(((originalPrice - sellingPrice) / originalPrice) * 100) : 0);
-
-  let stockQty = updates.stock_quantity !== undefined
-    ? Number(updates.stock_quantity)
-    : existingDyn.stock_quantity;
-
-  if (stockQty === undefined) {
-    stockQty = updates.stock_status === "out_of_stock" ? 0 : 10;
-  }
-
-  const payload = {
+  const result = await upsertDynamicProductRow({
     product_id: code,
-    selling_price: sellingPrice,
-    original_price: originalPrice,
-    discount_percentage: discountPercentage,
-    stock_quantity: stockQty,
-    featured: updates.featured !== undefined ? Boolean(updates.featured) : Boolean(existingDyn.featured ?? true),
-    new_arrival: updates.new_arrival !== undefined ? Boolean(updates.new_arrival) : Boolean(existingDyn.new_arrival ?? false),
-    active: updates.active !== undefined ? Boolean(updates.active) : Boolean(existingDyn.active ?? true),
-    display_order: updates.display_order !== undefined ? Number(updates.display_order) : Number(existingDyn.display_order ?? 99),
-    updated_at: new Date().toISOString(),
-  };
+    featured: updates.featured,
+    new_arrival: updates.new_arrival,
+    active: updates.active,
+    display_order: updates.display_order,
+  });
 
-  mockDynamicProducts[code] = {
-    ...existingDyn,
-    price: sellingPrice,
-    mrp: originalPrice,
-    discount_percentage: discountPercentage,
-    stock_quantity: stockQty,
-    stock_status: stockQty <= 0 ? "out_of_stock" : "in_stock",
-    featured: payload.featured,
-    new_arrival: payload.new_arrival,
-    display_order: payload.display_order,
-    active: payload.active,
-  };
-
-  if (isSupabaseConfigured) {
-    try {
-      const { error } = await supabase
-        .from("products_dynamic")
-        .upsert(payload, { onConflict: "product_id" });
-
-      if (error) {
-        console.error("[Vassio Supabase] products_dynamic upsert failed:", error.message, error.code);
-        return { success: false, error: error.message };
-      }
-
-      productService.updateProductCache(code, payload as any);
-      return { success: true };
-    } catch (e: any) {
-      return { success: false, error: e?.message || "Network error" };
-    }
-  }
-
-  productService.updateProductCache(code, payload as any);
-  return { success: true };
+  return result;
 }
 
 /**
- * Save an individual variant (e.g. Size A, Size B, Size C) to Supabase product_variants table.
+ * Update individual variant pricing (selling_price, original_price, stock_quantity, available, sku)
+ * in Supabase product_variants table.
  */
 export async function updateAdminProductVariant(
   variant: ProductVariant
 ): Promise<{ success: boolean; error?: string }> {
-  const code = variant.product_id.toUpperCase();
-
-  const result = await upsertProductVariant({
-    ...variant,
-    product_id: code,
-  });
-
-  if (result.success) {
-    productService.updateVariantCache({
-      ...variant,
-      product_id: code,
-    });
-  }
-
-  return result;
+  return await upsertProductVariantRow(variant);
 }
 
 // ==============================================================================

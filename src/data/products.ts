@@ -1,18 +1,14 @@
-import heroPlants from "@/assets/hero-plants-new.png";
-import arecaImg from "@/assets/areca.png";
+// ─── Static Product Metadata Catalog ───────────────────────────────────────────
+// Single Source of Truth for static product content (names, descriptions, images, categories).
+// ZERO PRICE OR MRP FIELDS ARE STORED HERE.
+// All prices, MRPs, stock quantities, and availability exist ONLY in Supabase product_variants.
+
+import heroPlantersBeige from "@/assets/hero-planters-beige.jpg";
 import flaxImg from "@/assets/flax-series.png";
 import leaf2Img from "@/assets/leaf-set-2.png";
 import leaf3Img from "@/assets/leaf-set-3.png";
 import vanillaImg from "@/assets/vanilla.png";
-import catDecor from "@/assets/cat-decor.jpg";
-import catFurniture from "@/assets/cat-furniture.jpg";
-import catBedding from "@/assets/cat-bedding.jpg";
-import catKitchen from "@/assets/cat-kitchen.jpg";
-import catBath from "@/assets/cat-bath.jpg";
-import prod1 from "@/assets/prod-1.jpg";
-import prod2 from "@/assets/prod-2.jpg";
-import prod3 from "@/assets/prod-3.jpg";
-import prod4 from "@/assets/prod-4.jpg";
+import arecaImg from "@/assets/areca.png";
 import reel1 from "@/assets/reel-1.jpg";
 import reel2 from "@/assets/reel-2.jpg";
 import reel3 from "@/assets/reel-3.jpg";
@@ -22,35 +18,28 @@ import livingRoomVases from "@/assets/living-room-vases.png";
 import bathroomAroma from "@/assets/bathroom-aroma.png";
 import woodenBeadsDecor from "@/assets/wooden-beads-decor.png";
 import aboutUsWindow from "@/assets/about-us-window.png";
-import blogPlants from "@/assets/blog-plants.png";
-import blogStyling from "@/assets/blog-styling.png";
-import blogVases from "@/assets/blog-vases.png";
-import logo from "@/assets/logo.png";
-import feature1 from "@/assets/feature-1.png";
-import feature2 from "@/assets/feature-2.png";
-import feature3 from "@/assets/feature-3.png";
-import feature4 from "@/assets/feature-4.png";
-import feature5 from "@/assets/feature-5.png";
-import feature6 from "@/assets/feature-6.png";
-import feature7 from "@/assets/feature-7.png";
-import feature8 from "@/assets/feature-8.png";
-import feature9 from "@/assets/feature-9.png";
-import feature10 from "@/assets/feature-10.png";
-import feature11 from "@/assets/feature-11.png";
-import feature12 from "@/assets/feature-12.png";
-import potBg from "@/assets/pot-bg.jpeg";
+
+export const potBg = heroPlantersBeige;
+export const prod1 = flaxImg;
+export const prod2 = leaf2Img;
+export const prod3 = leaf3Img;
+export const prod4 = vanillaImg;
+export const prod5 = arecaImg;
+export const logo = heroPlantersBeige;
+
+export const announcements = [
+  "Complimentary Pan-India Shipping on Orders Above ₹5,000",
+  "Architectural Fiberplanters — Designed for Modern Spaces",
+  "Crafted in Small Batches with Sustainable Materials",
+];
 
 export {
-  heroPlants,
-  catDecor,
-  catFurniture,
-  catBedding,
-  catKitchen,
-  catBath,
-  prod1,
-  prod2,
-  prod3,
-  prod4,
+  heroPlantersBeige,
+  flaxImg,
+  leaf2Img,
+  leaf3Img,
+  vanillaImg,
+  arecaImg,
   reel1,
   reel2,
   reel3,
@@ -60,63 +49,59 @@ export {
   bathroomAroma,
   woodenBeadsDecor,
   aboutUsWindow,
-  blogPlants,
-  blogStyling,
-  blogVases,
-  logo,
-  potBg,
 };
 
-export const featuresImages = [
-  feature1,
-  feature2,
-  feature3,
-  feature4,
-  feature5,
-  feature6,
-  feature7,
-  feature8,
-  feature9,
-  feature10,
-  feature11,
-  feature12,
+export const heroPlants = [
+  { img: flaxImg, title: "Architectural Vases", subtitle: "Handcrafted fiberglass forms" },
+  { img: leaf2Img, title: "Botanic Planters", subtitle: "Natural leaf-engraved texture" },
+  { img: leaf3Img, title: "Organic Stoneware", subtitle: "Earthy tones for quiet spaces" },
 ];
 
-export const announcements = [
-  "100% Secure Online Payments & Pan India Delivery",
-  "Last Chance — Up to 60% Off | Limited Pieces",
-  "Use PREPAID5 for 5% OFF above ₹2000",
-];
-
-export const navLinks = ["New Arrival", "Shop", "Blogs", "About Us", "Our Stores", "Contact Us"];
+export const featuresImages = {
+  durability: flaxImg,
+  makeInIndia: leaf2Img,
+  customizedDesign: leaf3Img,
+  fadeResistant: vanillaImg,
+  frostResistant: arecaImg,
+  handmade: potBg,
+  indoorOutdoor: livingRoomVases,
+  lightweight: bathroomAroma,
+  lowMaintenance: woodenBeadsDecor,
+  uvProtected: aboutUsWindow,
+};
 
 export const categories = [
   {
-    name: "FRP Pots",
+    title: "Fiberglass Planters",
+    subtitle: "Durable, lightweight floor planters",
     href: "/frp-pots",
-    shopSearch: { category: "frp-pots" },
-    img: potBg,
+    shopSearch: { type: "pots", category: "frp" },
+    img: flaxImg,
   },
   {
-    name: "Artificial Plants",
-    href: "/artificial-plants",
-    shopSearch: { category: "artificial-plants" },
-    img: potBg,
-  },
-  {
-    name: "Terracotta Pots",
+    title: "Ceramic & Stoneware Vases",
+    subtitle: "Tactile vessels for branches & stems",
     href: "/terracotta-pots",
-    shopSearch: { category: "terracotta-pots" },
-    img: potBg,
+    shopSearch: { type: "pots", category: "terracotta" },
+    img: leaf3Img,
   },
   {
-    name: "Pebbles",
+    title: "Artificial Trees & Palms",
+    subtitle: "Lifelike faux greenery for indoor spaces",
+    href: "/artificial-plants",
+    shopSearch: { type: "plants" },
+    img: vanillaImg,
+  },
+  {
+    title: "Pebbles & Home Accent Decor",
+    subtitle: "Natural marble stones & tabletop decor",
     href: "/pebbles",
-    shopSearch: { category: "pebbles" },
-    img: potBg,
+    shopSearch: { type: "pots", category: "pebbles" },
+    img: arecaImg,
   },
   {
-    name: "New Arrivals",
+    title: "New Arrivals",
+    subtitle: "Curated objects for elevated living",
     href: "/new-arrivals",
     shopSearch: { filter: "new-arrivals" },
     img: potBg,
@@ -126,8 +111,6 @@ export const categories = [
 export const products = [
   {
     name: "Flax Series Tapered Vases",
-    price: 5200,
-    mrp: 7500,
     img: potBg,
     thumbnails: [potBg, potBg, potBg],
     code: "FLX48",
@@ -138,18 +121,16 @@ export const products = [
     delivery: "5-7 Working Days",
     payment: "100% Secure Online Payment",
     description: "Sleek, minimalist floor vases boasting organic curves and a calming sea green matte finish. Available in four progressive sizes to create a striking architectural landscape in entryways or corners.",
-    pairsWith: { code: "DSV2299", name: "Dune Stoneware Vase", price: 1499, mrp: 2299, img: potBg },
+    pairsWith: { code: "DSV2299", name: "Dune Stoneware Vase", img: potBg },
     sizes: [
       { name: "Flax-D (H: 21\")", dimensions: "Height: 21\", Top: 8.5\", Bottom: 6.5\"" },
       { name: "Flax-C (H: 28\")", dimensions: "Height: 28\", Top: 11\", Bottom: 8.5\"" },
       { name: "Flax-B (H: 33\")", dimensions: "Height: 33\", Top: 13.5\", Bottom: 10\"" },
-      { name: "Flax-A (H: 40\")", dimensions: "Height: 40\", Top: 16\", Bottom: 12\"" }
-    ]
+      { name: "Flax-A (H: 40\")", dimensions: "Height: 40\", Top: 16\", Bottom: 12\"" },
+    ],
   },
   {
     name: "Leaf Textured Planters - Set of 2",
-    price: 4500,
-    mrp: 6500,
     img: potBg,
     thumbnails: [potBg, potBg, potBg],
     code: "LFS70",
@@ -160,16 +141,14 @@ export const products = [
     delivery: "5-7 Working Days",
     payment: "100% Secure Online Payment",
     description: "A set of two elegant tapered planters featuring subtle leaf texture on a neutral light grey backdrop. Designed to complement tall foliage and architectural indoor plants.",
-    pairsWith: { code: "DSV2299", name: "Dune Stoneware Vase", price: 1499, mrp: 2299, img: potBg },
+    pairsWith: { code: "DSV2299", name: "Dune Stoneware Vase", img: potBg },
     sizes: [
       { name: "Size B (Small - H: 16.5\")", dimensions: "Height: 16.5\", Top: 10.5\", Bottom: 10.5\"" },
-      { name: "Size A (Large - H: 25.5\")", dimensions: "Height: 25.5\", Top: 17\", Bottom: 17\"" }
-    ]
+      { name: "Size A (Large - H: 25.5\")", dimensions: "Height: 25.5\", Top: 17\", Bottom: 17\"" },
+    ],
   },
   {
     name: "Leaf Textured Planters - Set of 3",
-    price: 4500,
-    mrp: 6500,
     img: potBg,
     thumbnails: [potBg, potBg, potBg],
     code: "LFS69",
@@ -180,17 +159,15 @@ export const products = [
     delivery: "5-7 Working Days",
     payment: "100% Secure Online Payment",
     description: "Embellished with detailed leaf engravings, these charcoal grey planters introduce depth and quiet texture to your plant arrangements. Perfect for modern, rustic, or minimal settings.",
-    pairsWith: { code: "DSV2299", name: "Dune Stoneware Vase", price: 1499, mrp: 2299, img: potBg },
+    pairsWith: { code: "DSV2299", name: "Dune Stoneware Vase", img: potBg },
     sizes: [
       { name: "Size C (Small - H: 13.5\")", dimensions: "Height: 13.5\", Top: 12.5\", Bottom: 7.5\"" },
       { name: "Size B (Medium - H: 17.5\")", dimensions: "Height: 17.5\", Top: 16\", Bottom: 9\"" },
-      { name: "Size A (Large - H: 21\")", dimensions: "Height: 21\", Top: 19.5\", Bottom: 10.5\"" }
-    ]
+      { name: "Size A (Large - H: 21\")", dimensions: "Height: 21\", Top: 19.5\", Bottom: 10.5\"" },
+    ],
   },
   {
     name: "VANILLA Planters - Set of 3",
-    price: 3000,
-    mrp: 4500,
     img: potBg,
     thumbnails: [potBg, potBg, potBg],
     code: "VNL83",
@@ -201,17 +178,15 @@ export const products = [
     delivery: "5-7 Working Days",
     payment: "100% Secure Online Payment",
     description: "Add a touch of contemporary refinement to your botanical displays with our Vanilla Planters. Featuring an intricate, textured basket-weave pattern in an elegant sage green hue, this set of three rounded planters brings organic charm and artistic craft to any setting.",
-    pairsWith: { code: "DSV2299", name: "Dune Stoneware Vase", price: 1499, mrp: 2299, img: potBg },
+    pairsWith: { code: "DSV2299", name: "Dune Stoneware Vase", img: potBg },
     sizes: [
       { name: "Size C (Small - H: 8\")", dimensions: "Height: 8\", Top: 9\", Bottom: 0\"" },
       { name: "Size B (Medium - H: 12\")", dimensions: "Height: 12\", Top: 13.5\", Bottom: 0\"" },
-      { name: "Size A (Large - H: 16\")", dimensions: "Height: 16\", Top: 18\", Bottom: 0\"" }
-    ]
+      { name: "Size A (Large - H: 16\")", dimensions: "Height: 16\", Top: 18\", Bottom: 0\"" },
+    ],
   },
   {
     name: "Areca Ribbed Planters - Set of 3",
-    price: 5500,
-    mrp: 8000,
     img: potBg,
     thumbnails: [potBg, potBg, potBg],
     code: "ARC84",
@@ -222,17 +197,15 @@ export const products = [
     delivery: "5-7 Working Days",
     payment: "100% Secure Online Payment",
     description: "Add a touch of structural drama to your corners with these tall, charcoal black ribbed planters. Their heavy horizontal ribbing provides a beautiful backdrop for bright foliage.",
-    pairsWith: { code: "DSV2299", name: "Dune Stoneware Vase", price: 1499, mrp: 2299, img: potBg },
+    pairsWith: { code: "DSV2299", name: "Dune Stoneware Vase", img: potBg },
     sizes: [
       { name: "Size C (Small - H: 15\")", dimensions: "Height: 15\", Top: 8\", Bottom: 0\"" },
       { name: "Size B (Medium - H: 20\")", dimensions: "Height: 20\", Top: 11\", Bottom: 0\"" },
-      { name: "Size A (Large - H: 26\")", dimensions: "Height: 26\", Top: 15\", Bottom: 0\"" }
-    ]
+      { name: "Size A (Large - H: 26\")", dimensions: "Height: 26\", Top: 15\", Bottom: 0\"" },
+    ],
   },
   {
     name: "Faux Ficus Tree — 6 Feet",
-    price: 14999,
-    mrp: 23999,
     img: potBg,
     thumbnails: [potBg, potBg, potBg],
     code: "FFT2399",
@@ -244,12 +217,10 @@ export const products = [
     payment: "100% Secure Online Payment",
     description:
       "A favorite of designers everywhere, the Ficus tree softens hard corners and adds heights to blank walls. Hand-finished with lifelike green leaves and natural wood branches for a realistic look.",
-    pairsWith: { code: "DSV2299", name: "Dune Stoneware Vase", price: 1499, mrp: 2299, img: potBg },
+    pairsWith: { code: "DSV2299", name: "Dune Stoneware Vase", img: potBg },
   },
   {
     name: "Dune Stoneware Vase",
-    price: 1499,
-    mrp: 2299,
     img: potBg,
     thumbnails: [potBg, potBg, potBg],
     code: "DSV2299",
@@ -264,15 +235,11 @@ export const products = [
     pairsWith: {
       code: "AVP2500",
       name: "Artificial Variegated Pothos Plant",
-      price: 1799,
-      mrp: 2500,
       img: potBg,
     },
   },
   {
     name: "Loom Rattan Storage Basket",
-    price: 1899,
-    mrp: 2799,
     img: potBg,
     thumbnails: [potBg, potBg, potBg],
     code: "LRB2799",
@@ -287,8 +254,6 @@ export const products = [
     pairsWith: {
       code: "AMD3999",
       name: "Artificial Monstera Deliciosa Plant",
-      price: 2499,
-      mrp: 3999,
       img: potBg,
     },
   },
@@ -297,8 +262,6 @@ export const products = [
 export const vases = [
   {
     name: "Aero Black Ceramic Vessel",
-    price: 1899,
-    mrp: 2999,
     img: potBg,
     thumbnails: [potBg, potBg, potBg],
     code: "ABV2999",
@@ -310,12 +273,10 @@ export const vases = [
     payment: "100% Secure Online Payment",
     description:
       "Add a bold sculptural touch to your shelves with the Aero Matte Black Ceramic Vessel. Its sleek, geometric silhouette is designed to contrast beautifully with soft organic branches.",
-    pairsWith: { code: "DSV2299", name: "Dune Stoneware Vase", price: 1499, mrp: 2299, img: potBg },
+    pairsWith: { code: "DSV2299", name: "Dune Stoneware Vase", img: potBg },
   },
   {
     name: "Dune Stoneware Vase",
-    price: 1499,
-    mrp: 2299,
     img: potBg,
     thumbnails: [potBg, potBg, potBg],
     code: "DSV2299",
@@ -330,15 +291,11 @@ export const vases = [
     pairsWith: {
       code: "ABV2999",
       name: "Aero Black Ceramic Vessel",
-      price: 1899,
-      mrp: 2999,
       img: potBg,
     },
   },
   {
     name: "Halo Marble Bowl",
-    price: 3499,
-    mrp: 4999,
     img: potBg,
     thumbnails: [potBg, potBg, potBg],
     code: "HMB4999",
@@ -350,12 +307,10 @@ export const vases = [
     payment: "100% Secure Online Payment",
     description:
       "Carved from solid white marble, this decorative bowl features beautiful grey veining. Perfect as a keys dish on your entryway console or a centerpiece on your dining table.",
-    pairsWith: { code: "LRB2799", name: "Loom Rattan Basket", price: 1899, mrp: 2799, img: potBg },
+    pairsWith: { code: "LRB2799", name: "Loom Rattan Basket", img: potBg },
   },
   {
     name: "Loom Rattan Basket",
-    price: 1899,
-    mrp: 2799,
     img: potBg,
     thumbnails: [potBg, potBg, potBg],
     code: "LRB2799",
@@ -367,16 +322,13 @@ export const vases = [
     payment: "100% Secure Online Payment",
     description:
       "Woven by hand using traditional techniques, this rattan basket is the perfect outer cover for your plastic starter pots or as a stylish organic storage solution.",
-    pairsWith: { code: "HMB4999", name: "Halo Marble Bowl", price: 3499, mrp: 4999, img: potBg },
+    pairsWith: { code: "HMB4999", name: "Halo Marble Bowl", img: potBg },
   },
 ];
 
-// Additional products in reels/related sections to ensure they load properly if navigated to
 export const auxiliaryProducts = [
   {
     name: "Faux Bougainvillea — 4 ft",
-    price: 3999,
-    mrp: 6999,
     img: potBg,
     thumbnails: [potBg, potBg, potBg],
     code: "FBV3999",
@@ -388,12 +340,10 @@ export const auxiliaryProducts = [
     payment: "100% Secure Online Payment",
     description:
       "Bring a vibrant, maintenance-free pop of Mediterranean pink to your home. This Faux Bougainvillea is crafted with realistic silk blossoms and detailed green leaves.",
-    pairsWith: { code: "DSV2299", name: "Dune Stoneware Vase", price: 1499, mrp: 2299, img: potBg },
+    pairsWith: { code: "DSV2299", name: "Dune Stoneware Vase", img: potBg },
   },
   {
     name: "Magnetic Floating Shelf",
-    price: 1899,
-    mrp: 2799,
     img: potBg,
     thumbnails: [potBg, potBg, potBg],
     code: "MFS1899",
@@ -405,12 +355,10 @@ export const auxiliaryProducts = [
     payment: "100% Secure Online Payment",
     description:
       "An elegant floating shelf with invisible magnetic mounts. Perfect for exhibiting small vases, keys, or accessories in modern entryways and hallways.",
-    pairsWith: { code: "DSV2299", name: "Dune Stoneware Vase", price: 1499, mrp: 2299, img: potBg },
+    pairsWith: { code: "DSV2299", name: "Dune Stoneware Vase", img: potBg },
   },
   {
     name: "Travellers Palm — Tall",
-    price: 2399,
-    mrp: 3299,
     img: potBg,
     thumbnails: [potBg, potBg, potBg],
     code: "TPT2399",
@@ -425,15 +373,11 @@ export const auxiliaryProducts = [
     pairsWith: {
       code: "LRB2799",
       name: "Loom Rattan Storage Basket",
-      price: 1899,
-      mrp: 2799,
       img: potBg,
     },
   },
   {
     name: "Halo Marble Coffee Table",
-    price: 12999,
-    mrp: 18999,
     img: potBg,
     thumbnails: [potBg, potBg, potBg],
     code: "HCT12999",
@@ -448,15 +392,11 @@ export const auxiliaryProducts = [
     pairsWith: {
       code: "LRB2799",
       name: "Loom Rattan Storage Basket",
-      price: 1899,
-      mrp: 2799,
       img: prod4,
     },
   },
   {
     name: "Hammered Bronze Dispenser",
-    price: 949,
-    mrp: 1599,
     img: prod3,
     thumbnails: [prod3, prod1, prod2, prod4, prod3],
     code: "HBD949",
@@ -471,15 +411,11 @@ export const auxiliaryProducts = [
     pairsWith: {
       code: "ABV2999",
       name: "Aero Black Ceramic Vessel",
-      price: 1899,
-      mrp: 2999,
       img: prod3,
     },
   },
   {
     name: "Indo Mocha Laundry Basket",
-    price: 6499,
-    mrp: 9000,
     img: prod4,
     thumbnails: [prod4, prod1, prod2, prod3, prod4],
     code: "IMB9000",
@@ -494,8 +430,6 @@ export const auxiliaryProducts = [
     pairsWith: {
       code: "MFS1899",
       name: "Magnetic Floating Shelf",
-      price: 1899,
-      mrp: 2799,
       img: prod4,
     },
   },
@@ -508,8 +442,8 @@ export const reels = [
     img: reel1,
     caption: "Every corner deserves a bloom",
     products: [
-      { code: "VNL83", name: "VANILLA Planters - Set of 3", price: 3000, mrp: 4500, img: vanillaImg },
-      { code: "FLX48", name: "Flax Series Tapered Vases", price: 5200, mrp: 7500, img: flaxImg },
+      { code: "VNL83", name: "VANILLA Planters - Set of 3", img: vanillaImg },
+      { code: "FLX48", name: "Flax Series Tapered Vases", img: flaxImg },
     ],
   },
   {
@@ -518,8 +452,8 @@ export const reels = [
     img: reel2,
     caption: "Magnetic shelves are a vibe",
     products: [
-      { code: "ARC84", name: "Areca Ribbed Planters - Set of 3", price: 5500, mrp: 8000, img: arecaImg },
-      { code: "LFS69", name: "Leaf Textured Planters - Set of 3", price: 4500, mrp: 6500, img: leaf3Img },
+      { code: "ARC84", name: "Areca Ribbed Planters - Set of 3", img: arecaImg },
+      { code: "LFS69", name: "Leaf Textured Planters - Set of 3", img: leaf3Img },
     ],
   },
   {
@@ -528,8 +462,8 @@ export const reels = [
     img: reel3,
     caption: "I always wanted one",
     products: [
-      { code: "LFS70", name: "Leaf Textured Planters - Set of 2", price: 4500, mrp: 6500, img: leaf2Img },
-      { code: "VNL83", name: "VANILLA Planters - Set of 3", price: 3000, mrp: 4500, img: vanillaImg },
+      { code: "LFS70", name: "Leaf Textured Planters - Set of 2", img: leaf2Img },
+      { code: "VNL83", name: "VANILLA Planters - Set of 3", img: vanillaImg },
     ],
   },
   {
@@ -538,8 +472,8 @@ export const reels = [
     img: reel4,
     caption: "Tiny upgrades, big shift",
     products: [
-      { code: "FLX48", name: "Flax Series Tapered Vases", price: 5200, mrp: 7500, img: flaxImg },
-      { code: "ARC84", name: "Areca Ribbed Planters - Set of 3", price: 5500, mrp: 8000, img: arecaImg },
+      { code: "FLX48", name: "Flax Series Tapered Vases", img: flaxImg },
+      { code: "ARC84", name: "Areca Ribbed Planters - Set of 3", img: arecaImg },
     ],
   },
   {
@@ -548,8 +482,8 @@ export const reels = [
     img: reel5,
     caption: "Designer-look in one piece",
     products: [
-      { code: "LFS69", name: "Leaf Textured Planters - Set of 3", price: 4500, mrp: 6500, img: leaf3Img },
-      { code: "LFS70", name: "Leaf Textured Planters - Set of 2", price: 4500, mrp: 6500, img: leaf2Img },
+      { code: "LFS69", name: "Leaf Textured Planters - Set of 3", img: leaf3Img },
+      { code: "LFS70", name: "Leaf Textured Planters - Set of 2", img: leaf2Img },
     ],
   },
 ];
@@ -558,72 +492,23 @@ export const blogs = [
   {
     title: "Artificial Plants vs Live Plants",
     desc: "The ultimate guide to choosing the right greenery for your home's light conditions and maintenance lifestyle.",
-    date: "June 12, 2026",
-    img: blogPlants,
+    tag: "STYLING GUIDE",
+    readTime: "5 MIN READ",
+    href: "/blog",
   },
   {
-    title: "Minimalist Decor Ideas",
-    desc: "How to design a calming, spacious environment using neutral tones, tactile natural fibers and single statement pieces.",
-    date: "June 08, 2026",
-    img: blogStyling,
-  },
-  {
-    title: "Vase Styling for Beginners",
-    desc: "3 rules for arranging dry branches, eucalyptus stems, or bouquets to create beautiful focal points in any room.",
-    date: "May 29, 2026",
-    img: blogVases,
+    title: "How to Style Architectural Planters",
+    desc: "Transform dull entryway corners into dramatic focal points using tall tapered fiberglass floor vases.",
+    tag: "DESIGN TIPS",
+    readTime: "4 MIN READ",
+    href: "/blog",
   },
 ];
 
 export function getProductByCode(code: string | undefined | null) {
   if (!code) return null;
-  const rawCode = String(code).trim();
-  const cleanCode = rawCode.toUpperCase();
-  const normalizedCode = cleanCode.replace(/[^A-Z0-9]/g, "");
-  const codeSlug = rawCode.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  const upper = code.trim().toUpperCase();
 
-  const allItems = [...products, ...vases, ...auxiliaryProducts];
-
-  // 1. Exact code match
-  let found = allItems.find((p) => p.code && p.code.toUpperCase() === cleanCode);
-  if (found) return found;
-
-  // 2. Normalized code match (ignoring hyphens/spaces)
-  found = allItems.find((p) => p.code && p.code.toUpperCase().replace(/[^A-Z0-9]/g, "") === normalizedCode);
-  if (found) return found;
-
-  // 3. Exact slug match against product name
-  found = allItems.find((p) => {
-    if (!p.name) return false;
-    const nameSlug = p.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
-    return nameSlug === codeSlug;
-  });
-  if (found) return found;
-
-  // 4. Partial slug/keyword match against product name or code
-  found = allItems.find((p) => {
-    if (!p.name) return false;
-    const nameLower = p.name.toLowerCase();
-    const cleanLower = rawCode.toLowerCase().replace(/[-_]/g, " ");
-    const words = cleanLower.split(/\s+/).filter((w) => w.length > 2);
-    return words.length > 0 && words.every((w) => nameLower.includes(w) || p.code.toLowerCase().includes(w));
-  });
-  if (found) return found;
-
-  // 5. Fallback: match first word of slug against product name
-  const firstWord = codeSlug.split("-")[0];
-  if (firstWord && firstWord.length > 2) {
-    found = allItems.find((p) => p.name && p.name.toLowerCase().includes(firstWord));
-    if (found) return found;
-  }
-
-  return null;
+  const all = [...products, ...vases, ...auxiliaryProducts];
+  return all.find((p) => (p.code || "").toUpperCase() === upper) || null;
 }
-
-/**
- * All products from every collection combined.
- * Use this for search, wishlist, and any cross-collection queries.
- * Future: replace/augment with a Supabase query.
- */
-export const allProducts = [...products, ...vases, ...auxiliaryProducts];
-

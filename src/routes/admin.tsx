@@ -1986,18 +1986,21 @@ function AdminReviewsView({ products }: { products: AdminProduct[] }) {
  */
 function ProductVariantManager({ products, onRefresh }: { products: AdminProduct[]; onRefresh: () => void }) {
   const [selectedProductId, setSelectedProductId] = useState<string>(products[0]?.product_id || "FLX48");
-  const [savingVariant, setSavingVariant] = useState<string | null>(null);
+  const [saving, setSaving] = useState<boolean>(false);
 
   const currentProduct = products.find((p) => p.product_id === selectedProductId) || products[0];
-  const variants = currentProduct?.variants || [];
+  const dbVariants = useMemo(() => currentProduct?.variants || [], [currentProduct]);
 
-  const [localVariants, setLocalVariants] = useState<ProductVariant[]>(variants);
+  const [localVariants, setLocalVariants] = useState<ProductVariant[]>(dbVariants);
 
   useEffect(() => {
-    if (currentProduct) {
-      setLocalVariants(currentProduct.variants || []);
-    }
-  }, [currentProduct]);
+    setLocalVariants(dbVariants);
+  }, [dbVariants]);
+
+  // Check if local form has unsaved edits compared to database state
+  const isDirty = useMemo(() => {
+    return JSON.stringify(localVariants) !== JSON.stringify(dbVariants);
+  }, [localVariants, dbVariants]);
 
   const handleFieldChange = (index: number, field: keyof ProductVariant, value: any) => {
     setLocalVariants((prev) => {
@@ -2007,35 +2010,62 @@ function ProductVariantManager({ products, onRefresh }: { products: AdminProduct
     });
   };
 
-  const handleSaveVariant = async (variant: ProductVariant) => {
-    setSavingVariant(variant.variant_name);
-    const res = await updateAdminProductVariant(variant);
-    setSavingVariant(null);
+  const handleCancelChanges = () => {
+    setLocalVariants(dbVariants);
+    toast.info("Unsaved variant changes cancelled.");
+  };
 
-    if (res.success) {
-      toast.success(`Saved Variant "${variant.variant_name}" for ${variant.product_id} to Supabase!`);
+  const handleSaveChanges = async () => {
+    setSaving(true);
+    let allSuccess = true;
+    let lastErr: string | undefined = undefined;
+
+    for (const variant of localVariants) {
+      const res = await updateAdminProductVariant(variant);
+      if (!res.success) {
+        allSuccess = false;
+        lastErr = res.error;
+      }
+    }
+
+    setSaving(false);
+
+    if (allSuccess) {
+      toast.success(`Successfully saved all size variants for ${currentProduct.product_id} to Supabase!`);
       onRefresh();
     } else {
-      toast.error(`Error saving variant: ${res.error || "Check RLS policies"}`);
+      toast.error(`Error saving variant changes: ${lastErr || "Check Supabase credentials & RLS"}`);
     }
   };
 
   if (!currentProduct) return null;
 
   return (
-    <div className="bg-white border border-[#D9E3C5]/60 rounded-3xl p-6 shadow-sm space-y-6">
+    <div className="relative bg-white border border-[#D9E3C5]/60 rounded-3xl p-6 shadow-sm space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#D9E3C5]/40">
         <div>
-          <h3 className="serif text-xl font-extrabold text-[#2F4B2F]">Multi-Variant Price & Inventory Manager</h3>
+          <div className="flex items-center gap-2">
+            <h3 className="serif text-xl font-extrabold text-[#2F4B2F]">Enterprise Product Variant CMS Editor</h3>
+            {isDirty && (
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-amber-100 text-amber-800 animate-pulse">
+                Unsaved Edits
+              </span>
+            )}
+          </div>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Manage independent prices, MRPs, and stock quantities for Size A, B, C variants stored in Supabase <code className="font-mono text-[#739D30]">product_variants</code>.
+            Single source of truth editor for Size A, B, C prices, MRPs, SKUs, and stock quantities stored in Supabase <code className="font-mono text-[#739D30]">product_variants</code>.
           </p>
         </div>
 
         {/* Product Selector */}
         <select
           value={selectedProductId}
-          onChange={(e) => setSelectedProductId(e.target.value)}
+          onChange={(e) => {
+            if (isDirty && !window.confirm("You have unsaved changes. Switch product anyway?")) {
+              return;
+            }
+            setSelectedProductId(e.target.value);
+          }}
           className="px-3.5 py-2 rounded-xl border border-[#D9E3C5] text-xs font-bold bg-[#FCFCF8] text-[#2F4B2F] focus:ring-2 focus:ring-[#739D30]"
         >
           {products.map((p) => (
@@ -2052,19 +2082,19 @@ function ProductVariantManager({ products, onRefresh }: { products: AdminProduct
           <thead className="bg-[#FCFCF8] border-b border-[#D9E3C5]/50 text-muted-foreground font-semibold uppercase text-[10px] tracking-wider">
             <tr>
               <th className="py-3 px-4">Variant / Size</th>
+              <th className="py-3 px-4">SKU Code</th>
               <th className="py-3 px-4">Dimensions</th>
               <th className="py-3 px-4">Selling Price (₹)</th>
               <th className="py-3 px-4">Original MRP (₹)</th>
               <th className="py-3 px-4">Stock Units</th>
               <th className="py-3 px-4 text-center">Available</th>
-              <th className="py-3 px-4 text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[#D9E3C5]/30">
             {localVariants.length === 0 ? (
               <tr>
                 <td colSpan={7} className="py-6 text-center text-xs text-muted-foreground">
-                  No variants registered for this product yet.
+                  No variants registered for this product.
                 </td>
               </tr>
             ) : (
@@ -2079,12 +2109,24 @@ function ProductVariantManager({ products, onRefresh }: { products: AdminProduct
                     </div>
                   </td>
 
-                  <td className="py-3.5 px-4 text-muted-foreground font-medium text-[11px]">
+                  {/* SKU Input */}
+                  <td className="py-3.5 px-4">
+                    <input
+                      type="text"
+                      value={v.sku || ""}
+                      onChange={(e) => handleFieldChange(idx, "sku", e.target.value)}
+                      placeholder={`SKU-${v.product_id}-${v.variant_name}`}
+                      className="w-32 px-2.5 py-1 border border-[#D9E3C5] rounded-lg text-[11px] font-mono bg-white focus:ring-1 focus:ring-[#739D30]"
+                    />
+                  </td>
+
+                  {/* Dimensions Input */}
+                  <td className="py-3.5 px-4">
                     <input
                       type="text"
                       value={v.dimensions || ""}
                       onChange={(e) => handleFieldChange(idx, "dimensions", e.target.value)}
-                      className="w-48 px-2 py-1 border border-[#D9E3C5] rounded-lg text-xs bg-white focus:ring-1 focus:ring-[#739D30]"
+                      className="w-44 px-2.5 py-1 border border-[#D9E3C5] rounded-lg text-xs bg-white focus:ring-1 focus:ring-[#739D30]"
                     />
                   </td>
 
@@ -2094,7 +2136,7 @@ function ProductVariantManager({ products, onRefresh }: { products: AdminProduct
                       type="number"
                       value={v.selling_price}
                       onChange={(e) => handleFieldChange(idx, "selling_price", Number(e.target.value))}
-                      className="w-24 px-2 py-1 border border-[#D9E3C5] rounded-lg text-xs font-bold text-[#2F4B2F] bg-white focus:ring-1 focus:ring-[#739D30]"
+                      className="w-24 px-2.5 py-1 border border-[#D9E3C5] rounded-lg text-xs font-bold text-[#2F4B2F] bg-white focus:ring-1 focus:ring-[#739D30]"
                     />
                   </td>
 
@@ -2104,7 +2146,7 @@ function ProductVariantManager({ products, onRefresh }: { products: AdminProduct
                       type="number"
                       value={v.original_price}
                       onChange={(e) => handleFieldChange(idx, "original_price", Number(e.target.value))}
-                      className="w-24 px-2 py-1 border border-[#D9E3C5] rounded-lg text-xs text-muted-foreground bg-white focus:ring-1 focus:ring-[#739D30]"
+                      className="w-24 px-2.5 py-1 border border-[#D9E3C5] rounded-lg text-xs text-muted-foreground bg-white focus:ring-1 focus:ring-[#739D30]"
                     />
                   </td>
 
@@ -2114,7 +2156,7 @@ function ProductVariantManager({ products, onRefresh }: { products: AdminProduct
                       type="number"
                       value={v.stock_quantity}
                       onChange={(e) => handleFieldChange(idx, "stock_quantity", Number(e.target.value))}
-                      className="w-20 px-2 py-1 border border-[#D9E3C5] rounded-lg text-xs font-bold bg-white focus:ring-1 focus:ring-[#739D30]"
+                      className="w-20 px-2.5 py-1 border border-[#D9E3C5] rounded-lg text-xs font-bold bg-white focus:ring-1 focus:ring-[#739D30]"
                     />
                   </td>
 
@@ -2127,23 +2169,39 @@ function ProductVariantManager({ products, onRefresh }: { products: AdminProduct
                       className="w-4 h-4 accent-[#739D30] cursor-pointer"
                     />
                   </td>
-
-                  {/* Save Button */}
-                  <td className="py-3.5 px-4 text-right">
-                    <button
-                      onClick={() => handleSaveVariant(v)}
-                      disabled={savingVariant === v.variant_name}
-                      className="px-3 py-1.5 rounded-xl bg-[#739D30] hover:bg-[#628828] text-white text-xs font-bold shadow-xs transition cursor-pointer disabled:opacity-50"
-                    >
-                      {savingVariant === v.variant_name ? "Saving..." : "Save Variant"}
-                    </button>
-                  </td>
                 </tr>
               ))
             )}
           </tbody>
         </table>
       </div>
+
+      {/* Sticky Save / Cancel Action Bar */}
+      {isDirty && (
+        <div className="p-4 rounded-2xl bg-[#1C331C] text-white flex items-center justify-between shadow-xl animate-fade-in">
+          <div className="flex items-center gap-3">
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping" />
+            <span className="text-xs font-bold">Unsaved changes detected for product {currentProduct.product_id}</span>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleCancelChanges}
+              disabled={saving}
+              className="px-4 py-1.5 rounded-xl border border-white/30 text-white hover:bg-white/10 text-xs font-bold transition cursor-pointer"
+            >
+              Cancel Changes
+            </button>
+            <button
+              onClick={handleSaveChanges}
+              disabled={saving}
+              className="px-5 py-1.5 rounded-xl bg-[#739D30] hover:bg-[#628828] text-white text-xs font-extrabold shadow-md transition cursor-pointer disabled:opacity-50"
+            >
+              {saving ? "Saving to Supabase..." : "Save Changes"}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

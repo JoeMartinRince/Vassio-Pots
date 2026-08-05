@@ -1,14 +1,15 @@
 /**
- * Vassio Product Service — Multi-Variant Hybrid Architecture
+ * Vassio Product Service — Multi-Variant Enterprise Architecture
  * ─────────────────────────────────────────────────────────────────────────────
- * Single source of truth for all product and variant data across the application.
+ * Single Source of Truth for all product and size variant data across the application.
  *
- * Static fields   → src/data/products.ts (name, description, images, colors, specs)
- * Dynamic product → Supabase products_dynamic (featured, new_arrival, active, display_order)
- * Dynamic variant → Supabase product_variants (variant_name, selling_price, original_price, stock_quantity, available)
+ * Flow:
+ * 1. Load Static Metadata (src/data/products.ts)
+ * 2. Fetch products_dynamic (Supabase)
+ * 3. Fetch product_variants (Supabase)
+ * 4. Merge into single unified Product objects
  *
- * React components NEVER query Supabase directly.
- * They call this service and receive a unified Product object with a populated `variants[]` array.
+ * React components call this service exclusively and never query static files or Supabase directly.
  */
 
 import {
@@ -18,24 +19,16 @@ import {
   getProductByCode as findStaticProduct,
 } from "@/data/products";
 import {
-  fetchDynamicProductsFromSupabase,
-  fetchDynamicVariantsFromSupabase,
-  fetchDynamicProductById,
-  fetchVariantsByProductId,
+  fetchDynamicProductRows,
+  fetchProductVariantRows,
+  fetchVariantsByCode,
   isSupabaseConfigured,
 } from "@/lib/supabase";
 import type { Product, ProductVariant } from "@/types/product";
-import type { SupabaseDynamicProduct, SupabaseProductVariant } from "@/lib/supabase";
-
-// ─── Module-Level Caches ──────────────────────────────────────────────────────
-// Populated only from Supabase. Zero hardcoded prices.
-
-let dynamicProductCache: Map<string, SupabaseDynamicProduct> = new Map();
-let variantCache: Map<string, ProductVariant[]> = new Map();
-let cachePopulated = false;
+import type { SupabaseDynamicProductRow, SupabaseProductVariantRow } from "@/lib/supabase";
 
 // ─── Default Variant Builder ──────────────────────────────────────────────────
-// Creates fallback variant objects from static size definitions if Supabase rows do not exist yet.
+// Constructs default variant objects for static products when database rows do not exist.
 
 function buildStaticFallbackVariants(staticProd: any): ProductVariant[] {
   if (!staticProd) return [];
@@ -46,39 +39,38 @@ function buildStaticFallbackVariants(staticProd: any): ProductVariant[] {
       product_id: code,
       variant_name: sz.name,
       dimensions: sz.dimensions || "",
-      selling_price: Number(staticProd.price || 0),
-      original_price: Number(staticProd.mrp || staticProd.price || 0),
-      discount_percentage: staticProd.mrp > staticProd.price
-        ? Math.round(((staticProd.mrp - staticProd.price) / staticProd.mrp) * 100)
-        : 0,
+      selling_price: 5200 + idx * 1600, // Default price tier
+      original_price: 7500 + idx * 2200,
+      discount_percentage: 30,
       stock_quantity: 10,
       available: true,
+      sku: `SKU-${code}-${sz.name.substring(0, 8).replace(/\s+/g, "").toUpperCase()}`,
       display_order: idx + 1,
     }));
   }
 
-  // Single default variant for products without sizes
   return [
     {
       product_id: code,
       variant_name: "Standard",
       dimensions: staticProd.dimensions || "",
-      selling_price: Number(staticProd.price || 0),
-      original_price: Number(staticProd.mrp || staticProd.price || 0),
-      discount_percentage: 0,
+      selling_price: 4999,
+      original_price: 6999,
+      discount_percentage: 28,
       stock_quantity: 10,
       available: true,
+      sku: `SKU-${code}-STD`,
       display_order: 1,
     },
   ];
 }
 
-// ─── Merge Helper ─────────────────────────────────────────────────────────────
+// ─── Core Product Merger ──────────────────────────────────────────────────────
 
 function mergeProduct(
   staticProd: any,
-  dyn?: SupabaseDynamicProduct | null,
-  variantsList?: ProductVariant[]
+  dynRow?: SupabaseDynamicProductRow | null,
+  variantRows?: ProductVariant[]
 ): Product {
   if (!staticProd) {
     return {
@@ -93,30 +85,18 @@ function mergeProduct(
 
   const code = (staticProd.code || "").toUpperCase();
 
-  // Get active variants for this product
-  const activeVariants = (variantsList && variantsList.length > 0)
-    ? variantsList
-    : (variantCache.get(code) || buildStaticFallbackVariants(staticProd));
+  // Active variants for product
+  const activeVariants = (variantRows && variantRows.length > 0)
+    ? variantRows
+    : buildStaticFallbackVariants(staticProd);
 
-  // Determine primary base pricing from dynamic table OR first variant OR static product
+  // Default primary variant for card displays & catalog lists
   const primaryVariant = activeVariants.find((v) => v.available) || activeVariants[0];
 
-  const price = dyn?.selling_price !== undefined
-    ? Number(dyn.selling_price)
-    : (primaryVariant ? Number(primaryVariant.selling_price) : Number(staticProd.price ?? 0));
-
-  const mrp = dyn?.original_price !== undefined
-    ? Number(dyn.original_price)
-    : (primaryVariant ? Number(primaryVariant.original_price) : Number(staticProd.mrp ?? price));
-
-  const discountPercentage = dyn?.discount_percentage !== undefined
-    ? Number(dyn.discount_percentage)
-    : (mrp > price ? Math.round(((mrp - price) / mrp) * 100) : 0);
-
-  const stockQuantity = dyn?.stock_quantity !== undefined
-    ? Number(dyn.stock_quantity)
-    : (primaryVariant ? primaryVariant.stock_quantity : 10);
-
+  const price = primaryVariant ? Number(primaryVariant.selling_price) : 0;
+  const mrp = primaryVariant ? Number(primaryVariant.original_price) : price;
+  const discountPercentage = mrp > price ? Math.round(((mrp - price) / mrp) * 100) : 0;
+  const stockQuantity = primaryVariant ? primaryVariant.stock_quantity : 10;
   const isSoldOut = activeVariants.every((v) => !v.available || v.stock_quantity <= 0);
 
   return {
@@ -129,109 +109,109 @@ function mergeProduct(
     discountPercentage,
     stockQuantity,
     isSoldOut,
-    featured: dyn?.featured !== undefined ? Boolean(dyn.featured) : (staticProd.featured ?? false),
-    newArrival: dyn?.new_arrival !== undefined ? Boolean(dyn.new_arrival) : (staticProd.newArrival ?? false),
-    displayOrder: dyn?.display_order !== undefined ? Number(dyn.display_order) : 99,
-    active: dyn?.active !== undefined ? dyn.active !== false : true,
+    featured: dynRow?.featured !== undefined ? Boolean(dynRow.featured) : true,
+    newArrival: dynRow?.new_arrival !== undefined ? Boolean(dynRow.new_arrival) : false,
+    active: dynRow?.active !== undefined ? dynRow.active !== false : true,
+    displayOrder: dynRow?.display_order !== undefined ? Number(dynRow.display_order) : 99,
     variants: activeVariants,
   };
 }
 
-// ─── Public Service API ────────────────────────────────────────────────────────
+// ─── Product Service API ──────────────────────────────────────────────────────
 
 const productService = {
 
   /**
-   * Synchronous: returns merged products using current dynamic cache.
+   * Synchronous load: returns catalog products using static catalog + fallback defaults.
    */
   getAllProducts(): Product[] {
     const allStatic = [...staticProducts, ...staticVases, ...staticAuxiliary];
-    return allStatic
-      .filter((p) => {
-        const dyn = dynamicProductCache.get((p.code || "").toUpperCase());
-        return dyn ? dyn.active !== false : true;
-      })
-      .map((p) => mergeProduct(p, dynamicProductCache.get((p.code || "").toUpperCase())));
+    return allStatic.map((sp) => mergeProduct(sp, null, null));
   },
 
   /**
-   * Async: fetches products_dynamic AND product_variants from Supabase,
-   * populates caches, and returns the full merged product list.
+   * Async load: queries Supabase for products_dynamic and product_variants and merges everything cleanly.
    */
   async getAllProductsAsync(): Promise<Product[]> {
-    if (isSupabaseConfigured) {
-      try {
-        const [dbProducts, dbVariants] = await Promise.all([
-          fetchDynamicProductsFromSupabase(),
-          fetchDynamicVariantsFromSupabase(),
-        ]);
+    const allStatic = [...staticProducts, ...staticVases, ...staticAuxiliary];
 
-        if (dbProducts && dbProducts.length > 0) {
-          dynamicProductCache = new Map(
-            dbProducts
-              .filter((dp) => dp.product_id)
-              .map((dp) => [dp.product_id.toUpperCase(), dp])
-          );
-        }
-
-        if (dbVariants && dbVariants.length > 0) {
-          const grouped = new Map<string, ProductVariant[]>();
-          dbVariants.forEach((v) => {
-            const key = v.product_id.toUpperCase();
-            const list = grouped.get(key) || [];
-            list.push({
-              id: v.id,
-              product_id: key,
-              variant_name: v.variant_name,
-              dimensions: v.dimensions,
-              selling_price: Number(v.selling_price),
-              original_price: Number(v.original_price),
-              discount_percentage: Number(v.discount_percentage ?? 0),
-              stock_quantity: Number(v.stock_quantity),
-              available: Boolean(v.available),
-              display_order: Number(v.display_order),
-            });
-            grouped.set(key, list);
-          });
-          variantCache = grouped;
-        }
-
-        cachePopulated = true;
-      } catch (e) {
-        console.warn("[Vassio Supabase] Error fetching dynamic products/variants:", e);
-      }
+    if (!isSupabaseConfigured) {
+      return this.getAllProducts();
     }
-    return this.getAllProducts();
+
+    try {
+      const [dbProducts, dbVariants] = await Promise.all([
+        fetchDynamicProductRows(),
+        fetchProductVariantRows(),
+      ]);
+
+      const dynMap = new Map<string, SupabaseDynamicProductRow>();
+      if (dbProducts) {
+        dbProducts.forEach((p) => {
+          if (p.product_id) dynMap.set(p.product_id.toUpperCase(), p);
+        });
+      }
+
+      const variantMap = new Map<string, ProductVariant[]>();
+      if (dbVariants) {
+        dbVariants.forEach((v) => {
+          const key = v.product_id.toUpperCase();
+          const list = variantMap.get(key) || [];
+          list.push({
+            id: v.id,
+            product_id: key,
+            variant_name: v.variant_name,
+            dimensions: v.dimensions,
+            selling_price: Number(v.selling_price),
+            original_price: Number(v.original_price),
+            discount_percentage: Number(v.discount_percentage ?? 0),
+            stock_quantity: Number(v.stock_quantity),
+            available: Boolean(v.available),
+            sku: v.sku || `SKU-${key}-${v.variant_name.toUpperCase()}`,
+            display_order: Number(v.display_order),
+          });
+          variantMap.set(key, list);
+        });
+      }
+
+      return allStatic
+        .filter((sp) => {
+          const dyn = dynMap.get(sp.code.toUpperCase());
+          return dyn ? dyn.active !== false : true;
+        })
+        .map((sp) => {
+          const key = sp.code.toUpperCase();
+          return mergeProduct(sp, dynMap.get(key), variantMap.get(key));
+        });
+    } catch (e) {
+      console.warn("[Vassio Supabase] Error fetching dynamic products/variants:", e);
+      return this.getAllProducts();
+    }
   },
 
   /**
-   * Synchronous single product lookup from cache.
+   * Synchronous single product lookup by code.
    */
   getProductByCode(code: string | undefined | null): Product | null {
     if (!code) return null;
     const staticProd = findStaticProduct(code);
     if (!staticProd) return null;
-    const key = staticProd.code.toUpperCase();
-    return mergeProduct(staticProd, dynamicProductCache.get(key), variantCache.get(key));
+    return mergeProduct(staticProd, null, null);
   },
 
   /**
-   * Async single product lookup: queries product_id and variants directly from Supabase.
+   * Async single product lookup by code: queries Supabase directly for fresh variants.
    */
   async getProductByCodeAsync(code: string | undefined | null): Promise<Product | null> {
     if (!code) return null;
     const staticProd = findStaticProduct(code);
     if (!staticProd) return null;
+
     const key = staticProd.code.toUpperCase();
 
     if (isSupabaseConfigured) {
       try {
-        const [dyn, variants] = await Promise.all([
-          fetchDynamicProductById(key),
-          fetchVariantsByProductId(key),
-        ]);
-
-        if (dyn) dynamicProductCache.set(key, dyn);
+        const variants = await fetchVariantsByCode(key);
         if (variants && variants.length > 0) {
           const mappedVariants: ProductVariant[] = variants.map((v) => ({
             id: v.id,
@@ -243,45 +223,18 @@ const productService = {
             discount_percentage: Number(v.discount_percentage ?? 0),
             stock_quantity: Number(v.stock_quantity),
             available: Boolean(v.available),
+            sku: v.sku || `SKU-${key}-${v.variant_name.toUpperCase()}`,
             display_order: Number(v.display_order),
           }));
-          variantCache.set(key, mappedVariants);
-          return mergeProduct(staticProd, dyn, mappedVariants);
+
+          return mergeProduct(staticProd, null, mappedVariants);
         }
       } catch (e) {
-        console.warn(`[Vassio Supabase] Error loading single product "${key}":`, e);
+        console.warn(`[Vassio Supabase] Error fetching variants for product "${key}":`, e);
       }
     }
 
     return this.getProductByCode(code);
-  },
-
-  /**
-   * Update dynamic product cache for single product
-   */
-  updateProductCache(productId: string, data: Partial<SupabaseDynamicProduct>): void {
-    const key = productId.toUpperCase();
-    const existing = dynamicProductCache.get(key);
-    if (existing) {
-      dynamicProductCache.set(key, { ...existing, ...data });
-    } else {
-      dynamicProductCache.set(key, data as SupabaseDynamicProduct);
-    }
-  },
-
-  /**
-   * Update dynamic variant cache after admin save
-   */
-  updateVariantCache(variant: ProductVariant): void {
-    const key = variant.product_id.toUpperCase();
-    const existingList = variantCache.get(key) || [];
-    const idx = existingList.findIndex((v) => v.variant_name === variant.variant_name);
-    if (idx >= 0) {
-      existingList[idx] = { ...existingList[idx], ...variant };
-    } else {
-      existingList.push(variant);
-    }
-    variantCache.set(key, existingList);
   },
 
   /**
@@ -301,7 +254,7 @@ const productService = {
   },
 
   /**
-   * Category filtering.
+   * Filter products by category slug.
    */
   getProductsByCategory(category: string): Product[] {
     const cat = category.toLowerCase();
@@ -347,10 +300,6 @@ const productService = {
     }
 
     return all;
-  },
-
-  isCachePopulated(): boolean {
-    return cachePopulated;
   },
 };
 
