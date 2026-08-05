@@ -1,5 +1,6 @@
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { products as staticProducts, potBg } from "@/data/products";
+import productService from "@/services/product.service";
 
 export interface AdminProduct {
   db_id?: string;
@@ -69,17 +70,12 @@ export interface RevenueMetrics {
 }
 
 // ==============================================================================
-// CACHED DYNAMIC PRODUCT STORE (Synchronized with Supabase products_dynamic)
+// ADMIN PRODUCT SERVICE — reads/writes Supabase products_dynamic
 // ==============================================================================
 
-export const mockDynamicProducts: Record<string, Partial<AdminProduct>> = {
-  FLX48: { price: 5200, mrp: 7500, discount_percentage: 30, stock_status: "in_stock", stock_quantity: 15, featured: true, new_arrival: true, display_order: 1, active: true },
-  LFS70: { price: 4500, mrp: 6500, discount_percentage: 30, stock_status: "in_stock", stock_quantity: 10, featured: true, new_arrival: false, display_order: 2, active: true },
-  LFS69: { price: 4500, mrp: 6500, discount_percentage: 30, stock_status: "in_stock", stock_quantity: 8, featured: false, new_arrival: true, display_order: 3, active: true },
-  VNL83: { price: 3000, mrp: 4500, discount_percentage: 33, stock_status: "in_stock", stock_quantity: 20, featured: true, new_arrival: true, display_order: 4, active: true },
-  ARC84: { price: 5500, mrp: 8000, discount_percentage: 31, stock_status: "in_stock", stock_quantity: 12, featured: true, new_arrival: false, display_order: 5, active: true },
-  FFT2399: { price: 14999, mrp: 23999, discount_percentage: 37, stock_status: "in_stock", stock_quantity: 5, featured: false, new_arrival: false, display_order: 6, active: true },
-};
+// No hardcoded prices here. All dynamic data must come from Supabase.
+// The productService module-level cache (Map) is the single source of truth.
+export const mockDynamicProducts: Record<string, Partial<AdminProduct>> = {};
 
 let mockOrders: Order[] = [
   {
@@ -214,44 +210,57 @@ export async function fetchAdminProducts(): Promise<AdminProduct[]> {
 export async function updateAdminProduct(productId: string, updates: Partial<AdminProduct>): Promise<boolean> {
   const code = productId.toUpperCase();
 
-  // 1. Update in-memory cache for instant customer UI reflection
-  mockDynamicProducts[code] = {
-    ...mockDynamicProducts[code],
-    ...updates,
+  // Build Supabase payload — map AdminProduct fields to products_dynamic column names
+  const payload: Record<string, any> = {
+    product_id: code,
+    updated_at: new Date().toISOString(),
   };
+  if (updates.price !== undefined)             payload.selling_price = Number(updates.price);
+  if (updates.mrp !== undefined)               payload.original_price = Number(updates.mrp);
+  if (updates.discount_percentage !== undefined) payload.discount_percentage = Number(updates.discount_percentage);
+  if (updates.stock_status !== undefined)      payload.stock_status = updates.stock_status;
+  if (updates.stock_quantity !== undefined)    payload.stock_quantity = Number(updates.stock_quantity);
+  if (updates.featured !== undefined)          payload.featured = Boolean(updates.featured);
+  if (updates.new_arrival !== undefined)       payload.new_arrival = Boolean(updates.new_arrival);
+  if (updates.display_order !== undefined)     payload.display_order = Number(updates.display_order);
+  if (updates.active !== undefined)            payload.active = Boolean(updates.active);
 
-  // 2. Execute UPDATE / UPSERT query against Supabase products_dynamic table
   if (isSupabaseConfigured) {
     try {
-      const payload: any = {
-        product_id: code,
-        updated_at: new Date().toISOString(),
-      };
-
-      if (updates.price !== undefined) payload.selling_price = Number(updates.price);
-      if (updates.mrp !== undefined) payload.original_price = Number(updates.mrp);
-      if (updates.discount_percentage !== undefined) payload.discount_percentage = Number(updates.discount_percentage);
-      if (updates.stock_status !== undefined) payload.stock_status = updates.stock_status;
-      if (updates.stock_quantity !== undefined) payload.stock_quantity = Number(updates.stock_quantity);
-      if (updates.featured !== undefined) payload.featured = Boolean(updates.featured);
-      if (updates.new_arrival !== undefined) payload.new_arrival = Boolean(updates.new_arrival);
-      if (updates.display_order !== undefined) payload.display_order = Number(updates.display_order);
-      if (updates.active !== undefined) payload.active = Boolean(updates.active);
-
       const { error } = await supabase
         .from("products_dynamic")
         .upsert(payload, { onConflict: "product_id" });
 
       if (error) {
-        console.warn("[Vassio Supabase] products_dynamic upsert notice:", error.message);
-      } else {
-        return true;
+        console.error("[Vassio Supabase] products_dynamic upsert failed:", error.message, error.code);
+        return false;
       }
+
+      // Notify productService cache so the customer UI reflects this change immediately
+      productService.updateCache(code, {
+        selling_price:       payload.selling_price,
+        original_price:      payload.original_price,
+        discount_percentage: payload.discount_percentage,
+        stock_status:        payload.stock_status,
+        stock_quantity:      payload.stock_quantity,
+        featured:            payload.featured,
+        new_arrival:         payload.new_arrival,
+        display_order:       payload.display_order,
+        active:              payload.active,
+      } as any);
+
+      return true;
     } catch (e) {
-      console.warn("[Vassio Supabase] Error updating product in Supabase:", e);
+      console.error("[Vassio Supabase] Error upserting product:", e);
+      return false;
     }
   }
 
+  // Supabase not configured — update local cache only (dev mode)
+  productService.updateCache(code, {
+    selling_price:  updates.price,
+    original_price: updates.mrp,
+  } as any);
   return true;
 }
 

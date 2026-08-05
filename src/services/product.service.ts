@@ -1,146 +1,123 @@
-import { products as staticProducts, vases as staticVases, auxiliaryProducts as staticAuxiliary, getProductByCode as findStaticProduct, potBg } from "@/data/products";
-import { mockDynamicProducts } from "@/services/adminService";
-import { fetchDynamicProductsFromSupabase, isSupabaseConfigured, supabase } from "@/lib/supabase";
-import type { Product } from "@/types/product";
+/**
+ * Vassio Product Service — Hybrid Architecture
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Single source of truth for all product data on the customer website.
+ *
+ * Static fields  → src/data/products.ts  (name, images, specs, sizes, colors)
+ * Dynamic fields → Supabase products_dynamic table (price, stock, featured…)
+ *
+ * React components NEVER call Supabase directly.
+ * They call this service and receive one final merged Product object.
+ */
 
-export interface DynamicProductData {
-  product_id: string;
-  selling_price?: number;
-  original_price?: number;
-  discount_percentage?: number;
-  stock_quantity?: number;
-  stock_status?: "in_stock" | "out_of_stock" | "pre_order";
-  featured?: boolean;
-  new_arrival?: boolean;
-  display_order?: number;
-  active?: boolean;
-  updated_at?: string;
+import {
+  products as staticProducts,
+  vases as staticVases,
+  auxiliaryProducts as staticAuxiliary,
+  getProductByCode as findStaticProduct,
+} from "@/data/products";
+import {
+  fetchDynamicProductsFromSupabase,
+  fetchDynamicProductById,
+  isSupabaseConfigured,
+} from "@/lib/supabase";
+import type { Product } from "@/types/product";
+import type { SupabaseDynamicProduct } from "@/lib/supabase";
+
+// ─── Module-Level Dynamic Cache ───────────────────────────────────────────────
+// Starts EMPTY. Populated only from Supabase. Never seeded with hardcoded data.
+// This is intentional: if Supabase hasn't loaded yet, static fallback prices
+// from products.ts are used, making it clear no override exists.
+
+let dynamicCache: Map<string, SupabaseDynamicProduct> = new Map();
+let cachePopulated = false;
+
+// ─── Merge Helper ─────────────────────────────────────────────────────────────
+
+function mergeProduct(staticProd: any, dyn?: SupabaseDynamicProduct | null): Product {
+  // Use Supabase values when available; fall back to static product prices
+  const price = dyn ? Number(dyn.selling_price) : Number(staticProd.price ?? 0);
+  const mrp = dyn ? Number(dyn.original_price) : Number(staticProd.mrp ?? price);
+  const discountPercentage = dyn?.discount_percentage !== undefined
+    ? Number(dyn.discount_percentage)
+    : (mrp > price ? Math.round(((mrp - price) / mrp) * 100) : 0);
+  const isSoldOut = dyn
+    ? (dyn.stock_status === "out_of_stock" || (dyn.stock_quantity !== undefined && Number(dyn.stock_quantity) <= 0))
+    : false;
+
+  return {
+    // Spread all static fields first (name, images, description, sizes, etc.)
+    ...staticProd,
+    // Dynamic fields override — these always come from Supabase when available
+    price,
+    mrp,
+    discountPercentage,
+    isSoldOut,
+    stockQuantity: dyn?.stock_quantity,
+    featured: dyn?.featured !== undefined ? Boolean(dyn.featured) : (staticProd.featured ?? false),
+    newArrival: dyn?.new_arrival !== undefined ? Boolean(dyn.new_arrival) : (staticProd.newArrival ?? false),
+    displayOrder: dyn?.display_order !== undefined ? Number(dyn.display_order) : 99,
+    active: dyn?.active !== undefined ? dyn.active !== false : true,
+  };
 }
 
-/**
- * Hybrid Product Service:
- * Merges Static Product Data (src/data/products.ts) with Dynamic Business Data (Supabase `products_dynamic` table / Admin Store).
- */
-export const productService = {
-  /**
-   * Helper to merge static content with dynamic business state safely.
-   */
-  mergeProduct(staticProd: any, dynamicMap?: Map<string, any>): Product {
-    if (!staticProd) {
-      return {
-        code: "UNKNOWN",
-        name: "Unknown Product",
-        price: 0,
-        mrp: 0,
-        img: potBg,
-      };
-    }
+// ─── Public Service API ────────────────────────────────────────────────────────
 
-    const code = (staticProd.code || "").toUpperCase();
-    const dyn = dynamicMap ? dynamicMap.get(code) : mockDynamicProducts[code];
-
-    const price = Number(dyn?.selling_price ?? dyn?.price ?? staticProd.price ?? 0);
-    const mrp = Number(dyn?.original_price ?? dyn?.mrp ?? staticProd.mrp ?? price);
-    const discount = dyn?.discount_percentage !== undefined ? Number(dyn.discount_percentage) : (mrp > price ? Math.round(((mrp - price) / mrp) * 100) : 0);
-    const isSoldOut = dyn?.stock_status === "out_of_stock" || (dyn?.stock_quantity !== undefined && Number(dyn.stock_quantity) <= 0);
-
-    return {
-      ...staticProd,
-      code: staticProd.code || "UNKNOWN",
-      name: staticProd.name || "Planter",
-      img: staticProd.img || potBg,
-      price,
-      mrp,
-      discountPercentage: discount,
-      isSoldOut,
-      featured: dyn?.featured !== undefined ? Boolean(dyn.featured) : (staticProd.featured ?? false),
-      newArrival: dyn?.new_arrival !== undefined ? Boolean(dyn.new_arrival) : (staticProd.newArrival ?? false),
-      displayOrder: dyn?.display_order !== undefined ? Number(dyn.display_order) : 99,
-      active: dyn?.active !== undefined ? dyn.active !== false : true,
-    };
-  },
+const productService = {
 
   /**
-   * Fetch all active merged products across collections.
+   * Synchronous: returns merged products using whatever is in the dynamic cache.
+   * On first call (cache empty), returns static product prices as fallback.
+   * After getAllProductsAsync() has resolved, this reflects live Supabase values.
    */
   getAllProducts(): Product[] {
     const allStatic = [...staticProducts, ...staticVases, ...staticAuxiliary];
-    
-    // Fetch cached dynamic map
-    const dynamicMap = new Map<string, any>();
-    Object.entries(mockDynamicProducts).forEach(([code, item]) => {
-      dynamicMap.set(code.toUpperCase(), item);
-    });
-
     return allStatic
       .filter((p) => {
-        const dyn = dynamicMap.get((p.code || "").toUpperCase());
-        return dyn?.active !== false;
+        const dyn = dynamicCache.get((p.code || "").toUpperCase());
+        // Only filter out if Supabase explicitly set active = false
+        return dyn ? dyn.active !== false : true;
       })
-      .map((p) => this.mergeProduct(p, dynamicMap));
+      .map((p) => mergeProduct(p, dynamicCache.get((p.code || "").toUpperCase())));
   },
 
   /**
-   * Async Supabase integration for loading dynamic records from `products_dynamic`.
+   * Async: fetches all dynamic records from Supabase, populates the cache,
+   * then returns the full merged product list.
+   * Call this once on page mount; getAllProducts() will then be accurate.
    */
   async getAllProductsAsync(): Promise<Product[]> {
-    const allStatic = [...staticProducts, ...staticVases, ...staticAuxiliary];
-
     if (isSupabaseConfigured) {
-      try {
-        const dbProducts = await fetchDynamicProductsFromSupabase();
-        if (dbProducts && dbProducts.length > 0) {
-          const dynamicMap = new Map<string, any>();
-          dbProducts.forEach((dp) => {
-            if (dp.product_id) {
-              dynamicMap.set(dp.product_id.toUpperCase(), dp);
-              mockDynamicProducts[dp.product_id.toUpperCase()] = {
-                price: Number(dp.selling_price),
-                mrp: Number(dp.original_price),
-                discount_percentage: Number(dp.discount_percentage),
-                stock_status: dp.stock_quantity > 0 ? "in_stock" : "out_of_stock",
-                stock_quantity: dp.stock_quantity,
-                featured: dp.featured,
-                new_arrival: dp.new_arrival,
-                display_order: dp.display_order,
-                active: dp.active,
-              };
-            }
-          });
-
-          return allStatic
-            .filter((p) => {
-              const dyn = dynamicMap.get((p.code || "").toUpperCase());
-              return dyn ? dyn.active !== false : true;
-            })
-            .map((p) => this.mergeProduct(p, dynamicMap));
-        }
-      } catch (err) {
-        console.warn("[Vassio Supabase] Error fetching products_dynamic:", err);
+      const dbProducts = await fetchDynamicProductsFromSupabase();
+      if (dbProducts && dbProducts.length > 0) {
+        // Replace cache with fresh Supabase data
+        dynamicCache = new Map(
+          dbProducts
+            .filter((dp) => dp.product_id)
+            .map((dp) => [dp.product_id.toUpperCase(), dp])
+        );
+        cachePopulated = true;
       }
     }
-
     return this.getAllProducts();
   },
 
   /**
-   * Fetch a single merged product by code or slug.
+   * Synchronous: returns a single merged product using whatever is in cache.
+   * Used for SSR initial render — returns static prices as fallback.
    */
   getProductByCode(code: string | undefined | null): Product | null {
     if (!code) return null;
     const staticProd = findStaticProduct(code);
     if (!staticProd) return null;
-
-    const dynamicMap = new Map<string, any>();
-    Object.entries(mockDynamicProducts).forEach(([c, item]) => {
-      dynamicMap.set(c.toUpperCase(), item);
-    });
-
-    return this.mergeProduct(staticProd, dynamicMap);
+    const dyn = dynamicCache.get(staticProd.code.toUpperCase());
+    return mergeProduct(staticProd, dyn);
   },
 
   /**
-   * Async single product lookup from Supabase products_dynamic table by code/slug.
+   * Async: fetches ONE product's dynamic data directly from Supabase,
+   * updates the cache, and returns the merged product.
+   * Used by the product detail page for live pricing on every visit.
    */
   async getProductByCodeAsync(code: string | undefined | null): Promise<Product | null> {
     if (!code) return null;
@@ -148,89 +125,103 @@ export const productService = {
     if (!staticProd) return null;
 
     if (isSupabaseConfigured) {
-      try {
-        const productCode = staticProd.code.toUpperCase();
-        const { data, error } = await supabase
-          .from("products_dynamic")
-          .select("*")
-          .eq("product_id", productCode)
-          .maybeSingle();
-
-        if (!error && data) {
-          const dynamicMap = new Map<string, any>();
-          dynamicMap.set(productCode, data);
-          mockDynamicProducts[productCode] = {
-            price: Number(data.selling_price),
-            mrp: Number(data.original_price),
-            discount_percentage: Number(data.discount_percentage),
-            stock_status: data.stock_quantity > 0 ? "in_stock" : "out_of_stock",
-            stock_quantity: data.stock_quantity,
-            featured: data.featured,
-            new_arrival: data.new_arrival,
-            display_order: data.display_order,
-            active: data.active,
-          };
-          return this.mergeProduct(staticProd, dynamicMap);
-        }
-      } catch (e) {
-        console.warn("[Vassio Supabase] Exception fetching single product:", e);
+      const dyn = await fetchDynamicProductById(staticProd.code);
+      if (dyn) {
+        // Update cache so subsequent getAllProducts() calls are also accurate
+        dynamicCache.set(dyn.product_id.toUpperCase(), dyn);
+        return mergeProduct(staticProd, dyn);
       }
     }
 
-    return this.getProductByCode(code);
+    // Supabase unavailable or no row found — return static fallback
+    return mergeProduct(staticProd, dynamicCache.get(staticProd.code.toUpperCase()));
   },
 
   /**
-   * Search products by name, code, category, or keywords.
+   * Update the local dynamic cache after an admin save.
+   * Called by adminService after a successful Supabase upsert.
+   * Keeps the customer website in sync without a full page reload.
+   */
+  updateCache(productId: string, data: Partial<SupabaseDynamicProduct>): void {
+    const key = productId.toUpperCase();
+    const existing = dynamicCache.get(key);
+    if (existing) {
+      dynamicCache.set(key, { ...existing, ...data });
+    } else {
+      dynamicCache.set(key, data as SupabaseDynamicProduct);
+    }
+  },
+
+  /**
+   * Search products by name, code, color, or material.
    */
   searchProducts(query: string): Product[] {
     const q = query.trim().toLowerCase();
     if (!q) return [];
-
     return this.getAllProducts().filter((p) => {
-      const matchName = p.name.toLowerCase().includes(q);
-      const matchCode = p.code.toLowerCase().includes(q);
-      const matchColor = p.color ? p.color.toLowerCase().includes(q) : false;
-      const matchMaterial = p.material ? p.material.toLowerCase().includes(q) : false;
-      return matchName || matchCode || matchColor || matchMaterial;
+      return (
+        p.name.toLowerCase().includes(q) ||
+        p.code.toLowerCase().includes(q) ||
+        (p.color || "").toLowerCase().includes(q) ||
+        (p.material || "").toLowerCase().includes(q)
+      );
     });
   },
 
   /**
-   * Get products by category slug.
+   * Filter products by category slug.
    */
   getProductsByCategory(category: string): Product[] {
     const cat = category.toLowerCase();
     const all = this.getAllProducts();
 
     if (cat === "frp-pots") {
-      return all.filter((p) => (p.material || "").toLowerCase().includes("fiber") || p.code.startsWith("FLX") || p.code.startsWith("ARC"));
+      return all.filter(
+        (p) =>
+          (p.material || "").toLowerCase().includes("fiber") ||
+          p.code.startsWith("FLX") ||
+          p.code.startsWith("ARC")
+      );
     }
-
     if (cat === "artificial-plants") {
       return all.filter((p) => {
-        const lname = p.name.toLowerCase();
+        const n = p.name.toLowerCase();
         return (
-          lname.includes("plant") ||
-          lname.includes("tree") ||
-          lname.includes("faux") ||
-          lname.includes("palm") ||
-          lname.includes("ficus") ||
+          n.includes("plant") ||
+          n.includes("tree") ||
+          n.includes("faux") ||
+          n.includes("palm") ||
+          n.includes("ficus") ||
           p.code.startsWith("FFT")
         );
       });
     }
-
     if (cat === "terracotta-pots") {
-      return all.filter((p) => (p.material || "").toLowerCase().includes("ceramic") || (p.material || "").toLowerCase().includes("clay") || p.code.startsWith("LFS") || p.code.startsWith("VNL"));
+      return all.filter(
+        (p) =>
+          (p.material || "").toLowerCase().includes("ceramic") ||
+          (p.material || "").toLowerCase().includes("clay") ||
+          p.code.startsWith("LFS") ||
+          p.code.startsWith("VNL")
+      );
     }
-
     if (cat === "pebbles") {
-      return all.filter((p) => p.name.toLowerCase().includes("pebble") || p.name.toLowerCase().includes("stone") || (p.material || "").toLowerCase().includes("stone"));
+      return all.filter(
+        (p) =>
+          p.name.toLowerCase().includes("pebble") ||
+          p.name.toLowerCase().includes("stone") ||
+          (p.material || "").toLowerCase().includes("stone")
+      );
     }
 
     return all;
   },
+
+  /** Whether the dynamic cache has been populated from Supabase */
+  isCachePopulated(): boolean {
+    return cachePopulated;
+  },
 };
 
 export default productService;
+export type { SupabaseDynamicProduct };
