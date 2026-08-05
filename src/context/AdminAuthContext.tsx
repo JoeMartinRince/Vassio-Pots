@@ -1,14 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import authService, { type AdminUser } from "@/services/auth.service";
 
 export type AdminRole = "admin" | "staff";
-
-export interface AdminUser {
-  id: string;
-  email: string;
-  name: string;
-  role: AdminRole;
-}
 
 interface AdminAuthContextType {
   user: AdminUser | null;
@@ -28,105 +21,50 @@ export const AdminAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check local session storage or Supabase session on mount
-    const savedUser = localStorage.getItem("vassio_admin_user");
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (e) {
-        console.error("Failed to parse stored admin user", e);
+    // 1. Restore persistent session from Supabase / localStorage on mount
+    authService.getCurrentSession().then((sessionUser) => {
+      if (sessionUser) {
+        setUser(sessionUser);
+      } else {
+        const saved = localStorage.getItem("vassio_admin_user");
+        if (saved) {
+          try {
+            setUser(JSON.parse(saved));
+          } catch (e) {
+            localStorage.removeItem("vassio_admin_user");
+          }
+        }
       }
-    }
-
-    if (isSupabaseConfigured) {
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (session?.user) {
-          const authUser: AdminUser = {
-            id: session.user.id,
-            email: session.user.email || "admin@vassio.com",
-            name: session.user.user_metadata?.name || session.user.email?.split("@")[0] || "Admin",
-            role: (session.user.user_metadata?.role as AdminRole) || "admin",
-          };
-          setUser(authUser);
-          localStorage.setItem("vassio_admin_user", JSON.stringify(authUser));
-        }
-        setLoading(false);
-      });
-
-      const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-        if (session?.user) {
-          const authUser: AdminUser = {
-            id: session.user.id,
-            email: session.user.email || "admin@vassio.com",
-            name: session.user.user_metadata?.name || session.user.email?.split("@")[0] || "Admin",
-            role: (session.user.user_metadata?.role as AdminRole) || "admin",
-          };
-          setUser(authUser);
-          localStorage.setItem("vassio_admin_user", JSON.stringify(authUser));
-        } else {
-          setUser(null);
-          localStorage.removeItem("vassio_admin_user");
-        }
-        setLoading(false);
-      });
-
-      return () => {
-        authListener.subscription.unsubscribe();
-      };
-    } else {
       setLoading(false);
-    }
+    });
+
+    // 2. Subscribe to Supabase auth state changes
+    const unsubscribe = authService.onAuthStateChange((authUser) => {
+      setUser(authUser);
+      if (authUser) {
+        localStorage.setItem("vassio_admin_user", JSON.stringify(authUser));
+      } else {
+        localStorage.removeItem("vassio_admin_user");
+      }
+      setLoading(false);
+    });
+
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   const login = async (email: string, pass: string) => {
-    if (isSupabaseConfigured) {
-      try {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password: pass,
-        });
-
-        if (error) {
-          return { success: false, error: error.message };
-        }
-
-        if (data.user) {
-          const loggedUser: AdminUser = {
-            id: data.user.id,
-            email: data.user.email || email,
-            name: data.user.user_metadata?.name || email.split("@")[0],
-            role: email.includes("staff") ? "staff" : "admin",
-          };
-          setUser(loggedUser);
-          localStorage.setItem("vassio_admin_user", JSON.stringify(loggedUser));
-          return { success: true };
-        }
-      } catch (err: any) {
-        console.warn("Supabase auth failed, falling back to local verification:", err);
-      }
+    const res = await authService.login(email, pass);
+    if (res.success && res.user) {
+      setUser(res.user);
+      localStorage.setItem("vassio_admin_user", JSON.stringify(res.user));
     }
-
-    // Local / Dev Mode verification fallback
-    if (pass === "admin123" || pass === "vassio123" || pass === "admin") {
-      const isStaffUser = email.includes("staff");
-      const loggedUser: AdminUser = {
-        id: isStaffUser ? "staff-001" : "admin-001",
-        email: email || (isStaffUser ? "staff@vassio.com" : "admin@vassio.com"),
-        name: isStaffUser ? "Staff Operations" : "Master Administrator",
-        role: isStaffUser ? "staff" : "admin",
-      };
-      setUser(loggedUser);
-      localStorage.setItem("vassio_admin_user", JSON.stringify(loggedUser));
-      return { success: true };
-    }
-
-    return { success: false, error: "Invalid credentials. Try admin@vassio.com / admin123 or staff@vassio.com / admin123" };
+    return { success: res.success, error: res.error };
   };
 
   const logout = async () => {
-    if (isSupabaseConfigured) {
-      await supabase.auth.signOut();
-    }
+    await authService.logout();
     setUser(null);
     localStorage.removeItem("vassio_admin_user");
   };

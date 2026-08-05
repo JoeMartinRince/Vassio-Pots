@@ -276,7 +276,7 @@ function AdminDashboardMain() {
                 required
                 value={loginEmail}
                 onChange={(e) => setLoginEmail(e.target.value)}
-                placeholder="admin@vassio.com or staff@vassio.com"
+                placeholder="admin@vassio.com"
                 className="w-full px-4 py-3 rounded-xl border border-[#D9E3C5] focus:outline-none focus:ring-2 focus:ring-[#739D30] text-sm text-foreground bg-white"
               />
             </div>
@@ -290,7 +290,7 @@ function AdminDashboardMain() {
                 required
                 value={loginPass}
                 onChange={(e) => setLoginPass(e.target.value)}
-                placeholder="admin123"
+                placeholder="••••••••"
                 className="w-full px-4 py-3 rounded-xl border border-[#D9E3C5] focus:outline-none focus:ring-2 focus:ring-[#739D30] text-sm text-foreground bg-white"
               />
             </div>
@@ -303,48 +303,16 @@ function AdminDashboardMain() {
               {loginLoading ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Authenticating...</span>
+                  <span>Authenticating with Supabase...</span>
                 </>
               ) : (
                 <>
                   <Lock className="w-4 h-4" />
-                  <span>Sign In</span>
+                  <span>Sign In to Dashboard</span>
                 </>
               )}
             </button>
           </form>
-
-          {/* Quick Demo Credentials */}
-          <div className="mt-6 pt-6 border-t border-[#D9E3C5]/40 text-center">
-            <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-              Quick Demo Credentials:
-            </p>
-            <div className="grid grid-cols-2 gap-2 text-left">
-              <div
-                onClick={() => {
-                  setLoginEmail("admin@vassio.com");
-                  setLoginPass("admin123");
-                }}
-                className="p-2 rounded-lg bg-[#EEF5E3]/60 border border-[#D9E3C5] hover:bg-[#EEF5E3] cursor-pointer text-xs"
-              >
-                <div className="font-bold text-[#3F673F]">Master Admin</div>
-                <div className="text-[10px] text-muted-foreground">admin@vassio.com</div>
-              </div>
-              <div
-                onClick={() => {
-                  setLoginEmail("staff@vassio.com");
-                  setLoginPass("admin123");
-                }}
-                className="p-2 rounded-lg bg-[#EEF5E3]/60 border border-[#D9E3C5] hover:bg-[#EEF5E3] cursor-pointer text-xs"
-              >
-                <div className="font-bold text-[#3F673F]">Staff Operations</div>
-                <div className="text-[10px] text-muted-foreground">staff@vassio.com</div>
-              </div>
-            </div>
-
-            {/* ─── Variant Management Panel ─────────────────────────────────────────── */}
-            <ProductVariantManager products={products} />
-          </div>
         </div>
       </div>
     );
