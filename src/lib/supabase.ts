@@ -109,30 +109,25 @@ export async function fetchDynamicProductById(productId: string): Promise<Supaba
   Run this in the Supabase SQL Editor to set up the table and policies:
 
   CREATE TABLE IF NOT EXISTS public.products_dynamic (
-    product_id         TEXT PRIMARY KEY,
-    selling_price      NUMERIC NOT NULL DEFAULT 0,
-    original_price     NUMERIC NOT NULL DEFAULT 0,
+    product_id          TEXT PRIMARY KEY,
+    selling_price       NUMERIC NOT NULL DEFAULT 0,
+    original_price      NUMERIC NOT NULL DEFAULT 0,
     discount_percentage NUMERIC DEFAULT 0,
-    stock_quantity     INT DEFAULT 10,
-    stock_status       TEXT DEFAULT 'in_stock',
-    featured           BOOLEAN DEFAULT false,
-    new_arrival        BOOLEAN DEFAULT false,
-    active             BOOLEAN DEFAULT true,
-    display_order      INT DEFAULT 99,
-    updated_at         TIMESTAMPTZ DEFAULT NOW()
+    stock_quantity      INT DEFAULT 10,
+    featured            BOOLEAN DEFAULT false,
+    new_arrival         BOOLEAN DEFAULT false,
+    active              BOOLEAN DEFAULT true,
+    display_order       INT DEFAULT 99,
+    updated_at          TIMESTAMPTZ DEFAULT NOW()
   );
 
   ALTER TABLE public.products_dynamic ENABLE ROW LEVEL SECURITY;
 
-  -- Allow anonymous reads (required for customer website)
-  CREATE POLICY "Allow anon select" ON public.products_dynamic
-    FOR SELECT USING (true);
+  -- Allow public reads (required for customer website) and writes (required for admin dashboard)
+  CREATE POLICY "Allow public read and write" ON public.products_dynamic
+    FOR ALL USING (true) WITH CHECK (true);
 
-  -- Allow authenticated writes (required for admin dashboard)
-  CREATE POLICY "Allow authenticated upsert" ON public.products_dynamic
-    FOR ALL USING (auth.role() = 'authenticated');
-
-  -- Seed data (adjust prices to match your actual catalog)
+  -- Seed initial catalog data
   INSERT INTO public.products_dynamic
     (product_id, selling_price, original_price, discount_percentage, stock_quantity, featured, new_arrival, active, display_order)
   VALUES

@@ -160,16 +160,20 @@ function AdminDashboardMain() {
 
   // Handle Product Field Updates
   const handleProductUpdate = async (productId: string, updates: Partial<AdminProduct>) => {
-    const success = await updateAdminProduct(productId, updates);
-    if (success) {
-      toast.success(`Updated ${productId}`);
-      setProducts((prev) =>
-        prev.map((p) => (p.product_id === productId ? { ...p, ...updates } : p))
-      );
-      // Re-sync with Supabase for real-time consistency
-      fetchAdminProducts().then((refreshed) => setProducts(refreshed));
+    // Optimistic UI state update
+    setProducts((prev) =>
+      prev.map((p) => (p.product_id === productId ? { ...p, ...updates } : p))
+    );
+
+    const res = await updateAdminProduct(productId, updates);
+    if (res.success) {
+      toast.success(`Saved ${productId} to Supabase`);
+      const refreshed = await fetchAdminProducts();
+      setProducts(refreshed);
     } else {
-      toast.error("Failed to update product in Supabase");
+      toast.error(res.error || "Failed to update product in Supabase");
+      const refreshed = await fetchAdminProducts();
+      setProducts(refreshed);
     }
   };
 
@@ -184,7 +188,7 @@ function AdminDashboardMain() {
   };
 
   // Handle Add Product
-  const handleAddProductSubmit = (e: React.FormEvent) => {
+  const handleAddProductSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newProductForm.product_id || !newProductForm.name) {
       toast.error("Please fill in Product Code and Name");
@@ -192,8 +196,8 @@ function AdminDashboardMain() {
     }
 
     const created: AdminProduct = {
-      product_id: newProductForm.product_id.toUpperCase(),
-      name: newProductForm.name,
+      product_id: newProductForm.product_id.trim().toUpperCase(),
+      name: newProductForm.name.trim(),
       price: Number(newProductForm.price) || 3000,
       mrp: Number(newProductForm.mrp) || 4500,
       discount_percentage: Math.round(
@@ -202,6 +206,7 @@ function AdminDashboardMain() {
           100
       ),
       stock_status: (newProductForm.stock_status as any) || "in_stock",
+      stock_quantity: Number(newProductForm.stock_quantity || 10),
       featured: Boolean(newProductForm.featured),
       new_arrival: Boolean(newProductForm.new_arrival),
       display_order: products.length + 1,
@@ -213,10 +218,15 @@ function AdminDashboardMain() {
       description: "New handcrafted Vassio botanical product.",
     };
 
-    setProducts((prev) => [created, ...prev]);
-    updateAdminProduct(created.product_id, created);
-    setShowAddProductModal(false);
-    toast.success(`Product ${created.product_id} added successfully`);
+    const res = await updateAdminProduct(created.product_id, created);
+    if (res.success) {
+      toast.success(`Product ${created.product_id} created in Supabase!`);
+      setShowAddProductModal(false);
+      const fresh = await fetchAdminProducts();
+      setProducts(fresh);
+    } else {
+      toast.error(`Failed to create product: ${res.error}`);
+    }
   };
 
   // Handle Order Updates

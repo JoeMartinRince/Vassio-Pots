@@ -207,61 +207,111 @@ export async function fetchAdminProducts(): Promise<AdminProduct[]> {
   });
 }
 
-export async function updateAdminProduct(productId: string, updates: Partial<AdminProduct>): Promise<boolean> {
-  const code = productId.toUpperCase();
+export async function updateAdminProduct(
+  productId: string,
+  updates: Partial<AdminProduct>
+): Promise<{ success: boolean; error?: string }> {
+  const code = productId.trim().toUpperCase();
 
-  // Build Supabase payload — map AdminProduct fields to products_dynamic column names
-  const payload: Record<string, any> = {
+  // Find static product to use defaults for missing values
+  const staticProd = staticProducts.find((p) => p.code.toUpperCase() === code);
+
+  // Read current cached values if any
+  const existingDyn = mockDynamicProducts[code] || {};
+
+  // Compute final values for payload
+  const sellingPrice = updates.price !== undefined
+    ? Number(updates.price)
+    : Number(existingDyn.price ?? staticProd?.price ?? 0);
+
+  const originalPrice = updates.mrp !== undefined
+    ? Number(updates.mrp)
+    : Number(existingDyn.mrp ?? staticProd?.mrp ?? sellingPrice);
+
+  const discountPercentage = updates.discount_percentage !== undefined
+    ? Number(updates.discount_percentage)
+    : (originalPrice > 0 ? Math.round(((originalPrice - sellingPrice) / originalPrice) * 100) : 0);
+
+  let stockQty = updates.stock_quantity !== undefined
+    ? Number(updates.stock_quantity)
+    : existingDyn.stock_quantity;
+
+  if (stockQty === undefined) {
+    stockQty = updates.stock_status === "out_of_stock" ? 0 : 10;
+  }
+
+  // Construct complete products_dynamic payload (NO stock_status column as it does not exist in DB schema)
+  const payload = {
     product_id: code,
+    selling_price: sellingPrice,
+    original_price: originalPrice,
+    discount_percentage: discountPercentage,
+    stock_quantity: stockQty,
+    featured: updates.featured !== undefined ? Boolean(updates.featured) : Boolean(existingDyn.featured ?? true),
+    new_arrival: updates.new_arrival !== undefined ? Boolean(updates.new_arrival) : Boolean(existingDyn.new_arrival ?? false),
+    active: updates.active !== undefined ? Boolean(updates.active) : Boolean(existingDyn.active ?? true),
+    display_order: updates.display_order !== undefined ? Number(updates.display_order) : Number(existingDyn.display_order ?? 99),
     updated_at: new Date().toISOString(),
   };
-  if (updates.price !== undefined)             payload.selling_price = Number(updates.price);
-  if (updates.mrp !== undefined)               payload.original_price = Number(updates.mrp);
-  if (updates.discount_percentage !== undefined) payload.discount_percentage = Number(updates.discount_percentage);
-  if (updates.stock_status !== undefined)      payload.stock_status = updates.stock_status;
-  if (updates.stock_quantity !== undefined)    payload.stock_quantity = Number(updates.stock_quantity);
-  if (updates.featured !== undefined)          payload.featured = Boolean(updates.featured);
-  if (updates.new_arrival !== undefined)       payload.new_arrival = Boolean(updates.new_arrival);
-  if (updates.display_order !== undefined)     payload.display_order = Number(updates.display_order);
-  if (updates.active !== undefined)            payload.active = Boolean(updates.active);
+
+  // Update local cache object
+  mockDynamicProducts[code] = {
+    ...existingDyn,
+    price: sellingPrice,
+    mrp: originalPrice,
+    discount_percentage: discountPercentage,
+    stock_quantity: stockQty,
+    stock_status: stockQty <= 0 ? "out_of_stock" : "in_stock",
+    featured: payload.featured,
+    new_arrival: payload.new_arrival,
+    display_order: payload.display_order,
+    active: payload.active,
+  };
 
   if (isSupabaseConfigured) {
     try {
-      const { error } = await supabase
+      console.log(`[Vassio Supabase UPDATE] Upserting products_dynamic for "${code}":`, payload);
+
+      const { data, error } = await supabase
         .from("products_dynamic")
-        .upsert(payload, { onConflict: "product_id" });
+        .upsert(payload, { onConflict: "product_id" })
+        .select();
 
       if (error) {
-        console.error("[Vassio Supabase] products_dynamic upsert failed:", error.message, error.code);
-        return false;
+        console.error("[Vassio Supabase Error] products_dynamic upsert failed:", {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+        });
+
+        if (error.code === "42501") {
+          console.warn(
+            "[Vassio Supabase RLS Fix Required] Row-Level Security blocked this update.\n" +
+            "Run the following SQL in your Supabase SQL Editor:\n\n" +
+            "ALTER TABLE public.products_dynamic ENABLE ROW LEVEL SECURITY;\n" +
+            "CREATE POLICY \"Allow public write\" ON public.products_dynamic FOR ALL USING (true) WITH CHECK (true);\n"
+          );
+        }
+
+        return { success: false, error: `Supabase error (${error.code}): ${error.message}` };
       }
 
-      // Notify productService cache so the customer UI reflects this change immediately
-      productService.updateCache(code, {
-        selling_price:       payload.selling_price,
-        original_price:      payload.original_price,
-        discount_percentage: payload.discount_percentage,
-        stock_status:        payload.stock_status,
-        stock_quantity:      payload.stock_quantity,
-        featured:            payload.featured,
-        new_arrival:         payload.new_arrival,
-        display_order:       payload.display_order,
-        active:              payload.active,
-      } as any);
+      console.log(`[Vassio Supabase Success] Upsert succeeded for "${code}":`, data);
 
-      return true;
-    } catch (e) {
-      console.error("[Vassio Supabase] Error upserting product:", e);
-      return false;
+      // Notify productService cache so the customer UI reflects this change immediately
+      productService.updateCache(code, payload as any);
+
+      return { success: true };
+    } catch (e: any) {
+      console.error("[Vassio Supabase Exception] Error updating product:", e);
+      return { success: false, error: e?.message || "Network error updating product." };
     }
   }
 
-  // Supabase not configured — update local cache only (dev mode)
-  productService.updateCache(code, {
-    selling_price:  updates.price,
-    original_price: updates.mrp,
-  } as any);
-  return true;
+  // Supabase not configured — update local cache only
+  productService.updateCache(code, payload as any);
+  return { success: true };
 }
 
 // ==============================================================================
