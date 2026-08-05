@@ -1,0 +1,15 @@
+export const ROUTES = {
+  HOME: "/",
+  PRODUCTS: "/products",
+  FRP_POTS: "/frp-pots",
+  ARTIFICIAL_PLANTS: "/artificial-plants",
+  TERRACOTTA_POTS: "/terracotta-pots",
+  PEBBLES: "/pebbles",
+  NEW_ARRIVALS: "/new-arrivals",
+  TRACK_ORDER: "/track-order",
+  LOCATION: "/location",
+  CONTACT: "/contact",
+  WISHLIST: "/wishlist",
+  ADMIN: "/admin",
+  PRODUCT_DETAIL: (code: string) => `/product/${code}`,
+} as const;
