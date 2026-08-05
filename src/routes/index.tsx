@@ -54,10 +54,13 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
+import { useProducts } from "@/hooks/useProducts";
+
 function Index() {
+  const { products: liveProducts } = useProducts();
   const [selectedReelIndex, setSelectedReelIndex] = useState<number | null>(null);
-  const visibleProducts = products.slice(0, 4);
-  const visibleVases = vases.slice(0, 4);
+  const visibleProducts = liveProducts.slice(0, 4);
+  const visibleVases = liveProducts.filter((p) => (p.material || "").toLowerCase().includes("ceramic")).slice(0, 4);
 
   return (
     <Layout>

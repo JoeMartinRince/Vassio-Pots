@@ -53,7 +53,10 @@ interface CatalogItem {
   isNewArrival?: boolean;
 }
 
+import { useProducts } from "@/hooks/useProducts";
+
 function ProductsPage() {
+  const { products: liveProducts } = useProducts();
   const search = useSearch({ from: "/products" });
   const navigate = useNavigate({ from: "/products" });
   const { addToCart } = useStore();
@@ -73,7 +76,7 @@ function ProductsPage() {
 
   // Master product catalog list with smart categorization
   const masterCatalog: CatalogItem[] = useMemo(() => {
-    const rawList = [...products, ...vases, ...auxiliaryProducts];
+    const rawList = liveProducts;
     const uniqueMap = new Map<string, CatalogItem>();
 
     rawList.forEach((item) => {

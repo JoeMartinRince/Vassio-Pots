@@ -20,20 +20,15 @@ export const Route = createFileRoute("/terracotta-pots")({
   component: TerracottaPotsPage,
 });
 
+import { useProducts } from "@/hooks/useProducts";
+
 function TerracottaPotsPage() {
+  const { products: terracottaList } = useProducts("terracotta-pots");
   const { addToCart } = useStore();
   const [sortBy, setSortBy] = useState<string>("featured");
 
   const terracottaProducts = useMemo(() => {
-    const combined = [...products, ...vases].filter(
-      (p) =>
-        p.material.toLowerCase().includes("ceramic") ||
-        p.material.toLowerCase().includes("stone") ||
-        p.color.toLowerCase().includes("beige") ||
-        p.name.toLowerCase().includes("leaf") ||
-        p.name.toLowerCase().includes("vanilla")
-    );
-    let result = combined.length > 0 ? combined : products;
+    let result = [...terracottaList];
 
     if (sortBy === "price-asc") {
       result.sort((a, b) => a.price - b.price);

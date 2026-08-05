@@ -140,10 +140,10 @@ export const products = [
     description: "Sleek, minimalist floor vases boasting organic curves and a calming sea green matte finish. Available in four progressive sizes to create a striking architectural landscape in entryways or corners.",
     pairsWith: { code: "DSV2299", name: "Dune Stoneware Vase", price: 1499, mrp: 2299, img: potBg },
     sizes: [
-      { name: "Flax-D (H: 21\")", price: 5200, mrp: 7500, dimensions: "Height: 21\", Top: 8.5\", Bottom: 6.5\"" },
-      { name: "Flax-C (H: 28\")", price: 7580, mrp: 11000, dimensions: "Height: 28\", Top: 11\", Bottom: 8.5\"" },
-      { name: "Flax-B (H: 33\")", price: 11870, mrp: 17000, dimensions: "Height: 33\", Top: 13.5\", Bottom: 10\"" },
-      { name: "Flax-A (H: 40\")", price: 14910, mrp: 22000, dimensions: "Height: 40\", Top: 16\", Bottom: 12\"" }
+      { name: "Flax-D (H: 21\")", dimensions: "Height: 21\", Top: 8.5\", Bottom: 6.5\"" },
+      { name: "Flax-C (H: 28\")", dimensions: "Height: 28\", Top: 11\", Bottom: 8.5\"" },
+      { name: "Flax-B (H: 33\")", dimensions: "Height: 33\", Top: 13.5\", Bottom: 10\"" },
+      { name: "Flax-A (H: 40\")", dimensions: "Height: 40\", Top: 16\", Bottom: 12\"" }
     ]
   },
   {
@@ -162,8 +162,8 @@ export const products = [
     description: "A set of two elegant tapered planters featuring subtle leaf texture on a neutral light grey backdrop. Designed to complement tall foliage and architectural indoor plants.",
     pairsWith: { code: "DSV2299", name: "Dune Stoneware Vase", price: 1499, mrp: 2299, img: potBg },
     sizes: [
-      { name: "Size B (Small - H: 16.5\")", price: 4500, mrp: 6500, dimensions: "Height: 16.5\", Top: 10.5\", Bottom: 10.5\"" },
-      { name: "Size A (Large - H: 25.5\")", price: 9000, mrp: 13500, dimensions: "Height: 25.5\", Top: 17\", Bottom: 17\"" }
+      { name: "Size B (Small - H: 16.5\")", dimensions: "Height: 16.5\", Top: 10.5\", Bottom: 10.5\"" },
+      { name: "Size A (Large - H: 25.5\")", dimensions: "Height: 25.5\", Top: 17\", Bottom: 17\"" }
     ]
   },
   {
@@ -182,9 +182,9 @@ export const products = [
     description: "Embellished with detailed leaf engravings, these charcoal grey planters introduce depth and quiet texture to your plant arrangements. Perfect for modern, rustic, or minimal settings.",
     pairsWith: { code: "DSV2299", name: "Dune Stoneware Vase", price: 1499, mrp: 2299, img: potBg },
     sizes: [
-      { name: "Size C (Small - H: 13.5\")", price: 4500, mrp: 6500, dimensions: "Height: 13.5\", Top: 12.5\", Bottom: 7.5\"" },
-      { name: "Size B (Medium - H: 17.5\")", price: 7200, mrp: 10000, dimensions: "Height: 17.5\", Top: 16\", Bottom: 9\"" },
-      { name: "Size A (Large - H: 21\")", price: 8000, mrp: 12000, dimensions: "Height: 21\", Top: 19.5\", Bottom: 10.5\"" }
+      { name: "Size C (Small - H: 13.5\")", dimensions: "Height: 13.5\", Top: 12.5\", Bottom: 7.5\"" },
+      { name: "Size B (Medium - H: 17.5\")", dimensions: "Height: 17.5\", Top: 16\", Bottom: 9\"" },
+      { name: "Size A (Large - H: 21\")", dimensions: "Height: 21\", Top: 19.5\", Bottom: 10.5\"" }
     ]
   },
   {
@@ -203,9 +203,9 @@ export const products = [
     description: "Add a touch of contemporary refinement to your botanical displays with our Vanilla Planters. Featuring an intricate, textured basket-weave pattern in an elegant sage green hue, this set of three rounded planters brings organic charm and artistic craft to any setting.",
     pairsWith: { code: "DSV2299", name: "Dune Stoneware Vase", price: 1499, mrp: 2299, img: potBg },
     sizes: [
-      { name: "Size C (Small - H: 8\")", price: 3000, mrp: 4500, dimensions: "Height: 8\", Top: 9\", Bottom: 0\"" },
-      { name: "Size B (Medium - H: 12\")", price: 5000, mrp: 7500, dimensions: "Height: 12\", Top: 13.5\", Bottom: 0\"" },
-      { name: "Size A (Large - H: 16\")", price: 7300, mrp: 11000, dimensions: "Height: 16\", Top: 18\", Bottom: 0\"" }
+      { name: "Size C (Small - H: 8\")", dimensions: "Height: 8\", Top: 9\", Bottom: 0\"" },
+      { name: "Size B (Medium - H: 12\")", dimensions: "Height: 12\", Top: 13.5\", Bottom: 0\"" },
+      { name: "Size A (Large - H: 16\")", dimensions: "Height: 16\", Top: 18\", Bottom: 0\"" }
     ]
   },
   {
@@ -224,9 +224,9 @@ export const products = [
     description: "Add a touch of structural drama to your corners with these tall, charcoal black ribbed planters. Their heavy horizontal ribbing provides a beautiful backdrop for bright foliage.",
     pairsWith: { code: "DSV2299", name: "Dune Stoneware Vase", price: 1499, mrp: 2299, img: potBg },
     sizes: [
-      { name: "Size C (Small - H: 15\")", price: 5500, mrp: 8000, dimensions: "Height: 15\", Top: 8\", Bottom: 0\"" },
-      { name: "Size B (Medium - H: 20\")", price: 7000, mrp: 10000, dimensions: "Height: 20\", Top: 11\", Bottom: 0\"" },
-      { name: "Size A (Large - H: 26\")", price: 8500, mrp: 12000, dimensions: "Height: 26\", Top: 15\", Bottom: 0\"" }
+      { name: "Size C (Small - H: 15\")", dimensions: "Height: 15\", Top: 8\", Bottom: 0\"" },
+      { name: "Size B (Medium - H: 20\")", dimensions: "Height: 20\", Top: 11\", Bottom: 0\"" },
+      { name: "Size A (Large - H: 26\")", dimensions: "Height: 26\", Top: 15\", Bottom: 0\"" }
     ]
   },
   {

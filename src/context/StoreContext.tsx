@@ -6,7 +6,7 @@ import {
   useCallback,
   type ReactNode,
 } from "react";
-import { allProducts } from "@/data/products";
+import productService from "@/services/product.service";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -205,23 +205,16 @@ export function useCartSubtotal() {
   return cartItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
 }
 
-/** All products that are in the wishlist */
+/** All products that are in the wishlist (with live merged Supabase pricing) */
 export function useWishlistProducts() {
   const { wishlistIds } = useStore();
-  return allProducts.filter((p) => wishlistIds.has(p.code));
+  return productService.getAllProducts().filter((p) => wishlistIds.has(p.code));
 }
 
 /**
- * Search result: fuzzy filter over allProducts.
- * Future: replace `allProducts` with a Supabase query here.
+ * Search result: fuzzy filter over merged products.
  */
 export function useSearchResults(query: string) {
   if (!query.trim()) return [];
-  const q = query.toLowerCase();
-  return allProducts.filter(
-    (p) =>
-      p.name.toLowerCase().includes(q) ||
-      (p as any).category?.toLowerCase().includes(q) ||
-      (p as any).keywords?.some((k: string) => k.toLowerCase().includes(q))
-  );
+  return productService.searchProducts(query);
 }

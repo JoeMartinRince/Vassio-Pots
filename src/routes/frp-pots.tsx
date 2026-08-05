@@ -20,14 +20,16 @@ export const Route = createFileRoute("/frp-pots")({
   component: FrpPotsPage,
 });
 
+import { useProducts } from "@/hooks/useProducts";
+
 function FrpPotsPage() {
+  const { products: frpProductsList } = useProducts("frp-pots");
   const { addToCart } = useStore();
   const [selectedColor, setSelectedColor] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("featured");
 
   const frpProducts = useMemo(() => {
-    let result = products.filter((p) => p.material.toLowerCase().includes("fiber") || p.code.startsWith("FLX") || p.code.startsWith("ARC"));
-    if (frpProductsLength(result) === 0) result = products; // fallback
+    let result = [...frpProductsList];
 
     if (selectedColor !== "all") {
       result = result.filter((p) => p.color.toLowerCase().includes(selectedColor.toLowerCase()));

@@ -20,20 +20,15 @@ export const Route = createFileRoute("/pebbles")({
   component: PebblesPage,
 });
 
+import { useProducts } from "@/hooks/useProducts";
+
 function PebblesPage() {
+  const { products: pebblesList } = useProducts("pebbles");
   const { addToCart } = useStore();
   const [sortBy, setSortBy] = useState<string>("featured");
 
   const pebbleProducts = useMemo(() => {
-    const combined = [...products, ...vases, ...auxiliaryProducts].filter(
-      (p) =>
-        p.material.toLowerCase().includes("marble") ||
-        p.name.toLowerCase().includes("pebble") ||
-        p.name.toLowerCase().includes("stone") ||
-        p.name.toLowerCase().includes("rattan") ||
-        p.color.toLowerCase().includes("beige")
-    );
-    let result = combined.length > 0 ? combined : products;
+    let result = [...pebblesList];
 
     if (sortBy === "price-asc") {
       result.sort((a, b) => a.price - b.price);

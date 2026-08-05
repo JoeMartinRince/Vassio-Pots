@@ -4,9 +4,8 @@
 
 export interface ProductSizeOption {
   name: string;
-  price: number;
-  mrp: number;
   dimensions: string;
+  available?: boolean;
 }
 
 export interface PairedProduct {

@@ -20,7 +20,10 @@ export const Route = createFileRoute("/shop")({
   component: ShopPage,
 });
 
+import { useProducts } from "@/hooks/useProducts";
+
 function ShopPage() {
+  const { products: liveProducts } = useProducts();
   const search = useSearch({ from: "/shop" });
   const [selectedCategory, setSelectedCategory] = useState<string>(search.category || "all");
   const [sortBy, setSortBy] = useState<string>(search.sort || "featured");
@@ -30,17 +33,22 @@ function ShopPage() {
   const [inStockOnly, setInStockOnly] = useState<boolean>(false);
 
   // Combine products and assign categories
-  const allProducts = useMemo(() => {
-    return [
-      ...products.map((p) => ({ ...p, category: "plants" })),
-      ...vases.map((p) => ({ ...p, category: "vases" })),
-      ...auxiliaryProducts.map((p) => ({ ...p, category: "decor" })),
-    ];
-  }, []);
+  const allProductsList = useMemo(() => {
+    return liveProducts.map((p) => {
+      const lname = p.name.toLowerCase();
+      let category = "pots";
+      if (lname.includes("plant") || lname.includes("tree") || lname.includes("faux") || p.code.startsWith("FFT")) {
+        category = "plants";
+      } else if ((p.material || "").toLowerCase().includes("ceramic")) {
+        category = "vases";
+      }
+      return { ...p, category };
+    });
+  }, [liveProducts]);
 
   // Filter and sort products
   const filteredProducts = useMemo(() => {
-    let result = [...allProducts];
+    let result = [...allProductsList];
 
     // Category filter
     if (selectedCategory !== "all") {

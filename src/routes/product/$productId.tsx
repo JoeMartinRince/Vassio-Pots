@@ -193,10 +193,16 @@ function ProductDetails({ product }: { product: Product }) {
     setSelectedVariantColor(freshColors.find((c) => c.available) ?? null);
   }, [product.code]);
 
-  // ── Pricing ─────────────────────────────────────────────────────────────────
-  // product.price and product.mrp are already the Supabase-merged dynamic values.
-  // For products with legacy size-based pricing, match the selected size to adjust price.
-  const productWithSizes = product as Product & { sizes?: Array<{ name: string; price: number; mrp: number; dimensions: string }> };
+  // ── Pricing & Dimensions ───────────────────────────────────────────────────
+  // Display prices come EXCLUSIVELY from Supabase dynamic product object (product.price & product.mrp)
+  const displayPrice = Number(product.price ?? 0);
+  const displayMrp = Number(product.mrp ?? displayPrice);
+  const off = product.discountPercentage !== undefined
+    ? product.discountPercentage
+    : (displayMrp > displayPrice ? Math.round(((displayMrp - displayPrice) / displayMrp) * 100) : 0);
+
+  // Match size dimensions description if defined
+  const productWithSizes = product as Product & { sizes?: Array<{ name: string; dimensions: string }> };
   const matchedLegacySize = productWithSizes.sizes?.find((sz) => {
     if (!selectedVariantSize) return false;
     const label = selectedVariantSize.label.toUpperCase();
@@ -210,12 +216,6 @@ function ProductDetails({ product }: { product: Product }) {
     );
   });
 
-  // Use legacy size price if variant matched; otherwise use Supabase dynamic price
-  const displayPrice = matchedLegacySize ? matchedLegacySize.price : Number(product.price ?? 0);
-  const displayMrp = matchedLegacySize ? matchedLegacySize.mrp : Number(product.mrp ?? displayPrice);
-  const off = displayMrp > 0
-    ? Math.max(0, Math.round(((displayMrp - displayPrice) / displayMrp) * 100))
-    : 0;
   const displayDimensions = matchedLegacySize
     ? matchedLegacySize.dimensions
     : selectedVariantSize?.dimensions || product.dimensions || "Dimensions available on request";

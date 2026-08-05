@@ -46,7 +46,10 @@ const HEIGHT_OPTIONS: HeightOption[] = [
   { id: "6ft+", label: "6 FT+" },
 ];
 
+import { useProducts } from "@/hooks/useProducts";
+
 function ArtificialPlantsPage() {
+  const { products: livePlantsList } = useProducts("artificial-plants");
   const search = useSearch({ from: "/artificial-plants" });
   const navigate = useNavigate({ from: "/artificial-plants" });
   const { addToCart } = useStore();
@@ -69,7 +72,7 @@ function ArtificialPlantsPage() {
 
   // Enriched Artificial Plant Products List with Height Metadata
   const allPlantProducts = useMemo(() => {
-    const rawList = [...products, ...auxiliaryProducts];
+    const rawList = livePlantsList;
     const uniqueMap = new Map<string, any>();
 
     rawList.forEach((item) => {

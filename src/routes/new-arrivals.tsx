@@ -20,13 +20,16 @@ export const Route = createFileRoute("/new-arrivals")({
   component: NewArrivalsPage,
 });
 
+import { useProducts } from "@/hooks/useProducts";
+
 function NewArrivalsPage() {
+  const { products: liveProducts } = useProducts();
   const { addToCart } = useStore();
   const [sortBy, setSortBy] = useState<string>("featured");
 
   const newArrivals = useMemo(() => {
-    const combined = [...products, ...vases, ...auxiliaryProducts];
-    let result = combined.slice(0, 8); // Latest items
+    let result = liveProducts.filter((p) => p.newArrival !== false).slice(0, 8);
+    if (result.length === 0) result = liveProducts.slice(0, 8);
 
     if (sortBy === "price-asc") {
       result.sort((a, b) => a.price - b.price);
