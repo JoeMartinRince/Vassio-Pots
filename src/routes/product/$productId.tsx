@@ -188,11 +188,11 @@ function ProductDetails({ product }: { product: Product }) {
     setSelectedVariantColor(freshColors.find((c) => c.available) ?? null);
   }, [product.code]);
 
-  // ── Supabase Variant Pricing ────────────────────────────────────────────────
-  // Match the product.variants[] (from Supabase) to the selected UI size.
-  // Matching logic: variant_name must match the selected size label.
-  const matchedDbVariant: ProductVariant | undefined = selectedVariantSize
-    ? product.variants?.find((v) => {
+  // ── Supabase / Fallback Variant Pricing ─────────────────────────────────────
+  // Safe matching against product.variants
+  const matchedDbVariant: ProductVariant | undefined = (selectedVariantSize && product.variants)
+    ? product.variants.find((v) => {
+        if (!v || !v.variant_name) return false;
         const vName = v.variant_name.toUpperCase();
         const sLabel = selectedVariantSize.label.toUpperCase();
         return (
@@ -208,21 +208,21 @@ function ProductDetails({ product }: { product: Product }) {
       })
     : undefined;
 
-  // Fall back to first available variant if none matched
+  // Fall back to first available variant, else first variant in array
   const activeDbVariant = matchedDbVariant
-    ?? product.variants?.find((v) => v.available)
+    ?? product.variants?.find((v) => v && v.available)
     ?? product.variants?.[0];
 
-  // Prices exclusively from Supabase variant. Never from static data.
-  const displayPrice = activeDbVariant ? Number(activeDbVariant.selling_price) : 0;
-  const displayMrp = activeDbVariant ? Number(activeDbVariant.original_price) : 0;
+  // Prices: active variant -> product root -> 0 fallback
+  const displayPrice = activeDbVariant ? Number(activeDbVariant.selling_price || 0) : Number(product.price || 0);
+  const displayMrp = activeDbVariant ? Number(activeDbVariant.original_price || 0) : Number(product.mrp || 0);
   const off = displayMrp > displayPrice
     ? Math.round(((displayMrp - displayPrice) / displayMrp) * 100)
     : 0;
-  const displayStock = activeDbVariant ? activeDbVariant.stock_quantity : 0;
+  const displayStock = activeDbVariant ? Number(activeDbVariant.stock_quantity || 0) : Number(product.stockQuantity || 0);
   const isAvailable = activeDbVariant
-    ? (activeDbVariant.available && activeDbVariant.stock_quantity > 0)
-    : false;
+    ? Boolean(activeDbVariant.available && (activeDbVariant.stock_quantity ?? 0) > 0)
+    : !product.isSoldOut;
 
   const displayDimensions = activeDbVariant?.dimensions
     || selectedVariantSize?.dimensions
@@ -279,7 +279,7 @@ function ProductDetails({ product }: { product: Product }) {
           </div>
         </div>
 
-        {/* Price Tag — powered by Supabase product_variants */}
+        {/* Price Tag */}
         <div className="mt-5 flex items-center gap-3.5">
           {displayPrice > 0 ? (
             <>
